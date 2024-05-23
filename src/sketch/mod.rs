@@ -5,13 +5,12 @@ pub mod point2;
 use std::collections::VecDeque;
 
 
-use self::{constraints::Constraints, primitives::{Parametric, SketchPrimitives}};
+use self::{constraints::Constraints, primitives::Parametric};
 
 pub struct Sketch<'a, const N: usize> {
     data: [f64; N],
     gradient: [f64; N],
 
-    edges: VecDeque<SketchPrimitives<'a>>,
     n: usize,
 
     constraints: VecDeque<Constraints<'a>>,
@@ -22,19 +21,17 @@ impl<'a, const N: usize> Sketch<'a, N> {
         Self {
             data: [0.0; N],
             gradient: [0.0; N],
-            edges: VecDeque::new(),
             n: 0,
             constraints: VecDeque::new(),
         }
     }
 
-    pub fn add_primitive<P: Parametric<'a>>(&'a mut self) -> &mut P {
+    pub fn add_primitive<P: Parametric<'a>>(&'a mut self) -> P {
         let data = &mut self.data[self.n..self.n + P::num_parameters()];
         let gradient = &mut self.gradient.as_mut_slice()[self.n..self.n + P::num_parameters()];
         let primitive = P::initialize(data, gradient);
-        self.edges.push_back(primitive.as_sketch_primitive());
         self.n += P::num_parameters();
-        P::ref_from_sketch_primitive(self.edges.back_mut().unwrap())
+        primitive
     }
 
     pub fn add_constraint(&mut self, constraint: Constraints<'a>) {
