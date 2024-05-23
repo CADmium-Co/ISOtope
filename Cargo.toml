@@ -1,0 +1,10 @@
+[package]
+name = "ISOtope"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+truck-geometry = "0.4.0"
+truck-geotrait = "0.3.0"
+truck-modeling = "0.5.1"
+truck-topology = "0.5.0"
