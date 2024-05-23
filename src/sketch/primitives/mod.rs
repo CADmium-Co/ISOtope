@@ -6,13 +6,13 @@ use self::line::Line;
 use self::arc::Arc;
 use self::circle::Circle;
 
-pub enum SketchPrimitives{
-    Line(Line),
+pub enum SketchPrimitives<'a> {
+    Line(Line<'a>),
     // Arc(Arc),
     // Circle(Circle),
 }
 
-impl SketchPrimitives {
+impl<'a> SketchPrimitives<'a> {
     pub fn num_parameters(&self) -> usize {
         match self {
             SketchPrimitives::Line(l) => l.num_parameters(),
@@ -23,9 +23,8 @@ impl SketchPrimitives {
 }
 
 // A trait that defines a parametric object, meaning a SketchPrimitive that can be defined by a FIXED NUMBER of parameters.
-pub trait Parametric<const N: usize> {
-    fn from_data(data: [f64; N]) -> Self;
-    fn data(&self) -> [f64; N];
+pub trait Parametric<'a, const N: usize> {
+    fn initialize(data: &'a mut [f64; N], gradient: &'a mut [f64; 4]) -> Self;
     fn num_parameters(&self) -> usize {
         N
     }

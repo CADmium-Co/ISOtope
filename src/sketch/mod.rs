@@ -8,17 +8,17 @@ use std::collections::VecDeque;
 
 use self::primitives::SketchPrimitives;
 
-pub struct Sketch {
-    pub edges: VecDeque<SketchPrimitives>,
+pub struct Sketch<'a> {
+    pub edges: VecDeque<SketchPrimitives<'a>>,
 }
 
-impl Sketch {
+impl<'a> Sketch<'a> {
     pub fn new() -> Self {
         Self {
             edges: VecDeque::new(),
         }
     }
-    pub fn add_primitive(&mut self, primitive: SketchPrimitives) {
+    pub fn add_primitive(&mut self, primitive: SketchPrimitives<'a>) {
         self.edges.push_back(primitive);
     }
 }
