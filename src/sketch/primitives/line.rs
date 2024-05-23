@@ -1,6 +1,6 @@
 use crate::sketch::point2::Point2;
 
-use super::Parametric;
+use super::{Parametric, SketchPrimitives};
 
 pub struct Line<'a> {
     data: &'a mut [f64; 4],
@@ -32,8 +32,11 @@ impl<'a> Line<'a> {
         self.data[3] = end.y;
     }
 
-    pub fn gradient_to_data(gradient_start_x: f64, gradient_start_y: f64, gradient_end_x: f64, gradient_end_y: f64) -> [f64; 4] {
-        [gradient_start_x, gradient_start_y, gradient_end_x, gradient_end_y]
+    pub fn add_to_gradient(&mut self, gradient_start_x: f64, gradient_start_y: f64, gradient_end_x: f64, gradient_end_y: f64) {
+        self.gradient[0] += gradient_start_x;
+        self.gradient[1] += gradient_start_y;
+        self.gradient[2] += gradient_end_x;
+        self.gradient[3] += gradient_end_y;
     }
 }
 
@@ -43,6 +46,10 @@ impl<'a> Parametric<'a, 4> for Line<'a> {
             data,
             gradient,
         }
+    }
+
+    fn as_sketch_primitive(self) -> SketchPrimitives<'a> {
+        SketchPrimitives::Line(self)
     }
 }
 
