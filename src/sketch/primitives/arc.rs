@@ -1,4 +1,5 @@
-use truck_geometry::Point2;
+use crate::sketch::point2::Point2;
+
 
 pub struct Arc {
     pub start: Point2,

@@ -1,4 +1,7 @@
 pub mod primitives;
+pub mod constraints;
+pub mod point2;
+pub mod gradient_buffer;
 
 use std::collections::VecDeque;
 

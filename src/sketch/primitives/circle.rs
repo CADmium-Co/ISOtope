@@ -1,4 +1,4 @@
-use truck_geometry::Point2;
+use crate::sketch::point2::Point2;
 
 pub struct Circle {
     pub center: Point2,
