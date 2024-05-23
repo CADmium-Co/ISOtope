@@ -18,14 +18,23 @@ pub struct Sketch<'a, const N: usize> {
 }
 
 impl<'a, const N: usize> Sketch<'a, N> {
-    pub fn add_primitive<P: Parametric<'a, N2>, const N2: usize>(&'a mut self) {
-        let slice1 = &mut self.data[self.n..self.n + N2];
-        let data = slice1.try_into().unwrap();
-        let slice2 = &mut self.gradient.as_mut_slice()[self.n..self.n + N2];
-        let gradient = slice2.try_into().unwrap();
+    pub fn new() -> Self {
+        Self {
+            data: [0.0; N],
+            gradient: [0.0; N],
+            edges: VecDeque::new(),
+            n: 0,
+            constraints: VecDeque::new(),
+        }
+    }
+
+    pub fn add_primitive<P: Parametric<'a>>(&'a mut self) -> &mut P {
+        let data = &mut self.data[self.n..self.n + P::num_parameters()];
+        let gradient = &mut self.gradient.as_mut_slice()[self.n..self.n + P::num_parameters()];
         let primitive = P::initialize(data, gradient);
         self.edges.push_back(primitive.as_sketch_primitive());
-        self.n += N2;
+        self.n += P::num_parameters();
+        P::ref_from_sketch_primitive(self.edges.back_mut().unwrap())
     }
 
     pub fn add_constraint(&mut self, constraint: Constraints<'a>) {

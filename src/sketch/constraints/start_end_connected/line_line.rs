@@ -1,5 +1,3 @@
-use std::rc::Rc;
-
 use crate::sketch::{constraints::Constraint, primitives::line::Line};
 
 // This is a sketch constraint that connects the end of the first line to the start of the following line.

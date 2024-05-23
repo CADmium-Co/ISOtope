@@ -3,8 +3,8 @@ use crate::sketch::point2::Point2;
 use super::{Parametric, SketchPrimitives};
 
 pub struct Line<'a> {
-    data: &'a mut [f64; 4],
-    gradient: &'a mut [f64; 4],
+    data: &'a mut [f64],
+    gradient: &'a mut [f64],
 }
 
 impl<'a> Line<'a> {
@@ -40,16 +40,26 @@ impl<'a> Line<'a> {
     }
 }
 
-impl<'a> Parametric<'a, 4> for Line<'a> {
-    fn initialize(data: &'a mut [f64; 4], gradient: &'a mut [f64; 4]) -> Self {
+impl<'a> Parametric<'a> for Line<'a> {
+    fn initialize(data: &'a mut [f64], gradient: &'a mut [f64]) -> Self {
         Self {
             data,
             gradient,
         }
     }
 
+    fn num_parameters() -> usize {
+        4
+    }
+
     fn as_sketch_primitive(self) -> SketchPrimitives<'a> {
         SketchPrimitives::Line(self)
+    }
+
+    fn ref_from_sketch_primitive(primitive: &'a mut SketchPrimitives<'a>) -> &'a mut Self {
+        match primitive {
+            SketchPrimitives::Line(l) => l,
+        }
     }
 }
 
