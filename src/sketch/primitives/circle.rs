@@ -1,61 +1,76 @@
-use nalgebra::Vector2;
+use std::{cell::RefCell, rc::Rc};
 
-use super::Parametric;
+use nalgebra::{SMatrix, SMatrixView, SVector};
+
+use super::{point2::Point2, Parametric};
 
 pub struct Circle {
-    data: [f64; 3],
-    gradient: [f64; 3],
+    center: Rc<RefCell<Point2>>,
+    data: SVector<f64, 1>,
+    gradient: SVector<f64, 1>,
 }
 
 impl Circle {
-    pub fn new(center: Vector2<f64>, radius: f64) -> Self {
+    pub fn new(center: Rc<RefCell<Point2>>, radius: f64) -> Self {
         Self {
-            data: [center.x, center.y, radius],
-            gradient: [0.0; 3],
+            center: center,
+            data: SVector::<f64, 1>::from_row_slice(&[radius]),
+            gradient: SVector::<f64, 1>::zeros(),
         }
     }
 
-    pub fn center(&self) -> Vector2<f64> {
-        Vector2::new(self.data[0], self.data[1])   
+    pub fn center(&self) -> Rc<RefCell<Point2>> {
+        self.center.clone()
+    }
+
+    pub fn set_center(&mut self, center: Rc<RefCell<Point2>>) {
+        self.center = center;
+    }
+
+    pub fn center_gradient(&self) -> SMatrix<f64, 2, 3> {
+        SMatrix::<f64, 2, 3>::from_row_slice(
+            &[
+                1.0, 0.0, 0.0,
+                0.0, 1.0, 0.0,
+            ]
+        )
     }
 
     pub fn radius(&self) -> f64 {
-        self.data[2]
-    }
-
-    pub fn set_center(&mut self, center: Vector2<f64>) {
-        self.data[0] = center.x;
-        self.data[1] = center.y;
+        self.data[0]
     }
 
     pub fn set_radius(&mut self, radius: f64) {
-        self.data[2] = radius;
+        self.data[0] = radius;
+    }
+
+    pub fn radius_gradient(&self) -> SMatrix<f64, 1, 3> {
+        SMatrix::<f64, 1, 3>::from_row_slice(
+            &[
+                0.0, 0.0, 1.0,
+            ]
+        )
     }
 
     pub fn add_to_gradient(
         &mut self,
-        gradient_center_x: f64,
-        gradient_center_y: f64,
-        gradient_radius: f64,
+        gradient: SMatrixView<f64, 1, 3>,
     ) {
-        self.gradient[0] += gradient_center_x;
-        self.gradient[1] += gradient_center_y;
-        self.gradient[2] += gradient_radius;
+        self.center.borrow_mut().add_to_gradient(gradient.fixed_view::<1, 2>(0, 0));
+        self.gradient += gradient.fixed_view::<1, 1>(0, 2).transpose();
     }
 }
 
 impl Parametric for Circle {
     fn references(&self) -> Vec<std::rc::Rc<std::cell::RefCell<dyn Parametric>>> {
-        vec![]
+        vec![self.center.clone()]
     }
 
     fn zero_gradient(&mut self) {
-        self.gradient = [0.0; 3];
+        self.gradient = SVector::<f64, 1>::zeros();
     }
 
     fn step(&mut self, step_size: f64) {
-        for i in 0..3 {
-            self.data[i] -= step_size * self.gradient[i];
-        }
+        self.data -= step_size * self.gradient;
     }
 }

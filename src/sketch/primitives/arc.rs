@@ -144,7 +144,6 @@ impl Arc {
         &mut self,
         gradient: SMatrixView<f64, 1, 5>,
     ) {
-        // get first two columns of gradient
         self.center.borrow_mut().add_to_gradient(gradient.fixed_view::<1, 2>(0, 0));
         self.gradient += gradient.fixed_view::<1, 3>(0, 2).transpose();
     }
