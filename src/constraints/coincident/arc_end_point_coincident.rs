@@ -10,13 +10,29 @@ use crate::{
 // This is a sketch constraint that makes the end point of an arc coincident with a point.
 #[derive(Debug)]
 pub struct ArcEndPointCoincident {
-    pub arc: Rc<RefCell<Arc>>,
-    pub point: Rc<RefCell<Point2>>,
+    arc: Rc<RefCell<Arc>>,
+    point: Rc<RefCell<Point2>>,
 }
 
 impl ArcEndPointCoincident {
     pub fn new(arc: Rc<RefCell<Arc>>, point: Rc<RefCell<Point2>>) -> Self {
         Self { arc, point }
+    }
+
+    pub fn arc(&self) -> Rc<RefCell<Arc>> {
+        self.arc.clone()
+    }
+
+    pub fn set_arc(&mut self, arc: Rc<RefCell<Arc>>) {
+        self.arc = arc;
+    }
+
+    pub fn point(&self) -> Rc<RefCell<Point2>> {
+        self.point.clone()
+    }
+
+    pub fn set_point(&mut self, point: Rc<RefCell<Point2>>) {
+        self.point = point;
     }
 }
 

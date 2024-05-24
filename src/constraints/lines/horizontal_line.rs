@@ -10,12 +10,20 @@ use crate::{
 // This is a sketch constraint that makes the end point of an arc coincident with a point.
 #[derive(Debug)]
 pub struct HorizontalLine {
-    pub line: Rc<RefCell<Line>>,
+    line: Rc<RefCell<Line>>,
 }
 
 impl HorizontalLine {
     pub fn new(line: Rc<RefCell<Line>>) -> Self {
         Self { line }
+    }
+
+    pub fn line(&self) -> Rc<RefCell<Line>> {
+        self.line.clone()
+    }
+
+    pub fn set_line(&mut self, line: Rc<RefCell<Line>>) {
+        self.line = line;
     }
 }
 

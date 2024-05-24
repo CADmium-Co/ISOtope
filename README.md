@@ -2,6 +2,10 @@
 
 The **I**terative **SO**lver for 2D Sketches. This project is a dependency free gradient descent based solver. It works by minimizing the energy of virtual springs that represent the constraints.
 
+## Todos
+
+- [ ] When adding a constraint, check that all primitives are already in the sketch
+
 ## Usage
 
 ```rust
