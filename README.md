@@ -41,11 +41,11 @@ p_c = [x_3, y_3]
 $$
 
 $$
-l_1 = \overleftrightarrow{p_a p_b}
+l_1 = \overline{p_a p_b}
 $$
 
 $$
-l_2 = [x_2, y_2, x_3, y_3]
+l_2 = \overline{p_b p_c}
 $$
 
 $$
