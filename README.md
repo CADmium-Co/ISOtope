@@ -29,7 +29,9 @@ The algorithm is quite simple. First, we create a Sketch that constists of primi
 Now we take all these parameters and put them into a big vector $q$. This vector is the current state of our sketch. For example
 
 $$
-q = [x_1, y_1, x_2, y_2, x_3, y_3, r_1, x_4, y_4, x_5, y_5, r_2]
+point_a = [x_1, y_1]
+
+q = [x_1, y_1, x_2, y_2, x_3]
 $$
 
 ## Todos
