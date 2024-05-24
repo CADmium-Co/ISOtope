@@ -1,6 +1,6 @@
 use std::{cell::RefCell, rc::Rc};
 
-use nalgebra::{SMatrix, SMatrixView, Vector2};
+use nalgebra::{SMatrix, SMatrixView};
 
 use super::{point2::Point2, Parametric};
 
