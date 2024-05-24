@@ -1,4 +1,4 @@
-use nalgebra::{SMatrixView, Vector2};
+use nalgebra::{SMatrix, SMatrixView, Vector2};
 
 use super::Parametric;
 
@@ -23,6 +23,19 @@ impl Point2 {
 
     pub fn y(&self) -> f64 {
         self.data.y
+    }
+
+    pub fn data(&self) -> Vector2<f64> {
+        self.data
+    }
+
+    pub fn gradient(&self) -> SMatrix<f64, 2, 2> {
+        SMatrix::<f64, 2, 2>::from_row_slice(
+            &[
+                1.0, 0.0,
+                0.0, 1.0,
+            ]
+        )
     }
 
     pub fn set_x(&mut self, x: f64) {

@@ -1,65 +1,73 @@
-use nalgebra::Vector2;
+use std::{cell::RefCell, rc::Rc};
 
-use super::Parametric;
+use nalgebra::{SMatrix, SMatrixView, Vector2};
+
+use super::{point2::Point2, Parametric};
 
 #[derive(Debug)]
 pub struct Line {
-    data: [f64; 4],
-    gradient: [f64; 4],
+    start: Rc<RefCell<Point2>>,
+    end: Rc<RefCell<Point2>>,
 }
 
 impl Line {
-    pub fn new(start: Vector2<f64>, end: Vector2<f64>) -> Self {
-        Self {
-            data: [start.x, start.y, end.x, end.y],
-            gradient: [0.0; 4],
-        }
+    pub fn new(start: Rc<RefCell<Point2>>, end: Rc<RefCell<Point2>>) -> Self {
+        Self { start, end }
     }
 
-    pub fn start(&self) -> Vector2<f64> {
-        Vector2::new(self.data[0], self.data[1])
+    pub fn start(&self) -> Rc<RefCell<Point2>> {
+        self.start.clone()
     }
 
-    pub fn end(&self) -> Vector2<f64> {
-        Vector2::new(self.data[2], self.data[3])
+    pub fn set_start(&mut self, start: Rc<RefCell<Point2>>) {
+        self.start = start;
     }
 
-    pub fn set_start(&mut self, start: Vector2<f64>) {
-        self.data[0] = start.x;
-        self.data[1] = start.y;
+    pub fn start_gradient(&self) -> SMatrix<f64, 2, 4> {
+        SMatrix::<f64, 2, 4>::from_row_slice(
+            &[
+                1.0, 0.0, 0.0, 0.0,
+                0.0, 1.0, 0.0, 0.0,
+            ]
+        )
     }
 
-    pub fn set_end(&mut self, end: Vector2<f64>) {
-        self.data[2] = end.x;
-        self.data[3] = end.y;
+    pub fn end(&self) -> Rc<RefCell<Point2>> {
+        self.end.clone()
+    }
+
+    pub fn set_end(&mut self, end: Rc<RefCell<Point2>>) {
+        self.end = end;
+    }
+
+    pub fn end_gradient(&self) -> SMatrix<f64, 2, 4> {
+        SMatrix::<f64, 2, 4>::from_row_slice(
+            &[
+                0.0, 0.0, 1.0, 0.0,
+                0.0, 0.0, 0.0, 1.0,
+            ]
+        )
     }
 
     pub fn add_to_gradient(
         &mut self,
-        gradient_start_x: f64,
-        gradient_start_y: f64,
-        gradient_end_x: f64,
-        gradient_end_y: f64,
+        gradient: SMatrixView<f64, 1, 3>,
     ) {
-        self.gradient[0] += gradient_start_x;
-        self.gradient[1] += gradient_start_y;
-        self.gradient[2] += gradient_end_x;
-        self.gradient[3] += gradient_end_y;
+        self.start.borrow_mut().add_to_gradient(gradient.fixed_view::<1, 2>(0, 0));
+        self.end.borrow_mut().add_to_gradient(gradient.fixed_view::<1, 2>(0, 2));
     }
 }
 
 impl Parametric for Line {
     fn references(&self) -> Vec<std::rc::Rc<std::cell::RefCell<dyn Parametric>>> {
-        vec![]
+        vec![self.start.clone(), self.end.clone()]
     }
 
     fn zero_gradient(&mut self) {
-        self.gradient = [0.0; 4];
+        // Referenced points will zero their gradients automatically as they are part of the sketch
     }
 
-    fn step(&mut self, step_size: f64) {
-        for i in 0..4 {
-            self.data[i] -= step_size * self.gradient[i];
-        }
+    fn step(&mut self, _step_size: f64) {
+        // Do nothing, the points will be updated in their own step functions
     }
 }

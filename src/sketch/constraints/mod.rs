@@ -1,4 +1,5 @@
-pub mod start_end_connected;
+
+pub mod coincident;
 
 pub trait Constraint {
     fn loss_value(&self) -> f64;
