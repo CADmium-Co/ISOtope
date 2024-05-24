@@ -45,7 +45,7 @@ impl Constraint for ArcLineStartEndConnected {
         self.first_arc
             .as_ref()
             .borrow_mut()
-            .add_to_gradient(grad[0], grad[1], grad[2], grad[3], grad[4]);
+            .add_to_gradient(grad);
         self.following_line
             .as_ref()
             .borrow_mut()
