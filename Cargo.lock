@@ -3,5 +3,5 @@
 version = 3
 
 [[package]]
-name = "ISOtope"
+name = "isotope"
 version = "0.1.0"

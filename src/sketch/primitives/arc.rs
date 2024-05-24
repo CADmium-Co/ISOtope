@@ -1,6 +1,5 @@
 use crate::sketch::point2::Point2;
 
-
 pub struct Arc {
     pub start: Point2,
     pub end: Point2,

@@ -40,7 +40,13 @@ impl Line {
         self.data[3] = end.y;
     }
 
-    pub fn add_to_gradient(&mut self, gradient_start_x: f64, gradient_start_y: f64, gradient_end_x: f64, gradient_end_y: f64) {
+    pub fn add_to_gradient(
+        &mut self,
+        gradient_start_x: f64,
+        gradient_start_y: f64,
+        gradient_end_x: f64,
+        gradient_end_y: f64,
+    ) {
         self.gradient[0] += gradient_start_x;
         self.gradient[1] += gradient_start_y;
         self.gradient[2] += gradient_end_x;
@@ -59,4 +65,3 @@ impl Parametric for Line {
         }
     }
 }
-

@@ -1,9 +1,8 @@
-pub mod primitives;
 pub mod constraints;
 pub mod point2;
+pub mod primitives;
 
 use std::{cell::RefCell, collections::VecDeque, rc::Rc};
-
 
 use self::{constraints::Constraint, primitives::Parametric};
 
@@ -20,8 +19,7 @@ impl Sketch {
         }
     }
 
-    pub fn add_primitive(&mut self, primitive: Rc<RefCell<dyn Parametric>>)
-    {
+    pub fn add_primitive(&mut self, primitive: Rc<RefCell<dyn Parametric>>) {
         self.primitives.push_back(primitive);
     }
 
@@ -40,6 +38,12 @@ impl Sketch {
 
         for primitive in self.primitives.iter_mut() {
             primitive.borrow_mut().step(step_size);
+        }
+    }
+
+    pub fn solve(&mut self, step_size: f64, max_steps: usize) {
+        for _ in 0..max_steps {
+            self.step(step_size);
         }
     }
 }

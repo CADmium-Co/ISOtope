@@ -1,12 +1,8 @@
-pub mod line;
 pub mod arc;
 pub mod circle;
+pub mod line;
 
-use self::line::Line;
-// use self::arc::Arc;
-// use self::circle::Circle;
-
-// A trait that defines a parametric object, meaning a SketchPrimitive that can be defined by a FIXED NUMBER of parameters.
+// A trait that defines a parametric object, meaning a SketchPrimitive that can be defined by a fixed number of parameters that can be used for gradient descent.
 pub trait Parametric {
     fn zero_gradient(&mut self);
     fn step(&mut self, step_size: f64);

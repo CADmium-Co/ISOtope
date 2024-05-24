@@ -7,9 +7,6 @@ pub struct Circle {
 
 impl Circle {
     pub fn new(center: Point2, radius: f64) -> Self {
-        Self {
-            center,
-            radius,
-        }
+        Self { center, radius }
     }
 }

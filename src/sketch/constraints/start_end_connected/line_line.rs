@@ -1,4 +1,4 @@
-use std::{borrow::BorrowMut, cell::RefCell, rc::Rc};
+use std::{cell::RefCell, rc::Rc};
 
 use crate::sketch::{constraints::Constraint, primitives::line::Line};
 
@@ -35,8 +35,13 @@ impl Constraint for LineLineStartEndConnected {
         let dx = first_line_end.x - following_line_start.x;
         let dy = first_line_end.y - following_line_start.y;
 
-        self.first_line.as_ref().borrow_mut().add_to_gradient(0.0, 0.0, dx, dy);
-        self.following_line.as_ref().borrow_mut().add_to_gradient(-dx, -dy, 0.0, 0.0);
+        self.first_line
+            .as_ref()
+            .borrow_mut()
+            .add_to_gradient(0.0, 0.0, dx, dy);
+        self.following_line
+            .as_ref()
+            .borrow_mut()
+            .add_to_gradient(-dx, -dy, 0.0, 0.0);
     }
 }
-
