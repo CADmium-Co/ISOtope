@@ -98,9 +98,64 @@ $$
 
 and can be highlighted to the user.
 
-
-## Todos
-
-- [x] When adding a constraint, check that all primitives are already in the sketch
-
 ## Usage
+
+For example, to constrain the angle between three points
+
+```rust
+let mut sketch = Sketch::new();
+
+let point_a = Rc::new(RefCell::new(Point2::new(1.0, 0.0)));
+let point_b = Rc::new(RefCell::new(Point2::new(0.0, 1.0)));
+let point_middle = Rc::new(RefCell::new(Point2::new(0.0, 0.0)));
+sketch.add_primitive(point_a.clone());
+sketch.add_primitive(point_b.clone());
+sketch.add_primitive(point_middle.clone());
+
+let constr1 = Rc::new(RefCell::new(AngleBetweenPoints::new(point_a.clone(), point_b.clone(), point_middle.clone(), std::f64::consts::PI / 4.0)));
+sketch.add_constraint(constr1.clone());
+
+println!("current angle: {}", constr1.borrow().current_angle() * 180.0 / std::f64::consts::PI);
+sketch.solve(0.001, 100000);
+
+println!("point_a: {:?}", point_a.as_ref().borrow());
+println!("point_b: {:?}", point_b.as_ref().borrow());
+println!("point_middle: {:?}", point_middle.as_ref().borrow());
+
+println!("current angle: {}", constr1.borrow().current_angle() * 180.0 / std::f64::consts::PI);
+
+assert!(
+    constr1.borrow().loss_value() < 0.001,
+);
+
+```
+
+or to constrain a line to be horizontal
+
+```rust
+let mut sketch = Sketch::new();
+
+let line_start = Rc::new(RefCell::new(Point2::new(3.0, 4.0)));
+let line_end = Rc::new(RefCell::new(Point2::new(5.0, 6.0)));
+let line = Rc::new(RefCell::new(Line::new(
+    line_start.clone(),
+    line_end.clone(),
+)));
+sketch.add_primitive(line_start.clone());
+sketch.add_primitive(line_end.clone());
+sketch.add_primitive(line.clone());
+
+let constr1 = VerticalLine::new(line.clone());
+sketch.add_constraint(Rc::new(RefCell::new(constr1)));
+
+sketch.solve(0.001, 100000);
+
+println!("line: {:?}", line.as_ref().borrow());
+
+assert!(
+    (line.as_ref().borrow().end().borrow().data().x - line.as_ref().borrow().start().borrow().data().x)
+        .abs()
+        < 1e-6
+);
+
+```
