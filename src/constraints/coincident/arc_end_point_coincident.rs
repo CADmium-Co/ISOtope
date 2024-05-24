@@ -1,0 +1,110 @@
+use std::{cell::RefCell, rc::Rc};
+
+use nalgebra::SMatrix;
+
+use crate::{
+    constraints::Constraint,
+    primitives::{arc::Arc, point2::Point2},
+};
+
+// This is a sketch constraint that makes the end point of an arc coincident with a point.
+#[derive(Debug)]
+pub struct ArcEndPointCoincident {
+    pub arc: Rc<RefCell<Arc>>,
+    pub point: Rc<RefCell<Point2>>,
+}
+
+impl ArcEndPointCoincident {
+    pub fn new(arc: Rc<RefCell<Arc>>, point: Rc<RefCell<Point2>>) -> Self {
+        Self { arc, point }
+    }
+}
+
+impl Constraint for ArcEndPointCoincident {
+    fn loss_value(&self) -> f64 {
+        let arc_end = self.arc.borrow().end_point();
+        let point = self.point.borrow().data();
+        let dx = arc_end.x - point.x;
+        let dy = arc_end.y - point.y;
+        0.5 * (dx * dx + dy * dy)
+    }
+
+    fn update_gradient(&mut self) {
+        let arc_end = self.arc.borrow().end_point();
+        let point = self.point.borrow().data();
+        let dx = arc_end.x - point.x;
+        let dy = arc_end.y - point.y;
+
+        let gradient_constraint = SMatrix::<f64, 1, 2>::from_row_slice(&[dx, dy]);
+
+        let grad_arc = self.arc.borrow().end_point_gradient();
+        let grad_point = self.point.borrow().gradient();
+
+        self.arc
+            .borrow_mut()
+            .add_to_gradient((gradient_constraint * grad_arc).as_view());
+        self.point
+            .borrow_mut()
+            .add_to_gradient((gradient_constraint * grad_point).as_view());
+    }
+}
+
+// Run some tests
+#[cfg(test)]
+mod tests {
+    use std::{cell::RefCell, rc::Rc};
+
+    use crate::{
+        constraints::coincident::arc_end_point_coincident::ArcEndPointCoincident,
+        primitives::{arc::Arc, line::Line, point2::Point2},
+        sketch::Sketch,
+    };
+
+    #[test]
+    fn test_arc_line() {
+        let mut sketch = Sketch::new();
+
+        let center = Rc::new(RefCell::new(Point2::new(0.0, 0.0)));
+        let arc1 = Rc::new(RefCell::new(Arc::new(
+            center.clone(),
+            1.0,
+            false,
+            0.0,
+            std::f64::consts::PI,
+        )));
+        let line2_start = Rc::new(RefCell::new(Point2::new(3.0, 4.0)));
+        let line2_end = Rc::new(RefCell::new(Point2::new(5.0, 6.0)));
+        let line2 = Rc::new(RefCell::new(Line::new(
+            line2_start.clone(),
+            line2_end.clone(),
+        )));
+        sketch.add_primitive(center.clone());
+        sketch.add_primitive(arc1.clone());
+        sketch.add_primitive(line2_start.clone());
+        sketch.add_primitive(line2_end.clone());
+        sketch.add_primitive(line2.clone());
+
+        let constr1 = ArcEndPointCoincident::new(arc1.clone(), line2_start.clone());
+        sketch.add_constraint(Rc::new(RefCell::new(constr1)));
+
+        sketch.solve(0.001, 100000);
+
+        println!("arc1: {:?}", arc1.as_ref().borrow());
+        println!(
+            "arc1 end point: {:?}",
+            arc1.as_ref().borrow().end_point()
+        );
+        println!("line2: {:?}", line2.as_ref().borrow());
+
+        assert!(
+            (arc1.as_ref().borrow().end_point().x - line2.as_ref().borrow().start().borrow().x())
+                .abs()
+                < 1e-6
+        );
+        assert!(
+            (arc1.as_ref().borrow().end_point().y - line2.as_ref().borrow().start().borrow().y())
+                .abs()
+                < 1e-6
+        );
+    }
+}
