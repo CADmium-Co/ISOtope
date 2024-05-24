@@ -1,4 +1,4 @@
-use crate::sketch::point2::Point2;
+use nalgebra::Vector2;
 
 use super::Parametric;
 
@@ -9,33 +9,27 @@ pub struct Line {
 }
 
 impl Line {
-    pub fn new(start: Point2, end: Point2) -> Self {
+    pub fn new(start: Vector2<f64>, end: Vector2<f64>) -> Self {
         Self {
             data: [start.x, start.y, end.x, end.y],
             gradient: [0.0; 4],
         }
     }
 
-    pub fn start(&self) -> Point2 {
-        Point2 {
-            x: self.data[0],
-            y: self.data[1],
-        }
+    pub fn start(&self) -> Vector2<f64> {
+        Vector2::new(self.data[0], self.data[1])
     }
 
-    pub fn end(&self) -> Point2 {
-        Point2 {
-            x: self.data[2],
-            y: self.data[3],
-        }
+    pub fn end(&self) -> Vector2<f64> {
+        Vector2::new(self.data[2], self.data[3])
     }
 
-    pub fn set_start(&mut self, start: Point2) {
+    pub fn set_start(&mut self, start: Vector2<f64>) {
         self.data[0] = start.x;
         self.data[1] = start.y;
     }
 
-    pub fn set_end(&mut self, end: Point2) {
+    pub fn set_end(&mut self, end: Vector2<f64>) {
         self.data[2] = end.x;
         self.data[3] = end.y;
     }

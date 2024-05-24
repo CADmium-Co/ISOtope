@@ -45,7 +45,7 @@ impl Constraint for ArcLineStartEndConnected {
         self.first_arc
             .as_ref()
             .borrow_mut()
-            .add_to_gradient(grad);
+            .add_to_gradient(grad.as_view());
         self.following_line
             .as_ref()
             .borrow_mut()
@@ -58,26 +58,30 @@ impl Constraint for ArcLineStartEndConnected {
 mod tests {
     use std::{cell::RefCell, rc::Rc};
 
+    use nalgebra::Vector2;
+
     use crate::sketch::{
-        constraints::start_end_connected::arc_line::ArcLineStartEndConnected, point2::Point2,
-        primitives::{arc::Arc, line::Line}, Sketch,
+        constraints::start_end_connected::arc_line::ArcLineStartEndConnected,
+        primitives::{arc::Arc, line::Line, point2::Point2}, Sketch,
     };
 
     #[test]
     fn test_arc_line() {
         let mut sketch = Sketch::new();
 
+        let center = Rc::new(RefCell::new(Point2::new(0.0, 0.0)));
         let arc1 = Rc::new(RefCell::new(Arc::new(
-            Point2::new(0.0, 0.0),
+            center.clone(),
             1.0,
             false,
             0.0,
             std::f64::consts::PI,
         )));
         let line2 = Rc::new(RefCell::new(Line::new(
-            Point2::new(3.0, 4.0),
-            Point2::new(5.0, 6.0),
+            Vector2::new(3.0, 4.0),
+            Vector2::new(5.0, 6.0),
         )));
+        sketch.add_primitive(center.clone());
         sketch.add_primitive(arc1.clone());
         sketch.add_primitive(line2.clone());
 

@@ -5,8 +5,10 @@ pub mod sketch;
 mod tests {
     use std::{cell::RefCell, rc::Rc};
 
+    use nalgebra::Vector2;
+
     use crate::sketch::{
-        constraints::start_end_connected::line_line::LineLineStartEndConnected, point2::Point2,
+        constraints::start_end_connected::line_line::LineLineStartEndConnected,
         primitives::line::Line, Sketch,
     };
 
@@ -15,12 +17,12 @@ mod tests {
         let mut sketch = Sketch::new();
 
         let line1 = Rc::new(RefCell::new(Line::new(
-            Point2::new(0.0, 0.0),
-            Point2::new(1.0, 1.0),
+            Vector2::new(0.0, 0.0),
+            Vector2::new(1.0, 1.0),
         )));
         let line2 = Rc::new(RefCell::new(Line::new(
-            Point2::new(3.0, 4.0),
-            Point2::new(5.0, 6.0),
+            Vector2::new(3.0, 4.0),
+            Vector2::new(5.0, 6.0),
         )));
         sketch.add_primitive(line1.clone());
         sketch.add_primitive(line2.clone());

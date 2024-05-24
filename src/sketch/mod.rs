@@ -1,5 +1,4 @@
 pub mod constraints;
-pub mod point2;
 pub mod primitives;
 
 use std::{cell::RefCell, collections::VecDeque, rc::Rc};

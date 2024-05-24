@@ -1,4 +1,4 @@
-use crate::sketch::point2::Point2;
+use nalgebra::Vector2;
 
 use super::Parametric;
 
@@ -8,25 +8,22 @@ pub struct Circle {
 }
 
 impl Circle {
-    pub fn new(center: Point2, radius: f64) -> Self {
+    pub fn new(center: Vector2<f64>, radius: f64) -> Self {
         Self {
             data: [center.x, center.y, radius],
             gradient: [0.0; 3],
         }
     }
 
-    pub fn center(&self) -> Point2 {
-        Point2 {
-            x: self.data[0],
-            y: self.data[1],
-        }
+    pub fn center(&self) -> Vector2<f64> {
+        Vector2::new(self.data[0], self.data[1])   
     }
 
     pub fn radius(&self) -> f64 {
         self.data[2]
     }
 
-    pub fn set_center(&mut self, center: Point2) {
+    pub fn set_center(&mut self, center: Vector2<f64>) {
         self.data[0] = center.x;
         self.data[1] = center.y;
     }
