@@ -1,9 +1,6 @@
-pub mod constraints;
-pub mod primitives;
-
 use std::{cell::RefCell, collections::VecDeque, rc::Rc};
 
-use self::{constraints::Constraint, primitives::Parametric};
+use super::{constraints::Constraint, primitives::Parametric};
 
 pub struct Sketch {
     primitives: VecDeque<Rc<RefCell<dyn Parametric>>>,
@@ -60,18 +57,20 @@ impl Sketch {
 
 #[cfg(test)]
 mod tests {
+    use crate::primitives::{arc::Arc, point2::Point2};
+
     use super::*;
-    use tests::primitives::{arc::Arc, point2::Point2};
 
     #[test]
     fn test_references_have_to_be_added_beforehand() {
         assert!(std::panic::catch_unwind(|| {
             let mut sketch = Sketch::new();
-    
+
             let point = Rc::new(RefCell::new(Point2::new(0.0, 0.0)));
             let arc = Rc::new(RefCell::new(Arc::new(point, 1.0, true, 0.0, 1.0)));
 
             sketch.add_primitive(arc.clone());
-        }).is_err());
+        })
+        .is_err());
     }
 }

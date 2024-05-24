@@ -1,4 +1,3 @@
-
 pub mod coincident;
 
 pub trait Constraint {

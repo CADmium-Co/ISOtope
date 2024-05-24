@@ -28,12 +28,7 @@ impl Circle {
     }
 
     pub fn center_gradient(&self) -> SMatrix<f64, 2, 3> {
-        SMatrix::<f64, 2, 3>::from_row_slice(
-            &[
-                1.0, 0.0, 0.0,
-                0.0, 1.0, 0.0,
-            ]
-        )
+        SMatrix::<f64, 2, 3>::from_row_slice(&[1.0, 0.0, 0.0, 0.0, 1.0, 0.0])
     }
 
     pub fn radius(&self) -> f64 {
@@ -45,18 +40,13 @@ impl Circle {
     }
 
     pub fn radius_gradient(&self) -> SMatrix<f64, 1, 3> {
-        SMatrix::<f64, 1, 3>::from_row_slice(
-            &[
-                0.0, 0.0, 1.0,
-            ]
-        )
+        SMatrix::<f64, 1, 3>::from_row_slice(&[0.0, 0.0, 1.0])
     }
 
-    pub fn add_to_gradient(
-        &mut self,
-        gradient: SMatrixView<f64, 1, 3>,
-    ) {
-        self.center.borrow_mut().add_to_gradient(gradient.fixed_view::<1, 2>(0, 0));
+    pub fn add_to_gradient(&mut self, gradient: SMatrixView<f64, 1, 3>) {
+        self.center
+            .borrow_mut()
+            .add_to_gradient(gradient.fixed_view::<1, 2>(0, 0));
         self.gradient += gradient.fixed_view::<1, 1>(0, 2).transpose();
     }
 }

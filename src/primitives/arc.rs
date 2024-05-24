@@ -14,7 +14,13 @@ pub struct Arc {
 }
 
 impl Arc {
-    pub fn new(center: Rc<RefCell<Point2>>, radius: f64, clockwise: bool, start_angle: f64, end_angle: f64) -> Self {
+    pub fn new(
+        center: Rc<RefCell<Point2>>,
+        radius: f64,
+        clockwise: bool,
+        start_angle: f64,
+        end_angle: f64,
+    ) -> Self {
         Self {
             center: center,
             data: SVector::<f64, 3>::from_row_slice(&[radius, start_angle, end_angle]),
@@ -33,12 +39,7 @@ impl Arc {
     }
 
     pub fn center_gradient(&self) -> SMatrix<f64, 2, 5> {
-        SMatrix::<f64, 2, 5>::from_row_slice(
-            &[
-                1.0, 0.0, 0.0, 0.0, 0.0,
-                0.0, 1.0, 0.0, 0.0, 0.0,
-            ]
-        )
+        SMatrix::<f64, 2, 5>::from_row_slice(&[1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0])
     }
 
     pub fn radius(&self) -> f64 {
@@ -50,11 +51,7 @@ impl Arc {
     }
 
     pub fn radius_gradient(&self) -> SMatrix<f64, 1, 5> {
-        SMatrix::<f64, 1, 5>::from_row_slice(
-            &[
-                0.0, 0.0, 1.0, 0.0, 0.0,
-            ]
-        )
+        SMatrix::<f64, 1, 5>::from_row_slice(&[0.0, 0.0, 1.0, 0.0, 0.0])
     }
 
     pub fn start_angle(&self) -> f64 {
@@ -66,11 +63,7 @@ impl Arc {
     }
 
     pub fn start_angle_gradient(&self) -> SMatrix<f64, 1, 5> {
-        SMatrix::<f64, 1, 5>::from_row_slice(
-            &[
-                0.0, 0.0, 0.0, 1.0, 0.0,
-            ]
-        )
+        SMatrix::<f64, 1, 5>::from_row_slice(&[0.0, 0.0, 0.0, 1.0, 0.0])
     }
 
     pub fn end_angle(&self) -> f64 {
@@ -82,11 +75,7 @@ impl Arc {
     }
 
     pub fn end_angle_gradient(&self) -> SMatrix<f64, 1, 5> {
-        SMatrix::<f64, 1, 5>::from_row_slice(
-            &[
-                0.0, 0.0, 0.0, 0.0, 1.0,
-            ]
-        )
+        SMatrix::<f64, 1, 5>::from_row_slice(&[0.0, 0.0, 0.0, 0.0, 1.0])
     }
 
     pub fn clockwise(&self) -> bool {
@@ -111,12 +100,18 @@ impl Arc {
         let radius = self.radius();
         let angle = self.start_angle();
 
-        SMatrix::<f64, 2, 5>::from_row_slice(
-            &[
-                1.0, 0.0, angle.cos(), -radius * angle.sin(), 0.0,
-                0.0, 1.0, angle.sin(), radius * angle.cos(), 0.0,
-            ]
-        )
+        SMatrix::<f64, 2, 5>::from_row_slice(&[
+            1.0,
+            0.0,
+            angle.cos(),
+            -radius * angle.sin(),
+            0.0,
+            0.0,
+            1.0,
+            angle.sin(),
+            radius * angle.cos(),
+            0.0,
+        ])
     }
 
     pub fn end_point(&self) -> Vector2<f64> {
@@ -132,19 +127,24 @@ impl Arc {
         let radius = self.radius();
         let angle = self.end_angle();
 
-        SMatrix::<f64, 2, 5>::from_row_slice(
-            &[
-                1.0, 0.0, angle.cos(), -radius * angle.sin(), 0.0,
-                0.0, 1.0, angle.sin(), radius * angle.cos(), 0.0,
-            ]
-        )
+        SMatrix::<f64, 2, 5>::from_row_slice(&[
+            1.0,
+            0.0,
+            angle.cos(),
+            -radius * angle.sin(),
+            0.0,
+            0.0,
+            1.0,
+            angle.sin(),
+            radius * angle.cos(),
+            0.0,
+        ])
     }
 
-    pub fn add_to_gradient(
-        &mut self,
-        gradient: SMatrixView<f64, 1, 5>,
-    ) {
-        self.center.borrow_mut().add_to_gradient(gradient.fixed_view::<1, 2>(0, 0));
+    pub fn add_to_gradient(&mut self, gradient: SMatrixView<f64, 1, 5>) {
+        self.center
+            .borrow_mut()
+            .add_to_gradient(gradient.fixed_view::<1, 2>(0, 0));
         self.gradient += gradient.fixed_view::<1, 3>(0, 2).transpose();
     }
 }

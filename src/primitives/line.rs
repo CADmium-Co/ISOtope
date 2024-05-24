@@ -24,12 +24,7 @@ impl Line {
     }
 
     pub fn start_gradient(&self) -> SMatrix<f64, 2, 4> {
-        SMatrix::<f64, 2, 4>::from_row_slice(
-            &[
-                1.0, 0.0, 0.0, 0.0,
-                0.0, 1.0, 0.0, 0.0,
-            ]
-        )
+        SMatrix::<f64, 2, 4>::from_row_slice(&[1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0])
     }
 
     pub fn end(&self) -> Rc<RefCell<Point2>> {
@@ -41,20 +36,16 @@ impl Line {
     }
 
     pub fn end_gradient(&self) -> SMatrix<f64, 2, 4> {
-        SMatrix::<f64, 2, 4>::from_row_slice(
-            &[
-                0.0, 0.0, 1.0, 0.0,
-                0.0, 0.0, 0.0, 1.0,
-            ]
-        )
+        SMatrix::<f64, 2, 4>::from_row_slice(&[0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0])
     }
 
-    pub fn add_to_gradient(
-        &mut self,
-        gradient: SMatrixView<f64, 1, 3>,
-    ) {
-        self.start.borrow_mut().add_to_gradient(gradient.fixed_view::<1, 2>(0, 0));
-        self.end.borrow_mut().add_to_gradient(gradient.fixed_view::<1, 2>(0, 2));
+    pub fn add_to_gradient(&mut self, gradient: SMatrixView<f64, 1, 3>) {
+        self.start
+            .borrow_mut()
+            .add_to_gradient(gradient.fixed_view::<1, 2>(0, 0));
+        self.end
+            .borrow_mut()
+            .add_to_gradient(gradient.fixed_view::<1, 2>(0, 2));
     }
 }
 
