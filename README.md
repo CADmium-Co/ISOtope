@@ -10,8 +10,8 @@ The **I**terative **SO**lver for 2D Sketches. This project is a dependency free 
     - [x] Circle
     - [x] Arc
 - Each constraint is a virtual spring and has a function to calculate its energy (or call it loss function) and the gradient. Current constraints are:
-    - [ ] Distance
-    - [ ] Angle
+    - [x] Distance
+    - [x] Angle
     - [x] Horizontal
     - [x] Vertical
     - [x] Coincident
