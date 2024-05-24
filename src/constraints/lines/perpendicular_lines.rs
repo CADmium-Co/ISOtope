@@ -1,7 +1,5 @@
 use std::{cell::RefCell, rc::Rc};
 
-use nalgebra::SMatrix;
-
 use crate::{
     constraints::Constraint,
     primitives::line::Line,
