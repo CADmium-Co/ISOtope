@@ -131,13 +131,13 @@ impl Arc {
             1.0,
             0.0,
             angle.cos(),
-            -radius * angle.sin(),
             0.0,
+            -radius * angle.sin(),
             0.0,
             1.0,
             angle.sin(),
-            radius * angle.cos(),
             0.0,
+            radius * angle.cos(),
         ])
     }
 

@@ -61,7 +61,7 @@ mod tests {
     };
 
     #[test]
-    fn test_arc_line() {
+    fn test_arc_end_point_coincident() {
         let mut sketch = Sketch::new();
 
         let center = Rc::new(RefCell::new(Point2::new(0.0, 0.0)));

@@ -39,7 +39,7 @@ impl Line {
         SMatrix::<f64, 2, 4>::from_row_slice(&[0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0])
     }
 
-    pub fn add_to_gradient(&mut self, gradient: SMatrixView<f64, 1, 3>) {
+    pub fn add_to_gradient(&mut self, gradient: SMatrixView<f64, 1, 4>) {
         self.start
             .borrow_mut()
             .add_to_gradient(gradient.fixed_view::<1, 2>(0, 0));
