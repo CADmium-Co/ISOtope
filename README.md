@@ -15,11 +15,11 @@ The **I**terative **SO**lver for 2D Sketches. This project is a dependency free 
     - [x] Horizontal
     - [x] Vertical
     - [x] Coincident
+    - [x] Parallel
+    - [x] Perpendicular
     - [ ] Tangent
     - [ ] Concentric
     - [ ] Equal
-    - [ ] Parallel
-    - [ ] Perpendicular
     - [ ] Fix
 
 ## Algorithm
