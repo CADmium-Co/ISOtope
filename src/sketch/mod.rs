@@ -2,54 +2,44 @@ pub mod primitives;
 pub mod constraints;
 pub mod point2;
 
-use std::collections::VecDeque;
+use std::{cell::RefCell, collections::VecDeque, rc::Rc};
 
 
-use self::{constraints::Constraints, primitives::Parametric};
+use self::{constraints::Constraint, primitives::Parametric};
 
-pub struct Sketch<'a, const N: usize> {
-    data: [f64; N],
-    gradient: [f64; N],
-
-    n: usize,
-
-    constraints: VecDeque<Constraints<'a>>,
+pub struct Sketch {
+    primitives: VecDeque<Rc<RefCell<dyn Parametric>>>,
+    constraints: VecDeque<Rc<RefCell<dyn Constraint>>>,
 }
 
-impl<'a, const N: usize> Sketch<'a, N> {
+impl Sketch {
     pub fn new() -> Self {
         Self {
-            data: [0.0; N],
-            gradient: [0.0; N],
-            n: 0,
+            primitives: VecDeque::new(),
             constraints: VecDeque::new(),
         }
     }
 
-    pub fn add_primitive<P: Parametric<'a>>(&'a mut self) -> P {
-        let data = &mut self.data[self.n..self.n + P::num_parameters()];
-        let gradient = &mut self.gradient.as_mut_slice()[self.n..self.n + P::num_parameters()];
-        let primitive = P::initialize(data, gradient);
-        self.n += P::num_parameters();
-        primitive
+    pub fn add_primitive(&mut self, primitive: Rc<RefCell<dyn Parametric>>)
+    {
+        self.primitives.push_back(primitive);
     }
 
-    pub fn add_constraint(&mut self, constraint: Constraints<'a>) {
+    pub fn add_constraint(&mut self, constraint: Rc<RefCell<dyn Constraint>>) {
         self.constraints.push_back(constraint);
     }
 
-    pub fn step(&'a mut self, step_size: f64) {
-        for i in 0..N {
-            self.gradient[i] = 0.0;
+    pub fn step(&mut self, step_size: f64) {
+        for primitive in self.primitives.iter_mut() {
+            primitive.borrow_mut().zero_gradient();
         }
 
         for constraint in self.constraints.iter_mut() {
-            constraint.constraint_mut().update_gradient();
+            constraint.borrow_mut().update_gradient();
         }
 
-        for i in 0..N {
-            self.data[i] -= step_size * self.gradient[i];
+        for primitive in self.primitives.iter_mut() {
+            primitive.borrow_mut().step(step_size);
         }
     }
 }
-

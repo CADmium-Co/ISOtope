@@ -1,13 +1,21 @@
 use crate::sketch::point2::Point2;
 
-use super::{Parametric, SketchPrimitives};
+use super::Parametric;
 
-pub struct Line<'a> {
-    data: &'a mut [f64],
-    gradient: &'a mut [f64],
+#[derive(Debug)]
+pub struct Line {
+    data: [f64; 4],
+    gradient: [f64; 4],
 }
 
-impl<'a> Line<'a> {
+impl Line {
+    pub fn new(start: Point2, end: Point2) -> Self {
+        Self {
+            data: [start.x, start.y, end.x, end.y],
+            gradient: [0.0; 4],
+        }
+    }
+
     pub fn start(&self) -> Point2 {
         Point2 {
             x: self.data[0],
@@ -40,25 +48,14 @@ impl<'a> Line<'a> {
     }
 }
 
-impl<'a> Parametric<'a> for Line<'a> {
-    fn initialize(data: &'a mut [f64], gradient: &'a mut [f64]) -> Self {
-        Self {
-            data,
-            gradient,
-        }
+impl Parametric for Line {
+    fn zero_gradient(&mut self) {
+        self.gradient = [0.0; 4];
     }
 
-    fn num_parameters() -> usize {
-        4
-    }
-
-    fn as_sketch_primitive(self) -> SketchPrimitives<'a> {
-        SketchPrimitives::Line(self)
-    }
-
-    fn ref_from_sketch_primitive(primitive: &'a mut SketchPrimitives<'a>) -> &'a mut Self {
-        match primitive {
-            SketchPrimitives::Line(l) => l,
+    fn step(&mut self, step_size: f64) {
+        for i in 0..4 {
+            self.data[i] -= step_size * self.gradient[i];
         }
     }
 }
