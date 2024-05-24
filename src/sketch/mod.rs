@@ -68,7 +68,7 @@ impl Sketch {
 
 #[cfg(test)]
 mod tests {
-    use crate::primitives::{arc::Arc, point2::Point2};
+    use crate::{constraints::coincident::arc_end_point_coincident::ArcEndPointCoincident, primitives::{arc::Arc, point2::Point2}};
 
     use super::*;
 
@@ -81,6 +81,52 @@ mod tests {
             let arc = Rc::new(RefCell::new(Arc::new(point, 1.0, true, 0.0, 1.0)));
 
             sketch.add_primitive(arc.clone());
+        })
+        .is_err());
+    }
+
+    #[test]
+    fn test_primitive_cannot_be_added_twice() {
+        assert!(std::panic::catch_unwind(|| {
+            let mut sketch = Sketch::new();
+
+            let point = Rc::new(RefCell::new(Point2::new(0.0, 0.0)));
+            sketch.add_primitive(point.clone());
+            sketch.add_primitive(point.clone());
+        })
+        .is_err());
+    }
+
+    #[test]
+    fn test_constraint_references_have_to_be_added_beforehand() {
+        assert!(std::panic::catch_unwind(|| {
+            let mut sketch = Sketch::new();
+
+            let point = Rc::new(RefCell::new(Point2::new(0.0, 0.0)));
+            let arc = Rc::new(RefCell::new(Arc::new(point.clone(), 1.0, true, 0.0, 1.0)));
+
+            sketch.add_primitive(point.clone());
+
+            let constraint = Rc::new(RefCell::new(ArcEndPointCoincident::new(arc, point)));
+            sketch.add_constraint(constraint);
+        })
+        .is_err());
+    }
+
+    #[test]
+    fn test_constraint_cannot_be_added_twice() {
+        assert!(std::panic::catch_unwind(|| {
+            let mut sketch = Sketch::new();
+
+            let point = Rc::new(RefCell::new(Point2::new(0.0, 0.0)));
+            let arc = Rc::new(RefCell::new(Arc::new(point.clone(), 1.0, true, 0.0, 1.0)));
+
+            sketch.add_primitive(point.clone());
+            sketch.add_primitive(arc.clone());
+
+            let constraint = Rc::new(RefCell::new(ArcEndPointCoincident::new(arc.clone(), point.clone())));
+            sketch.add_constraint(constraint.clone());
+            sketch.add_constraint(constraint.clone());
         })
         .is_err());
     }
