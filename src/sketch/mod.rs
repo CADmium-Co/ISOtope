@@ -31,6 +31,17 @@ impl Sketch {
     }
 
     pub fn add_constraint(&mut self, constraint: Rc<RefCell<dyn Constraint>>) {
+        // Make sure all referenced primitives are added to the sketch before the constraint
+        for reference in constraint.borrow().references() {
+            if !self.primitives.iter().any(|p| Rc::ptr_eq(p, &reference)) {
+                panic!("All references must be added to the sketch before the constraint");
+            }
+        }
+        // Make sure the constraint is not already in the sketch
+        if self.constraints.iter().any(|c| Rc::ptr_eq(c, &constraint)) {
+            panic!("The constraint is already in the sketch");
+        }
+
         self.constraints.push_back(constraint);
     }
 

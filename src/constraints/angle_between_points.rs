@@ -80,6 +80,10 @@ impl AngleBetweenPoints {
 }
 
 impl Constraint for AngleBetweenPoints {
+    fn references(&self) -> Vec<Rc<RefCell<dyn crate::primitives::Parametric>>> {
+        vec![self.point1.clone(), self.point2.clone(), self.middle_point.clone()]
+    }
+
     fn loss_value(&self) -> f64 {
         let theta = self.current_angle();
 
@@ -165,6 +169,5 @@ mod tests {
         assert!(
             constr1.borrow().loss_value() < 0.001,
         );
-        assert!(false);
     }
 }

@@ -28,6 +28,10 @@ impl HorizontalLine {
 }
 
 impl Constraint for HorizontalLine {
+    fn references(&self) -> Vec<Rc<RefCell<dyn crate::primitives::Parametric>>> {
+        vec![self.line.clone()]
+    }
+
     fn loss_value(&self) -> f64 {
         let start = self.line.borrow().start().borrow().data();
         let end = self.line.borrow().end().borrow().data();

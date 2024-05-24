@@ -37,6 +37,10 @@ impl ArcStartPointCoincident {
 }
 
 impl Constraint for ArcStartPointCoincident {
+    fn references(&self) -> Vec<Rc<RefCell<dyn crate::primitives::Parametric>>> {
+        vec![self.arc.clone(), self.point.clone()]
+    }
+
     fn loss_value(&self) -> f64 {
         let arc_start = self.arc.borrow().start_point();
         let point = self.point.borrow().data();
