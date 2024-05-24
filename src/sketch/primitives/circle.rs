@@ -45,6 +45,10 @@ impl Circle {
 }
 
 impl Parametric for Circle {
+    fn references(&self) -> Vec<std::rc::Rc<std::cell::RefCell<dyn Parametric>>> {
+        vec![]
+    }
+
     fn zero_gradient(&mut self) {
         self.gradient = [0.0; 3];
     }

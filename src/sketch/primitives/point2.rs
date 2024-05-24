@@ -39,6 +39,10 @@ impl Point2 {
 }
 
 impl Parametric for Point2 {
+    fn references(&self) -> Vec<std::rc::Rc<std::cell::RefCell<dyn Parametric>>> {
+        vec![]
+    }
+
     fn zero_gradient(&mut self) {
         self.gradient = Vector2::zeros();
     }

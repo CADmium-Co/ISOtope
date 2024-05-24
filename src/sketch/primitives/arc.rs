@@ -151,6 +151,10 @@ impl Arc {
 }
 
 impl Parametric for Arc {
+    fn references(&self) -> Vec<Rc<RefCell<dyn Parametric>>> {
+        vec![self.center.clone()]
+    }
+
     fn zero_gradient(&mut self) {
         self.gradient = SVector::<f64, 3>::zeros();
     }
