@@ -100,7 +100,7 @@ and can be highlighted to the user.
 
 ## Usage
 
-For example, to constrain the angle between three points
+For example, to constrain the angle between three points (`AngleBetweenPoints`)
 
 ```rust
 let mut sketch = Sketch::new();
@@ -130,7 +130,7 @@ assert!(
 
 ```
 
-or to constrain a line to be horizontal
+or to constrain a line to be vertical (`VerticalLine`)
 
 ```rust
 let mut sketch = Sketch::new();
