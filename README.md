@@ -206,10 +206,10 @@ $$
 \nabla (f(a)) = \nabla f(a) \cdot \nabla a
 $$
 
-If $x$ is a vector and $A$ is a matrix
+If $x$ and $y$ is a vector and $A$ is a matrix
 
 $$
-\nabla ||x||^2 = \nabla (x^T x) = x^T
+\nabla ||x||^2 = \nabla (x^T x) = 2 x^T
 $$
 
 $$
@@ -217,9 +217,13 @@ $$
 $$
 
 $$
-\nabla \frac{x}{||x||} = \nabla (\frac{x}{\sqrt{x^T x}}) = \frac{I \cdot ||x|| - x \cdot x^T}{x^T \cdot x} = \frac{I}{||x||} - \frac{x \cdot x^T}{||x||^2}
+\nabla \frac{x}{||x||} = \nabla (\frac{x}{\sqrt{x^T x}}) = \frac{I \cdot ||x|| - 2 x \cdot x^T}{x^T \cdot x} = \frac{I}{||x||} - \frac{2 x \cdot x^T}{||x||^2}
 $$
 
 $$
 \nabla (Ax) = A
+$$
+
+$$
+\nabla (y^T x) = y^T
 $$
