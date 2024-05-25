@@ -1,4 +1,4 @@
-use nalgebra::{SMatrix, SMatrixView, Vector2};
+use nalgebra::{DVector, DVectorView, SMatrix, SMatrixView, Vector2};
 
 use super::Parametric;
 
@@ -28,7 +28,7 @@ impl Point2 {
         self.data
     }
 
-    pub fn gradient(&self) -> SMatrix<f64, 2, 2> {
+    pub fn point_gradient(&self) -> SMatrix<f64, 2, 2> {
         SMatrix::<f64, 2, 2>::from_row_slice(&[1.0, 0.0, 0.0, 1.0])
     }
 
@@ -58,5 +58,17 @@ impl Parametric for Point2 {
 
     fn step(&mut self, step_size: f64) {
         self.data -= step_size * self.gradient;
+    }
+
+    fn get_data(&self) -> DVector<f64> {
+        DVector::from_row_slice(self.data.as_slice())
+    }
+
+    fn set_data(&mut self, data: DVectorView<f64>) {
+        self.data = Vector2::from_row_slice(data.as_slice());
+    }
+
+    fn get_gradient(&self) -> DVector<f64> {
+        DVector::from_row_slice(self.gradient.as_slice())
     }
 }

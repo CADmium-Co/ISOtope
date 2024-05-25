@@ -1,6 +1,6 @@
 use std::{cell::RefCell, rc::Rc};
 
-use nalgebra::SMatrix;
+use nalgebra::{Matrix2, SMatrix};
 
 use crate::{constraints::Constraint, primitives::line::Line};
 
@@ -44,8 +44,12 @@ impl Constraint for ParallelLines {
         let start2 = self.line2.borrow().start().borrow().data();
         let end2 = self.line2.borrow().end().borrow().data();
 
-        let dir1 = end1 - start1;
-        let dir2 = end2 - start2;
+        let dir1 = (end1 - start1).normalize();
+        let dir2 = (end2 - start2).normalize();
+        if !dir1.x.is_finite() || !dir1.y.is_finite() || !dir2.x.is_finite() || !dir2.y.is_finite()
+        {
+            return 0.0;
+        }
 
         let cross_product = dir1.x * dir2.y - dir1.y * dir2.x;
         0.5 * cross_product * cross_product
@@ -58,14 +62,31 @@ impl Constraint for ParallelLines {
         let end2 = self.line2.borrow().end().borrow().data();
 
         let dir1 = end1 - start1;
+        let dir1_norm = dir1.normalize(); // dir1 / dir1.norm();
         let dir2 = end2 - start2;
+        let dir2_norm = dir2.normalize();
+        if !dir1_norm.x.is_finite()
+            || !dir1_norm.y.is_finite()
+            || !dir2_norm.x.is_finite()
+            || !dir2_norm.y.is_finite()
+        {
+            return;
+        }
 
-        let cross_product = dir1.x * dir2.y - dir1.y * dir2.x;
+        let cross_product = dir1_norm.x * dir2_norm.y - dir1_norm.y * dir2_norm.x;
         let _loss = 0.5 * cross_product * cross_product;
 
         let grad_from_cross_product = cross_product;
-        let grad_cross_product_from_dir1 = SMatrix::<f64, 1, 2>::from_row_slice(&[dir2.y, -dir2.x]);
-        let grad_cross_product_from_dir2 = SMatrix::<f64, 1, 2>::from_row_slice(&[-dir1.y, dir1.x]);
+        let grad_cross_product_from_dir1_norm =
+            SMatrix::<f64, 1, 2>::from_row_slice(&[dir2.y, -dir2.x]);
+        let grad_cross_product_from_dir2_norm =
+            SMatrix::<f64, 1, 2>::from_row_slice(&[-dir1.y, dir1.x]);
+        let grad_dir1_norm_from_dir1 = (Matrix2::identity() * dir1.norm()
+            - dir1 * dir1.transpose() / dir1.norm_squared())
+            / dir1.norm_squared();
+        let grad_dir2_norm_from_dir2 = (Matrix2::identity() * dir2.norm()
+            - dir2 * dir2.transpose() / dir2.norm_squared())
+            / dir2.norm_squared();
 
         let grad_start1 = self.line1.borrow().start_gradient();
         let grad_end1 = self.line1.borrow().end_gradient();
@@ -73,12 +94,18 @@ impl Constraint for ParallelLines {
         let grad_end2 = self.line2.borrow().end_gradient();
 
         self.line1.borrow_mut().add_to_gradient(
-            (grad_from_cross_product * grad_cross_product_from_dir1 * (grad_end1 - grad_start1))
+            (grad_from_cross_product
+                * grad_cross_product_from_dir1_norm
+                * grad_dir1_norm_from_dir1
+                * (grad_end1 - grad_start1))
                 .as_view(),
         );
 
         self.line2.borrow_mut().add_to_gradient(
-            (grad_from_cross_product * grad_cross_product_from_dir2 * (grad_end2 - grad_start2))
+            (grad_from_cross_product
+                * grad_cross_product_from_dir2_norm
+                * grad_dir2_norm_from_dir2
+                * (grad_end2 - grad_start2))
                 .as_view(),
         );
     }
@@ -126,6 +153,7 @@ mod tests {
         )));
         sketch.add_constraint(constr1.clone());
 
+        sketch.check_gradients(1e-6, constr1.clone());
         sketch.solve(0.001, 100000);
 
         println!(

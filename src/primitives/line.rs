@@ -1,6 +1,6 @@
 use std::{cell::RefCell, rc::Rc};
 
-use nalgebra::{SMatrix, SMatrixView};
+use nalgebra::{DVector, DVectorView, SMatrix, SMatrixView};
 
 use super::{point2::Point2, Parametric};
 
@@ -62,5 +62,19 @@ impl Parametric for Line {
 
     fn step(&mut self, _step_size: f64) {
         // Do nothing, the points will be updated in their own step functions
+    }
+
+    fn get_data(&self) -> DVector<f64> {
+        // empty vector
+        DVector::from_row_slice(&[])
+    }
+
+    fn set_data(&mut self, _data: DVectorView<f64>) {
+        // Do nothing
+    }
+
+    fn get_gradient(&self) -> DVector<f64> {
+        // empty vector
+        DVector::from_row_slice(&[])
     }
 }

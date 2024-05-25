@@ -1,5 +1,7 @@
 use std::{cell::RefCell, collections::VecDeque, rc::Rc};
 
+use nalgebra::DVector;
+
 use super::{constraints::Constraint, primitives::Parametric};
 
 #[derive(Default)]
@@ -60,6 +62,39 @@ impl Sketch {
     pub fn solve(&mut self, step_size: f64, max_steps: usize) {
         for _ in 0..max_steps {
             self.step(step_size);
+        }
+    }
+
+    // This function is used in test cases to check the gradients of the primitives
+    pub fn check_gradients(&mut self, epsilon: f64, constraint: Rc<RefCell<dyn Constraint>>) {
+        // Update all gradients
+        self.step(0.0);
+
+        // Compare to numerical gradients
+        let constraint_loss = constraint.borrow().loss_value();
+        for primitive in self.primitives.iter_mut() {
+            let original_value = primitive.borrow().get_data();
+            let analytical_gradient = primitive.borrow().get_gradient();
+            let mut numerical_gradient = DVector::zeros(original_value.len());
+            let n = primitive.borrow().get_data().len();
+            assert!(n == analytical_gradient.len());
+            for i in 0..n {
+                let mut new_value = original_value.clone();
+                new_value[i] += epsilon;
+                primitive.borrow_mut().set_data(new_value.clone().as_view());
+                let new_loss = constraint.borrow().loss_value();
+                primitive
+                    .borrow_mut()
+                    .set_data(original_value.clone().as_view());
+                numerical_gradient[i] = (new_loss - constraint_loss) / epsilon;
+            }
+
+            println!("Analytical gradient: {:?}", analytical_gradient);
+            println!("Numerical gradient: {:?}", numerical_gradient);
+
+            let error = (numerical_gradient - analytical_gradient).norm();
+            println!("Error: {}", error);
+            assert!(error < epsilon);
         }
     }
 }

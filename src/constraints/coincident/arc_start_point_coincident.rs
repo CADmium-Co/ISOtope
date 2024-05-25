@@ -58,7 +58,7 @@ impl Constraint for ArcStartPointCoincident {
         let gradient_constraint = SMatrix::<f64, 1, 2>::from_row_slice(&[dx, dy]);
 
         let grad_arc = self.arc.borrow().start_point_gradient();
-        let grad_point = self.point.borrow().gradient();
+        let grad_point = self.point.borrow().point_gradient();
 
         self.arc
             .borrow_mut()

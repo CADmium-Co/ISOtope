@@ -85,8 +85,8 @@ impl Constraint for VerticalDistanceBetweenPoints {
 
         let grad_from_d = grad_loss_from_err * grad_err_from_distance * grad_distance_from_d;
 
-        let grad_point1 = self.point1.borrow().gradient();
-        let grad_point2 = self.point2.borrow().gradient();
+        let grad_point1 = self.point1.borrow().point_gradient();
+        let grad_point2 = self.point2.borrow().point_gradient();
 
         let grad_from_point1 = -grad_from_d * grad_point1;
         let grad_from_point2 = grad_from_d * grad_point2;

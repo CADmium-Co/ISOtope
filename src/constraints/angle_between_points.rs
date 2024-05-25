@@ -113,9 +113,9 @@ impl Constraint for AngleBetweenPoints {
             return;
         }
 
-        let grad_point1 = self.point1.borrow().gradient();
-        let grad_point2 = self.point2.borrow().gradient();
-        let grad_middle_point = self.middle_point.borrow().gradient();
+        let grad_point1 = self.point1.borrow().point_gradient();
+        let grad_point2 = self.point2.borrow().point_gradient();
+        let grad_middle_point = self.middle_point.borrow().point_gradient();
 
         let grad_dot_product_from_d1 = d2.transpose();
         let grad_dot_product_from_d2 = d1.transpose();
@@ -167,7 +167,7 @@ mod tests {
     };
 
     #[test]
-    fn test_vertical_line() {
+    fn test_angle_between_points() {
         let mut sketch = Sketch::new();
 
         let point_a = Rc::new(RefCell::new(Point2::new(1.0, 0.0)));

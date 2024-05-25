@@ -1,6 +1,6 @@
 use std::{cell::RefCell, rc::Rc};
 
-use nalgebra::{SMatrix, SMatrixView, SVector, Vector2};
+use nalgebra::{DVector, DVectorView, SMatrix, SMatrixView, SVector, Vector2};
 
 use super::{point2::Point2, Parametric};
 
@@ -162,5 +162,17 @@ impl Parametric for Arc {
 
     fn step(&mut self, step_size: f64) {
         self.data -= step_size * self.gradient;
+    }
+
+    fn get_data(&self) -> DVector<f64> {
+        DVector::from_row_slice(self.data.as_slice())
+    }
+
+    fn get_gradient(&self) -> DVector<f64> {
+        DVector::from_row_slice(self.gradient.as_slice())
+    }
+
+    fn set_data(&mut self, data: DVectorView<f64>) {
+        self.data = SVector::from_row_slice(data.as_slice());
     }
 }
