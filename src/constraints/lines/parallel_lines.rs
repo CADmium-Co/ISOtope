@@ -81,12 +81,10 @@ impl Constraint for ParallelLines {
             SMatrix::<f64, 1, 2>::from_row_slice(&[dir2_norm.y, -dir2_norm.x]);
         let grad_cross_product_from_dir2_norm =
             SMatrix::<f64, 1, 2>::from_row_slice(&[-dir1_norm.y, dir1_norm.x]);
-        let grad_dir1_norm_from_dir1 = (Matrix2::identity() * dir1.norm()
-            - 2.0 * dir1 * dir1.transpose())
-            / dir1.norm_squared();
-        let grad_dir2_norm_from_dir2 = (Matrix2::identity() * dir2.norm()
-            - 2.0 * dir2 * dir2.transpose())
-            / dir2.norm_squared();
+        let grad_dir1_norm_from_dir1 =
+            (Matrix2::identity() - dir1 * dir1.transpose() / dir1.norm_squared()) / dir1.norm();
+        let grad_dir2_norm_from_dir2 =
+            (Matrix2::identity() - dir2 * dir2.transpose() / dir2.norm_squared()) / dir2.norm();
 
         let grad_start1 = self.line1.borrow().start_gradient();
         let grad_end1 = self.line1.borrow().end_gradient();

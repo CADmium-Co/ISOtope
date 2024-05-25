@@ -1,5 +1,7 @@
 use std::{cell::RefCell, rc::Rc};
 
+use nalgebra::Matrix2;
+
 use crate::{constraints::Constraint, primitives::line::Line};
 
 // This is a sketch constraint that makes the end point of an arc coincident with a point.
@@ -42,8 +44,12 @@ impl Constraint for PerpendicularLines {
         let start2 = self.line2.borrow().start().borrow().data();
         let end2 = self.line2.borrow().end().borrow().data();
 
-        let dir1 = end1 - start1;
-        let dir2 = end2 - start2;
+        let dir1 = (end1 - start1).normalize();
+        let dir2 = (end2 - start2).normalize();
+        if !dir1.x.is_finite() || !dir1.y.is_finite() || !dir2.x.is_finite() || !dir2.y.is_finite()
+        {
+            return 0.0;
+        }
 
         let dot_product = dir1.dot(&dir2);
         0.5 * dot_product * dot_product
@@ -56,14 +62,27 @@ impl Constraint for PerpendicularLines {
         let end2 = self.line2.borrow().end().borrow().data();
 
         let dir1 = end1 - start1;
+        let dir1_norm = dir1.normalize(); // dir1 / dir1.norm();
         let dir2 = end2 - start2;
+        let dir2_norm = dir2.normalize();
+        if !dir1_norm.x.is_finite()
+            || !dir1_norm.y.is_finite()
+            || !dir2_norm.x.is_finite()
+            || !dir2_norm.y.is_finite()
+        {
+            return;
+        }
 
-        let dot_product = dir1.dot(&dir2);
+        let dot_product = dir1_norm.dot(&dir2_norm);
         let _loss = 0.5 * dot_product * dot_product;
 
         let grad_from_dot_product = dot_product;
-        let grad_dot_product_from_dir1 = dir2.transpose();
-        let grad_dot_product_from_dir2 = dir1.transpose();
+        let grad_dot_product_from_dir1_norm = dir2_norm.transpose();
+        let grad_dot_product_from_dir2_norm = dir1_norm.transpose();
+        let grad_dir1_norm_from_dir1 =
+            (Matrix2::identity() - dir1 * dir1.transpose() / dir1.norm_squared()) / dir1.norm();
+        let grad_dir2_norm_from_dir2 =
+            (Matrix2::identity() - dir2 * dir2.transpose() / dir2.norm_squared()) / dir2.norm();
 
         let grad_start1 = self.line1.borrow().start_gradient();
         let grad_end1 = self.line1.borrow().end_gradient();
@@ -71,12 +90,18 @@ impl Constraint for PerpendicularLines {
         let grad_end2 = self.line2.borrow().end_gradient();
 
         self.line1.borrow_mut().add_to_gradient(
-            (grad_from_dot_product * grad_dot_product_from_dir1 * (grad_end1 - grad_start1))
+            (grad_from_dot_product
+                * grad_dot_product_from_dir1_norm
+                * grad_dir1_norm_from_dir1
+                * (grad_end1 - grad_start1))
                 .as_view(),
         );
 
         self.line2.borrow_mut().add_to_gradient(
-            (grad_from_dot_product * grad_dot_product_from_dir2 * (grad_end2 - grad_start2))
+            (grad_from_dot_product
+                * grad_dot_product_from_dir2_norm
+                * grad_dir2_norm_from_dir2
+                * (grad_end2 - grad_start2))
                 .as_view(),
         );
     }
@@ -87,6 +112,8 @@ impl Constraint for PerpendicularLines {
 mod tests {
     use std::{cell::RefCell, rc::Rc};
 
+    use nalgebra::Vector2;
+
     use crate::{
         constraints::{lines::perpendicular_lines::PerpendicularLines, Constraint},
         primitives::{line::Line, point2::Point2},
@@ -95,6 +122,10 @@ mod tests {
 
     #[test]
     fn test_perpendicular_line() {
+        let mut v = Vector2::<f64>::zeros();
+        v = v.normalize(); // Test this
+        assert!(v.x.is_nan());
+        assert!(v.y.is_nan());
         let mut sketch = Sketch::new();
 
         let line1_start = Rc::new(RefCell::new(Point2::new(3.0, 4.0)));
