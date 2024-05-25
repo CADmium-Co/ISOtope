@@ -2,10 +2,7 @@ use std::{cell::RefCell, rc::Rc};
 
 use nalgebra::SMatrix;
 
-use crate::{
-    constraints::Constraint,
-    primitives::line::Line,
-};
+use crate::{constraints::Constraint, primitives::line::Line};
 
 // This is a sketch constraint that makes the end point of an arc coincident with a point.
 #[derive(Debug)]
@@ -75,14 +72,15 @@ impl Constraint for ParallelLines {
         let grad_start2 = self.line2.borrow().start_gradient();
         let grad_end2 = self.line2.borrow().end_gradient();
 
-        self.line1
-            .borrow_mut()
-            .add_to_gradient((grad_from_cross_product * grad_cross_product_from_dir1 * (grad_end1 - grad_start1)).as_view());
+        self.line1.borrow_mut().add_to_gradient(
+            (grad_from_cross_product * grad_cross_product_from_dir1 * (grad_end1 - grad_start1))
+                .as_view(),
+        );
 
-        self.line2
-            .borrow_mut()
-            .add_to_gradient((grad_from_cross_product * grad_cross_product_from_dir2 * (grad_end2 - grad_start2)).as_view());
-        
+        self.line2.borrow_mut().add_to_gradient(
+            (grad_from_cross_product * grad_cross_product_from_dir2 * (grad_end2 - grad_start2))
+                .as_view(),
+        );
     }
 }
 
@@ -92,7 +90,9 @@ mod tests {
     use std::{cell::RefCell, rc::Rc};
 
     use crate::{
-        constraints::{lines::parallel_lines::ParallelLines, Constraint}, primitives::{line::Line, point2::Point2}, sketch::Sketch
+        constraints::{lines::parallel_lines::ParallelLines, Constraint},
+        primitives::{line::Line, point2::Point2},
+        sketch::Sketch,
     };
 
     #[test]
@@ -120,19 +120,26 @@ mod tests {
         sketch.add_primitive(line2_end.clone());
         sketch.add_primitive(line2.clone());
 
-        let constr1 = Rc::new(RefCell::new(ParallelLines::new(line1.clone(), line2.clone())));
+        let constr1 = Rc::new(RefCell::new(ParallelLines::new(
+            line1.clone(),
+            line2.clone(),
+        )));
         sketch.add_constraint(constr1.clone());
 
         sketch.solve(0.001, 100000);
 
-        println!("line1_dir: {:?}", (line1_end.as_ref().borrow().data() - line1_start.as_ref().borrow().data()).normalize());
-        println!("line2_dir: {:?}", (line2_end.as_ref().borrow().data() - line2_start.as_ref().borrow().data()).normalize());
+        println!(
+            "line1_dir: {:?}",
+            (line1_end.as_ref().borrow().data() - line1_start.as_ref().borrow().data()).normalize()
+        );
+        println!(
+            "line2_dir: {:?}",
+            (line2_end.as_ref().borrow().data() - line2_start.as_ref().borrow().data()).normalize()
+        );
 
         println!("line1: {:?}", line1.as_ref().borrow());
         println!("line2: {:?}", line2.as_ref().borrow());
 
-        assert!(
-            constr1.as_ref().borrow().loss_value() < 0.001
-        );
+        assert!(constr1.as_ref().borrow().loss_value() < 0.001);
     }
 }

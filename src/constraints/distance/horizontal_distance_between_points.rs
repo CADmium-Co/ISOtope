@@ -2,10 +2,7 @@ use std::{cell::RefCell, rc::Rc};
 
 use nalgebra::Matrix1x2;
 
-use crate::{
-    constraints::Constraint,
-    primitives::point2::Point2,
-};
+use crate::{constraints::Constraint, primitives::point2::Point2};
 
 // This is a sketch constraint that makes the end point of an arc coincident with a point.
 #[derive(Debug)]
@@ -94,8 +91,12 @@ impl Constraint for HorizontalDistanceBetweenPoints {
         let grad_from_point1 = -grad_from_d * grad_point1;
         let grad_from_point2 = grad_from_d * grad_point2;
 
-        self.point1.borrow_mut().add_to_gradient(grad_from_point1.as_view());
-        self.point2.borrow_mut().add_to_gradient(grad_from_point2.as_view());
+        self.point1
+            .borrow_mut()
+            .add_to_gradient(grad_from_point1.as_view());
+        self.point2
+            .borrow_mut()
+            .add_to_gradient(grad_from_point2.as_view());
     }
 }
 
@@ -105,7 +106,12 @@ mod tests {
     use std::{cell::RefCell, rc::Rc};
 
     use crate::{
-        constraints::{distance::horizontal_distance_between_points::HorizontalDistanceBetweenPoints, Constraint}, primitives::point2::Point2, sketch::Sketch,
+        constraints::{
+            distance::horizontal_distance_between_points::HorizontalDistanceBetweenPoints,
+            Constraint,
+        },
+        primitives::point2::Point2,
+        sketch::Sketch,
     };
 
     #[test]
@@ -117,17 +123,22 @@ mod tests {
         sketch.add_primitive(point_a.clone());
         sketch.add_primitive(point_b.clone());
 
-        let constr1 = Rc::new(RefCell::new(HorizontalDistanceBetweenPoints::new(point_a.clone(), point_b.clone(), -3.0)));
+        let constr1 = Rc::new(RefCell::new(HorizontalDistanceBetweenPoints::new(
+            point_a.clone(),
+            point_b.clone(),
+            -3.0,
+        )));
         sketch.add_constraint(constr1.clone());
 
         sketch.solve(0.001, 100000);
 
         println!("point_a: {:?}", point_a.as_ref().borrow());
         println!("point_b: {:?}", point_b.as_ref().borrow());
-        println!("distance: {:?}", (point_b.as_ref().borrow().x() - point_a.as_ref().borrow().x()));
-
-        assert!(
-            constr1.borrow().loss_value() < 0.001,
+        println!(
+            "distance: {:?}",
+            (point_b.as_ref().borrow().x() - point_a.as_ref().borrow().x())
         );
+
+        assert!(constr1.borrow().loss_value() < 0.001,);
     }
 }

@@ -2,10 +2,7 @@ use std::{cell::RefCell, rc::Rc};
 
 use nalgebra::SMatrix;
 
-use crate::{
-    constraints::Constraint,
-    primitives::line::Line,
-};
+use crate::{constraints::Constraint, primitives::line::Line};
 
 // This is a sketch constraint that makes the end point of an arc coincident with a point.
 #[derive(Debug)]
@@ -91,7 +88,8 @@ mod tests {
         println!("line: {:?}", line.as_ref().borrow());
 
         assert!(
-            (line.as_ref().borrow().end().borrow().data().y - line.as_ref().borrow().start().borrow().data().y)
+            (line.as_ref().borrow().end().borrow().data().y
+                - line.as_ref().borrow().start().borrow().data().y)
                 .abs()
                 < 1e-6
         );
