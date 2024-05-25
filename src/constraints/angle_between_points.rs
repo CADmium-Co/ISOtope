@@ -102,8 +102,15 @@ impl Constraint for AngleBetweenPoints {
         let norm1 = d1.norm();
         let norm2 = d2.norm();
 
+        if norm1.abs() < 1e-6 || norm2.abs() < 1e-6 {
+            return;
+        }
+
         let cos_theta = dot_product / (norm1 * norm2);
         let theta = cos_theta.clamp(-1.0, 1.0).acos();
+        if !theta.is_finite() {
+            return;
+        }
 
         let grad_point1 = self.point1.borrow().gradient();
         let grad_point2 = self.point2.borrow().gradient();
@@ -119,6 +126,9 @@ impl Constraint for AngleBetweenPoints {
         let grad_cos_theta_from_norm2 = -dot_product / (norm1 * norm2 * norm2);
 
         let grad_theta_from_cos_theta = -1.0 / (1.0 - cos_theta * cos_theta).max(0.0).sqrt();
+        if !grad_theta_from_cos_theta.is_finite() {
+            return;
+        }
 
         let grad_loss = theta - self.desired_angle;
 

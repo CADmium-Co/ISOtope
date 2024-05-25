@@ -40,6 +40,8 @@ impl Line {
     }
 
     pub fn add_to_gradient(&mut self, gradient: SMatrixView<f64, 1, 4>) {
+        // Panic if nan or inf is encountered
+        assert!(gradient.iter().all(|x| x.is_finite()));
         self.start
             .borrow_mut()
             .add_to_gradient(gradient.fixed_view::<1, 2>(0, 0));

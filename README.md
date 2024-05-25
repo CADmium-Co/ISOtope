@@ -22,6 +22,12 @@ The **I**terative **SO**lver for 2D Sketches. This project is a dependency free 
     - [x] Concentric (can be done by using same ref for center points for circle and arcs)
     - [ ] Tangent
 
+## Todo
+
+- [ ] For perpendicular and parallel constraint: Normalize directions, such that they do not pull to length 0
+- [ ] Gradient descent seems to be to slow for more complex sketches. Use conjugate gradient instead to ensure a constant progress for each constraint.
+- [ ] Get the rectangle rotated test case working
+
 ## Algorithm
 
 The algorithm is quite simple. First, we create a Sketch that constists of primitives. Primitives can also reference each other. Take for example a line that is defined by two points. If one of the points moves, the line should also move. This is done by creating a reference to the point in the line. The line will then always calculate its position based on the points.
@@ -100,62 +106,83 @@ and can be highlighted to the user.
 
 ## Usage
 
-For example, to constrain the angle between three points (`AngleBetweenPoints`)
+Check out the examples folder at [src/examples](src/examples) for more examples.
 
 ```rust
-let mut sketch = Sketch::new();
+pub fn test_rectangle_axis_aligned() {
+    let mut sketch = Sketch::new();
 
-let point_a = Rc::new(RefCell::new(Point2::new(1.0, 0.0)));
-let point_b = Rc::new(RefCell::new(Point2::new(0.0, 1.0)));
-let point_middle = Rc::new(RefCell::new(Point2::new(0.0, 0.0)));
-sketch.add_primitive(point_a.clone());
-sketch.add_primitive(point_b.clone());
-sketch.add_primitive(point_middle.clone());
+    let point_a = Rc::new(RefCell::new(Point2::new(0.0, 0.0)));
+    let point_b = Rc::new(RefCell::new(Point2::new(0.0, 0.0)));
+    let point_c = Rc::new(RefCell::new(Point2::new(0.0, 0.0)));
+    let point_d = Rc::new(RefCell::new(Point2::new(0.0, 0.0)));
 
-let constr1 = Rc::new(RefCell::new(AngleBetweenPoints::new(point_a.clone(), point_b.clone(), point_middle.clone(), std::f64::consts::PI / 4.0)));
-sketch.add_constraint(constr1.clone());
+    sketch.add_primitive(point_a.clone());
+    sketch.add_primitive(point_b.clone());
+    sketch.add_primitive(point_c.clone());
+    sketch.add_primitive(point_d.clone());
 
-println!("current angle: {}", constr1.borrow().current_angle() * 180.0 / std::f64::consts::PI);
-sketch.solve(0.001, 100000);
+    let line_a = Rc::new(RefCell::new(Line::new(point_a.clone(), point_b.clone())));
+    let line_b = Rc::new(RefCell::new(Line::new(point_b.clone(), point_c.clone())));
+    let line_c = Rc::new(RefCell::new(Line::new(point_c.clone(), point_d.clone())));
+    let line_d = Rc::new(RefCell::new(Line::new(point_d.clone(), point_a.clone())));
 
-println!("point_a: {:?}", point_a.as_ref().borrow());
-println!("point_b: {:?}", point_b.as_ref().borrow());
-println!("point_middle: {:?}", point_middle.as_ref().borrow());
+    sketch.add_primitive(line_a.clone());
+    sketch.add_primitive(line_b.clone());
+    sketch.add_primitive(line_c.clone());
+    sketch.add_primitive(line_d.clone());
 
-println!("current angle: {}", constr1.borrow().current_angle() * 180.0 / std::f64::consts::PI);
+    // Fix point a to origin
+    sketch.add_constraint(Rc::new(RefCell::new(FixPoint::new(
+        point_a.clone(),
+        Vector2::new(0.0, 0.0),
+    ))));
 
-assert!(
-    constr1.borrow().loss_value() < 0.001,
-);
+    // Constrain line_a and line_c to be horizontal
+    sketch.add_constraint(Rc::new(RefCell::new(
+        HorizontalLine::new(line_a.clone()),
+    )));
+    sketch.add_constraint(Rc::new(RefCell::new(
+        HorizontalLine::new(line_c.clone()),
+    )));
 
-```
+    // Constrain line_b and line_d to be vertical
+    sketch.add_constraint(Rc::new(RefCell::new(
+        VerticalLine::new(line_b.clone()),
+    )));
+    sketch.add_constraint(Rc::new(RefCell::new(
+        VerticalLine::new(line_d.clone()),
+    )));
 
-or to constrain a line to be vertical (`VerticalLine`)
+    // Constrain the length of line_a to 2
+    sketch.add_constraint(Rc::new(RefCell::new(
+        HorizontalDistanceBetweenPoints::new(point_a.clone(), point_b.clone(), 2.0),
+    )));
 
-```rust
-let mut sketch = Sketch::new();
+    // Constrain the length of line_b to 3
+    sketch.add_constraint(Rc::new(RefCell::new(
+        VerticalDistanceBetweenPoints::new(point_a.clone(), point_d.clone(), 3.0),
+    )));
 
-let line_start = Rc::new(RefCell::new(Point2::new(3.0, 4.0)));
-let line_end = Rc::new(RefCell::new(Point2::new(5.0, 6.0)));
-let line = Rc::new(RefCell::new(Line::new(
-    line_start.clone(),
-    line_end.clone(),
-)));
-sketch.add_primitive(line_start.clone());
-sketch.add_primitive(line_end.clone());
-sketch.add_primitive(line.clone());
+    // Now solve the sketch
+    sketch.solve(0.001, 100000);
 
-let constr1 = VerticalLine::new(line.clone());
-sketch.add_constraint(Rc::new(RefCell::new(constr1)));
+    println!("point_a: {:?}", point_a.as_ref().borrow());
+    println!("point_b: {:?}", point_b.as_ref().borrow());
+    println!("point_c: {:?}", point_c.as_ref().borrow());
+    println!("point_d: {:?}", point_d.as_ref().borrow());
 
-sketch.solve(0.001, 100000);
-
-println!("line: {:?}", line.as_ref().borrow());
-
-assert!(
-    (line.as_ref().borrow().end().borrow().data().x - line.as_ref().borrow().start().borrow().data().x)
-        .abs()
-        < 1e-6
-);
-
+    assert!(
+        (point_a.as_ref().borrow().data() - Vector2::new(0.0, 0.0)).norm() < 0.001
+    );
+    assert!(
+        (point_b.as_ref().borrow().data() - Vector2::new(2.0, 0.0)).norm() < 0.001
+    );
+    assert!(
+        (point_c.as_ref().borrow().data() - Vector2::new(2.0, 3.0)).norm() < 0.001
+    );
+    assert!(
+        (point_d.as_ref().borrow().data() - Vector2::new(0.0, 3.0)).norm() < 0.001
+    );
+}
 ```
