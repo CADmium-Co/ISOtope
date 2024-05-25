@@ -217,7 +217,7 @@ $$
 $$
 
 $$
-\nabla \frac{x}{||x||} = \nabla (\frac{x}{\sqrt{x^T x}}) = \frac{I \cdot ||x|| - x \cdot x^T}{||x||^2}
+\nabla \frac{x}{||x||} = \nabla (\frac{x}{\sqrt{x^T x}}) = \frac{I \cdot ||x|| - x \cdot x^T}{||x||^2} = \frac{I}{||x||} - \frac{x \cdot x^T}{||x||^2}
 $$
 
 $$
