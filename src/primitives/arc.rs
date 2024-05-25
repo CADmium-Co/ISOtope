@@ -22,11 +22,11 @@ impl Arc {
         end_angle: f64,
     ) -> Self {
         Self {
-            center: center,
+            center,
             data: SVector::<f64, 3>::from_row_slice(&[radius, start_angle, end_angle]),
             gradient: SVector::<f64, 3>::zeros(),
 
-            clockwise: clockwise,
+            clockwise,
         }
     }
 
