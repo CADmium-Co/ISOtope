@@ -80,7 +80,7 @@ impl Constraint for EuclidianDistanceBetweenPoints {
 
         let grad_loss_from_err = err;
         let grad_err_from_distance = 1.0;
-        let grad_distance_from_d = d.transpose();
+        let grad_distance_from_d = d.transpose() / distance;
 
         let grad_from_d = grad_loss_from_err * grad_err_from_distance * grad_distance_from_d;
 

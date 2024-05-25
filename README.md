@@ -213,7 +213,7 @@ $$
 $$
 
 $$
-\nabla ||x|| = \nabla (\sqrt{x^T x}) = \frac{x^T}{\sqrt{x^T x}}
+\nabla ||x|| = \nabla (\sqrt{x^T x}) = \frac{x^T}{\sqrt{x^T x}} = \frac{x^T}{||x||}
 $$
 
 $$
