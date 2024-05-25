@@ -21,6 +21,7 @@ The **I**terative **SO**lver for 2D Sketches. This project is a dependency free 
     - [x] Equal length
     - [x] Concentric (can be done by using same ref for center points for circle and arcs)
     - [ ] Tangent
+- All gradients are checked with finite differences to ensure correctness
 
 ## Todo
 
