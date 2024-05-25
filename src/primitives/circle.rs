@@ -13,7 +13,7 @@ pub struct Circle {
 impl Circle {
     pub fn new(center: Rc<RefCell<Point2>>, radius: f64) -> Self {
         Self {
-            center: center,
+            center,
             data: SVector::<f64, 1>::from_row_slice(&[radius]),
             gradient: SVector::<f64, 1>::zeros(),
         }

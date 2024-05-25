@@ -2,6 +2,7 @@ use std::{cell::RefCell, collections::VecDeque, rc::Rc};
 
 use super::{constraints::Constraint, primitives::Parametric};
 
+#[derive(Default)]
 pub struct Sketch {
     primitives: VecDeque<Rc<RefCell<dyn Parametric>>>,
     constraints: VecDeque<Rc<RefCell<dyn Constraint>>>,
@@ -9,10 +10,7 @@ pub struct Sketch {
 
 impl Sketch {
     pub fn new() -> Self {
-        Self {
-            primitives: VecDeque::new(),
-            constraints: VecDeque::new(),
-        }
+        Self::default()
     }
 
     pub fn add_primitive(&mut self, primitive: Rc<RefCell<dyn Parametric>>) {
