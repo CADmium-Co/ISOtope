@@ -62,6 +62,16 @@ impl Sketch {
     pub fn solve(&mut self, step_size: f64, max_steps: usize) {
         for _ in 0..max_steps {
             self.step(step_size);
+
+            let gradient_sum = self
+                .primitives
+                .iter()
+                .map(|p| p.borrow().get_gradient().norm())
+                .sum::<f64>();
+
+            if gradient_sum < 1e-6 {
+                break;
+            }
         }
     }
 
