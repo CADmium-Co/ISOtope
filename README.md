@@ -206,7 +206,7 @@ $$
 \nabla (f(a)) = \nabla f(a) \cdot \nabla a
 $$
 
-If x is a vector
+If $x$ is a vector and $A$ is a matrix
 
 $$
 \nabla ||x||^2 = \nabla (x^T x) = x^T
