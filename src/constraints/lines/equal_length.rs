@@ -62,8 +62,8 @@ impl Constraint for EqualLength {
         let _loss = 0.5 * difference * difference;
 
         let grad_from_difference = difference;
-        let grad_difference_from_d1 = d1.transpose();
-        let grad_difference_from_d2 = -d2.transpose();
+        let grad_difference_from_d1 = d1.transpose() / d1.norm();
+        let grad_difference_from_d2 = -d2.transpose() / d2.norm();
 
         let grad_start1 = self.line1.borrow().start_gradient();
         let grad_end1 = self.line1.borrow().end_gradient();
@@ -106,7 +106,7 @@ mod tests {
         sketch.add_primitive(line1.clone());
 
         let line2_start = Rc::new(RefCell::new(Point2::new(0.0, 4.0)));
-        let line2_end = Rc::new(RefCell::new(Point2::new(5.0, 6.0)));
+        let line2_end = Rc::new(RefCell::new(Point2::new(10.0, 6.0)));
         let line2 = Rc::new(RefCell::new(Line::new(
             line2_start.clone(),
             line2_end.clone(),
