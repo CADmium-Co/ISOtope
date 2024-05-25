@@ -187,3 +187,39 @@ pub fn test_rectangle_axis_aligned() {
     );
 }
 ```
+
+## Math cheat sheet
+
+$$
+\nabla (a + b) = \nabla a + \nabla b
+$$
+
+$$
+\nabla (a \cdot b) = a \cdot \nabla b + b \cdot \nabla a
+$$
+
+$$
+\nabla (\frac{a}{b}) = \frac{\nabla a \cdot b - a \cdot \nabla b}{b^2}
+$$
+
+$$
+\nabla (f(a)) = \nabla f(a) \cdot \nabla a
+$$
+
+If x is a vector
+
+$$
+\nabla ||x||^2 = \nabla (x^T x) = x^T
+$$
+
+$$
+\nabla ||x|| = \nabla (\sqrt{x^T x}) = \frac{x^T}{\sqrt{x^T x}}
+$$
+
+$$
+\nabla \frac{x}{||x||} = \nabla (\frac{x}{\sqrt{x^T x}}) = \frac{I \cdot ||x|| - x \cdot x^T}{||x||^2}
+$$
+
+$$
+\nabla (Ax) = A
+$$
