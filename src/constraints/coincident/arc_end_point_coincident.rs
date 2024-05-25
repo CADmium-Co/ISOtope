@@ -104,9 +104,13 @@ mod tests {
         sketch.add_primitive(line2_end.clone());
         sketch.add_primitive(line2.clone());
 
-        let constr1 = ArcEndPointCoincident::new(arc1.clone(), line2_start.clone());
-        sketch.add_constraint(Rc::new(RefCell::new(constr1)));
+        let constr1 = Rc::new(RefCell::new(ArcEndPointCoincident::new(
+            arc1.clone(),
+            line2_start.clone(),
+        )));
+        sketch.add_constraint(constr1.clone());
 
+        sketch.check_gradients(1e-6, constr1.clone());
         sketch.solve(0.001, 100000);
 
         println!("arc1: {:?}", arc1.as_ref().borrow());

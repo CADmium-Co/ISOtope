@@ -189,6 +189,7 @@ mod tests {
             "current angle: {}",
             constr1.borrow().current_angle() * 180.0 / std::f64::consts::PI
         );
+        sketch.check_gradients(1e-6, constr1.clone());
         sketch.solve(0.001, 100000);
 
         println!("point_a: {:?}", point_a.as_ref().borrow());

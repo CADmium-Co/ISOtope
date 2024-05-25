@@ -80,9 +80,10 @@ mod tests {
         sketch.add_primitive(line_end.clone());
         sketch.add_primitive(line.clone());
 
-        let constr1 = HorizontalLine::new(line.clone());
-        sketch.add_constraint(Rc::new(RefCell::new(constr1)));
+        let constr1 = Rc::new(RefCell::new(HorizontalLine::new(line.clone())));
+        sketch.add_constraint(constr1.clone());
 
+        sketch.check_gradients(1e-6, constr1.clone());
         sketch.solve(0.001, 100000);
 
         println!("line: {:?}", line.as_ref().borrow());
