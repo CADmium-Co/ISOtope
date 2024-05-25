@@ -6,6 +6,7 @@ pub mod coincident;
 pub mod lines;
 pub mod angle_between_points;
 pub mod distance;
+pub mod fix_point;
 
 pub trait Constraint {
     fn references(&self) -> Vec<Rc<RefCell<dyn Parametric>>>;

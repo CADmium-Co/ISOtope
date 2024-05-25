@@ -17,10 +17,10 @@ The **I**terative **SO**lver for 2D Sketches. This project is a dependency free 
     - [x] Coincident
     - [x] Parallel
     - [x] Perpendicular
+    - [x] Fix
+    - [x] Equal length
+    - [x] Concentric (can be done by using same ref for center points for circle and arcs)
     - [ ] Tangent
-    - [ ] Concentric
-    - [ ] Equal
-    - [ ] Fix
 
 ## Algorithm
 
