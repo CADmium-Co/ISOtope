@@ -32,7 +32,7 @@ The **I**terative **SO**lver for 2D Sketches. This project is a dependency free 
 
 The algorithm is quite simple. First, we create a Sketch that constists of primitives. Primitives can also reference each other. Take for example a line that is defined by two points. If one of the points moves, the line should also move. This is done by creating a reference to the point in the line. The line will then always calculate its position based on the points.
 
-Consider for example a simple sketch consisting of three points $p_a$, $p_b$ and $p_c$, and two lines $l_1$ and $l_2$. The vector $q$ would look like this:
+Consider for example a simple sketch consisting of three points $p_a$, $p_b$ and $p_c$, and two lines $l_1$ and $l_2$.
 
 $$
 p_a = [x_1, y_1]
