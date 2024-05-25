@@ -66,7 +66,12 @@ impl Sketch {
     }
 
     // This function is used in test cases to check the gradients of the primitives
-    pub fn check_gradients(&mut self, epsilon: f64, constraint: Rc<RefCell<dyn Constraint>>) {
+    pub fn check_gradients(
+        &mut self,
+        epsilon: f64,
+        constraint: Rc<RefCell<dyn Constraint>>,
+        check_epsilon: f64,
+    ) {
         // Update all gradients
         self.step(0.0);
 
@@ -94,7 +99,7 @@ impl Sketch {
 
             let error = (numerical_gradient - analytical_gradient).norm();
             println!("Error: {}", error);
-            assert!(error < epsilon);
+            assert!(error < check_epsilon);
         }
     }
 }

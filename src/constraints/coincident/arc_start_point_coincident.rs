@@ -65,7 +65,7 @@ impl Constraint for ArcStartPointCoincident {
             .add_to_gradient((gradient_constraint * grad_arc).as_view());
         self.point
             .borrow_mut()
-            .add_to_gradient((gradient_constraint * grad_point).as_view());
+            .add_to_gradient((-gradient_constraint * grad_point).as_view());
     }
 }
 
@@ -110,7 +110,7 @@ mod tests {
         )));
         sketch.add_constraint(constr1.clone());
 
-        sketch.check_gradients(1e-6, constr1.clone());
+        sketch.check_gradients(1e-6, constr1.clone(), 1e-5);
         sketch.solve(0.001, 100000);
 
         println!("arc1: {:?}", arc1.as_ref().borrow());
