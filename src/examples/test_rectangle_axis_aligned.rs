@@ -5,7 +5,14 @@ mod tests {
     use nalgebra::Vector2;
 
     use crate::{
-        constraints::{distance::{horizontal_distance_between_points::HorizontalDistanceBetweenPoints, vertical_distance_between_points::VerticalDistanceBetweenPoints}, fix_point::FixPoint, lines::{horizontal_line::HorizontalLine, vertical_line::VerticalLine}},
+        constraints::{
+            distance::{
+                horizontal_distance_between_points::HorizontalDistanceBetweenPoints,
+                vertical_distance_between_points::VerticalDistanceBetweenPoints,
+            },
+            fix_point::FixPoint,
+            lines::{horizontal_line::HorizontalLine, vertical_line::VerticalLine},
+        },
         primitives::{line::Line, point2::Point2},
         sketch::Sketch,
     };
@@ -41,30 +48,26 @@ mod tests {
         ))));
 
         // Constrain line_a and line_c to be horizontal
-        sketch.add_constraint(Rc::new(RefCell::new(
-            HorizontalLine::new(line_a.clone()),
-        )));
-        sketch.add_constraint(Rc::new(RefCell::new(
-            HorizontalLine::new(line_c.clone()),
-        )));
+        sketch.add_constraint(Rc::new(RefCell::new(HorizontalLine::new(line_a.clone()))));
+        sketch.add_constraint(Rc::new(RefCell::new(HorizontalLine::new(line_c.clone()))));
 
         // Constrain line_b and line_d to be vertical
-        sketch.add_constraint(Rc::new(RefCell::new(
-            VerticalLine::new(line_b.clone()),
-        )));
-        sketch.add_constraint(Rc::new(RefCell::new(
-            VerticalLine::new(line_d.clone()),
-        )));
+        sketch.add_constraint(Rc::new(RefCell::new(VerticalLine::new(line_b.clone()))));
+        sketch.add_constraint(Rc::new(RefCell::new(VerticalLine::new(line_d.clone()))));
 
         // Constrain the length of line_a to 2
-        sketch.add_constraint(Rc::new(RefCell::new(
-           HorizontalDistanceBetweenPoints::new(point_a.clone(), point_b.clone(), 2.0),
-        )));
+        sketch.add_constraint(Rc::new(RefCell::new(HorizontalDistanceBetweenPoints::new(
+            point_a.clone(),
+            point_b.clone(),
+            2.0,
+        ))));
 
         // Constrain the length of line_b to 3
-        sketch.add_constraint(Rc::new(RefCell::new(
-           VerticalDistanceBetweenPoints::new(point_a.clone(), point_d.clone(), 3.0),
-        )));
+        sketch.add_constraint(Rc::new(RefCell::new(VerticalDistanceBetweenPoints::new(
+            point_a.clone(),
+            point_d.clone(),
+            3.0,
+        ))));
 
         // Now solve the sketch
         sketch.solve(0.001, 100000);
@@ -74,17 +77,9 @@ mod tests {
         println!("point_c: {:?}", point_c.as_ref().borrow());
         println!("point_d: {:?}", point_d.as_ref().borrow());
 
-        assert!(
-            (point_a.as_ref().borrow().data() - Vector2::new(0.0, 0.0)).norm() < 0.001
-        );
-        assert!(
-            (point_b.as_ref().borrow().data() - Vector2::new(2.0, 0.0)).norm() < 0.001
-        );
-        assert!(
-            (point_c.as_ref().borrow().data() - Vector2::new(2.0, 3.0)).norm() < 0.001
-        );
-        assert!(
-            (point_d.as_ref().borrow().data() - Vector2::new(0.0, 3.0)).norm() < 0.001
-        );
+        assert!((point_a.as_ref().borrow().data() - Vector2::new(0.0, 0.0)).norm() < 0.001);
+        assert!((point_b.as_ref().borrow().data() - Vector2::new(2.0, 0.0)).norm() < 0.001);
+        assert!((point_c.as_ref().borrow().data() - Vector2::new(2.0, 3.0)).norm() < 0.001);
+        assert!((point_d.as_ref().borrow().data() - Vector2::new(0.0, 3.0)).norm() < 0.001);
     }
 }

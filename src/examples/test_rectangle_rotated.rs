@@ -8,8 +8,7 @@ mod tests {
         constraints::{
             angle_between_points::AngleBetweenPoints,
             distance::euclidian_distance_between_points::EuclidianDistanceBetweenPoints,
-            fix_point::FixPoint,
-            lines::perpendicular_lines::PerpendicularLines,
+            fix_point::FixPoint, lines::perpendicular_lines::PerpendicularLines,
         },
         primitives::{line::Line, point2::Point2},
         sketch::Sketch,

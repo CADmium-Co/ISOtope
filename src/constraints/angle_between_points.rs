@@ -1,9 +1,6 @@
 use std::{cell::RefCell, rc::Rc};
 
-use crate::{
-    constraints::Constraint,
-    primitives::point2::Point2,
-};
+use crate::{constraints::Constraint, primitives::point2::Point2};
 
 // This is a sketch constraint that makes the end point of an arc coincident with a point.
 #[derive(Debug)]
@@ -21,7 +18,7 @@ impl AngleBetweenPoints {
         point2: Rc<RefCell<Point2>>,
         middle_point: Rc<RefCell<Point2>>,
         desired_angle: f64,
-) -> Self {
+    ) -> Self {
         Self {
             point1,
             point2,
@@ -81,7 +78,11 @@ impl AngleBetweenPoints {
 
 impl Constraint for AngleBetweenPoints {
     fn references(&self) -> Vec<Rc<RefCell<dyn crate::primitives::Parametric>>> {
-        vec![self.point1.clone(), self.point2.clone(), self.middle_point.clone()]
+        vec![
+            self.point1.clone(),
+            self.point2.clone(),
+            self.middle_point.clone(),
+        ]
     }
 
     fn loss_value(&self) -> f64 {
@@ -132,14 +133,26 @@ impl Constraint for AngleBetweenPoints {
 
         let grad_loss = theta - self.desired_angle;
 
-        let grad_from_d1 = grad_loss * grad_theta_from_cos_theta * grad_cos_theta_from_dot_product * grad_dot_product_from_d1
+        let grad_from_d1 = grad_loss
+            * grad_theta_from_cos_theta
+            * grad_cos_theta_from_dot_product
+            * grad_dot_product_from_d1
             + grad_loss * grad_theta_from_cos_theta * grad_cos_theta_from_norm1 * grad_norm_from_d1;
-        let grad_from_d2 = grad_loss * grad_theta_from_cos_theta * grad_cos_theta_from_dot_product * grad_dot_product_from_d2
+        let grad_from_d2 = grad_loss
+            * grad_theta_from_cos_theta
+            * grad_cos_theta_from_dot_product
+            * grad_dot_product_from_d2
             + grad_loss * grad_theta_from_cos_theta * grad_cos_theta_from_norm2 * grad_norm_to_d2;
 
-        self.point1.borrow_mut().add_to_gradient((grad_from_d1 * grad_point1).as_view());
-        self.point2.borrow_mut().add_to_gradient((grad_from_d2 * grad_point2).as_view());
-        self.middle_point.borrow_mut().add_to_gradient((-grad_from_d1 * grad_middle_point - grad_from_d2 * grad_middle_point).as_view());
+        self.point1
+            .borrow_mut()
+            .add_to_gradient((grad_from_d1 * grad_point1).as_view());
+        self.point2
+            .borrow_mut()
+            .add_to_gradient((grad_from_d2 * grad_point2).as_view());
+        self.middle_point.borrow_mut().add_to_gradient(
+            (-grad_from_d1 * grad_middle_point - grad_from_d2 * grad_middle_point).as_view(),
+        );
     }
 }
 
@@ -149,8 +162,8 @@ mod tests {
     use std::{cell::RefCell, rc::Rc};
 
     use crate::{
-        constraints::angle_between_points::AngleBetweenPoints, primitives::point2::Point2, sketch::Sketch,
-        constraints::Constraint,
+        constraints::angle_between_points::AngleBetweenPoints, constraints::Constraint,
+        primitives::point2::Point2, sketch::Sketch,
     };
 
     #[test]
@@ -164,20 +177,29 @@ mod tests {
         sketch.add_primitive(point_b.clone());
         sketch.add_primitive(point_middle.clone());
 
-        let constr1 = Rc::new(RefCell::new(AngleBetweenPoints::new(point_a.clone(), point_b.clone(), point_middle.clone(), std::f64::consts::PI / 4.0)));
+        let constr1 = Rc::new(RefCell::new(AngleBetweenPoints::new(
+            point_a.clone(),
+            point_b.clone(),
+            point_middle.clone(),
+            std::f64::consts::PI / 4.0,
+        )));
         sketch.add_constraint(constr1.clone());
 
-        println!("current angle: {}", constr1.borrow().current_angle() * 180.0 / std::f64::consts::PI);
+        println!(
+            "current angle: {}",
+            constr1.borrow().current_angle() * 180.0 / std::f64::consts::PI
+        );
         sketch.solve(0.001, 100000);
 
         println!("point_a: {:?}", point_a.as_ref().borrow());
         println!("point_b: {:?}", point_b.as_ref().borrow());
         println!("point_middle: {:?}", point_middle.as_ref().borrow());
 
-        println!("current angle: {}", constr1.borrow().current_angle() * 180.0 / std::f64::consts::PI);
-
-        assert!(
-            constr1.borrow().loss_value() < 0.001,
+        println!(
+            "current angle: {}",
+            constr1.borrow().current_angle() * 180.0 / std::f64::consts::PI
         );
+
+        assert!(constr1.borrow().loss_value() < 0.001,);
     }
 }

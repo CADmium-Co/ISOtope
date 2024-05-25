@@ -66,7 +66,10 @@ impl Sketch {
 
 #[cfg(test)]
 mod tests {
-    use crate::{constraints::coincident::arc_end_point_coincident::ArcEndPointCoincident, primitives::{arc::Arc, point2::Point2}};
+    use crate::{
+        constraints::coincident::arc_end_point_coincident::ArcEndPointCoincident,
+        primitives::{arc::Arc, point2::Point2},
+    };
 
     use super::*;
 
@@ -122,7 +125,10 @@ mod tests {
             sketch.add_primitive(point.clone());
             sketch.add_primitive(arc.clone());
 
-            let constraint = Rc::new(RefCell::new(ArcEndPointCoincident::new(arc.clone(), point.clone())));
+            let constraint = Rc::new(RefCell::new(ArcEndPointCoincident::new(
+                arc.clone(),
+                point.clone(),
+            )));
             sketch.add_constraint(constraint.clone());
             sketch.add_constraint(constraint.clone());
         })

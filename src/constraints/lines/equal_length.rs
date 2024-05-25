@@ -1,9 +1,6 @@
 use std::{cell::RefCell, rc::Rc};
 
-use crate::{
-    constraints::Constraint,
-    primitives::line::Line,
-};
+use crate::{constraints::Constraint, primitives::line::Line};
 
 // This is a sketch constraint that makes the end point of an arc coincident with a point.
 #[derive(Debug)]
@@ -73,14 +70,13 @@ impl Constraint for EqualLength {
         let grad_start2 = self.line2.borrow().start_gradient();
         let grad_end2 = self.line2.borrow().end_gradient();
 
-        self.line1
-            .borrow_mut()
-            .add_to_gradient((grad_from_difference * grad_difference_from_d1 * (grad_end1 - grad_start1)).as_view());
+        self.line1.borrow_mut().add_to_gradient(
+            (grad_from_difference * grad_difference_from_d1 * (grad_end1 - grad_start1)).as_view(),
+        );
 
-        self.line2
-            .borrow_mut()
-            .add_to_gradient((grad_from_difference * grad_difference_from_d2 * (grad_end2 - grad_start2)).as_view());
-        
+        self.line2.borrow_mut().add_to_gradient(
+            (grad_from_difference * grad_difference_from_d2 * (grad_end2 - grad_start2)).as_view(),
+        );
     }
 }
 
@@ -90,7 +86,9 @@ mod tests {
     use std::{cell::RefCell, rc::Rc};
 
     use crate::{
-        constraints::{lines::equal_length::EqualLength, Constraint}, primitives::{line::Line, point2::Point2}, sketch::Sketch
+        constraints::{lines::equal_length::EqualLength, Constraint},
+        primitives::{line::Line, point2::Point2},
+        sketch::Sketch,
     };
 
     #[test]
@@ -123,14 +121,18 @@ mod tests {
 
         sketch.solve(0.001, 100000);
 
-        println!("line1 len: {:?}", (line1_end.as_ref().borrow().data() - line1_start.as_ref().borrow().data()).norm());
-        println!("line2 len: {:?}", (line2_end.as_ref().borrow().data() - line2_start.as_ref().borrow().data()).norm());
+        println!(
+            "line1 len: {:?}",
+            (line1_end.as_ref().borrow().data() - line1_start.as_ref().borrow().data()).norm()
+        );
+        println!(
+            "line2 len: {:?}",
+            (line2_end.as_ref().borrow().data() - line2_start.as_ref().borrow().data()).norm()
+        );
 
         println!("line1: {:?}", line1.as_ref().borrow());
         println!("line2: {:?}", line2.as_ref().borrow());
 
-        assert!(
-            constr1.as_ref().borrow().loss_value() < 0.001
-        );
+        assert!(constr1.as_ref().borrow().loss_value() < 0.001);
     }
 }

@@ -110,10 +110,7 @@ mod tests {
         sketch.solve(0.001, 100000);
 
         println!("arc1: {:?}", arc1.as_ref().borrow());
-        println!(
-            "arc1 end point: {:?}",
-            arc1.as_ref().borrow().end_point()
-        );
+        println!("arc1 end point: {:?}", arc1.as_ref().borrow().end_point());
         println!("line2: {:?}", line2.as_ref().borrow());
 
         assert!(
