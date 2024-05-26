@@ -1,6 +1,6 @@
 use std::{cell::RefCell, collections::VecDeque, rc::Rc};
 
-use nalgebra::DVector;
+use nalgebra::{DMatrix, DVector};
 
 use super::{constraints::Constraint, primitives::Parametric};
 
@@ -65,7 +65,15 @@ impl Sketch {
         data
     }
 
-    pub fn get_gradient(&self) -> DVector<f64> {
+    pub fn get_gradient(&mut self) -> DVector<f64> {
+        for primitive in self.primitives.iter_mut() {
+            primitive.borrow_mut().zero_gradient();
+        }
+
+        for constraint in self.constraints.iter_mut() {
+            constraint.borrow_mut().update_gradient();
+        }
+
         let mut gradient = DVector::zeros(self.get_n_dofs());
         let mut i = 0;
         for primitive in self.primitives.iter() {
@@ -78,6 +86,29 @@ impl Sketch {
         gradient
     }
 
+    pub fn get_jacobian(&self) -> DMatrix<f64> {
+        let mut jacobian = DMatrix::zeros(self.constraints.len(), self.get_n_dofs());
+        for (i, constraint) in self.constraints.iter().enumerate() {
+            // Zero the gradients of all primitives
+            for primitive in self.primitives.iter() {
+                primitive.borrow_mut().zero_gradient();
+            }
+            // Update the gradient of the constraint
+            constraint.borrow_mut().update_gradient();
+            // Copy the gradient of the constraint to the jacobian
+            let mut j = 0;
+            for primitive in self.primitives.iter() {
+                let primitive_gradient = primitive.borrow().get_gradient();
+                jacobian
+                    .row_mut(i)
+                    .rows_mut(j, primitive_gradient.len())
+                    .copy_from(&primitive_gradient);
+                j += primitive_gradient.len();
+            }
+        }
+        jacobian
+    }
+
     pub fn set_data(&mut self, data: DVector<f64>) {
         assert!(data.len() == self.get_n_dofs());
         let mut i = 0;
@@ -85,17 +116,6 @@ impl Sketch {
             let n = primitive.borrow().get_data().len();
             primitive.borrow_mut().set_data(data.rows(i, n).as_view());
             i += n;
-        }
-    }
-
-    pub fn update(&mut self) {
-        // Collect everything into a VectorD
-        for primitive in self.primitives.iter_mut() {
-            primitive.borrow_mut().zero_gradient();
-        }
-
-        for constraint in self.constraints.iter_mut() {
-            constraint.borrow_mut().update_gradient();
         }
     }
 
@@ -107,7 +127,7 @@ impl Sketch {
         check_epsilon: f64,
     ) {
         // Update all gradients
-        self.update();
+        self.get_gradient();
 
         // Compare to numerical gradients
         let constraint_loss = constraint.borrow().loss_value();

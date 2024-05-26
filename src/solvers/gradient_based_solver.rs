@@ -38,9 +38,8 @@ impl GradientBasedSolver {
         let mut grad_norm = f64::INFINITY;
 
         while iterations < self.max_iterations && grad_norm > self.min_grad {
-            self.sketch.borrow_mut().update();
             let mut data = self.sketch.borrow().get_data();
-            let gradient = self.sketch.borrow().get_gradient();
+            let gradient = self.sketch.borrow_mut().get_gradient();
 
             grad_norm = gradient.norm();
             data -= self.step_size * gradient;
