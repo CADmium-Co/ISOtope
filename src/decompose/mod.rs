@@ -10,7 +10,7 @@ pub fn decompose_sketch(sketch: &Sketch) -> Vec<Face> {
     let _primitives = sketch
         .primitives()
         .iter()
-        .map(|p| p.borrow().to_primitive())
+        .map(|p| p.1.borrow().to_primitive())
         .collect::<Vec<Primitive>>();
     // A primitive is now ether a Circle, Line, or Arc. Points can be ignored.
     // Now chain all consecutive primitives that are connected into a ring.
