@@ -120,8 +120,8 @@ mod tests {
     use std::{cell::RefCell, rc::Rc};
 
     use crate::{
-        constraints::{lines::parallel_lines::ParallelLines, Constraint},
-        primitives::{line::Line, point2::Point2},
+        constraints::{lines::parallel_lines::ParallelLines, Constraint, ConstraintCell},
+        primitives::{line::Line, point2::Point2, ParametricCell},
         sketch::Sketch,
         solvers::gradient_based_solver::GradientBasedSolver,
     };
@@ -138,13 +138,16 @@ mod tests {
         )));
         sketch
             .borrow_mut()
-            .add_primitive(line1_start.clone())
+            .add_primitive(ParametricCell(line1_start.clone()))
             .unwrap();
         sketch
             .borrow_mut()
-            .add_primitive(line1_end.clone())
+            .add_primitive(ParametricCell(line1_end.clone()))
             .unwrap();
-        sketch.borrow_mut().add_primitive(line1.clone()).unwrap();
+        sketch
+            .borrow_mut()
+            .add_primitive(ParametricCell(line1.clone()))
+            .unwrap();
 
         let line2_start = Rc::new(RefCell::new(Point2::new(0.0, 4.0)));
         let line2_end = Rc::new(RefCell::new(Point2::new(5.0, 6.0)));
@@ -155,19 +158,25 @@ mod tests {
 
         sketch
             .borrow_mut()
-            .add_primitive(line2_start.clone())
+            .add_primitive(ParametricCell(line2_start.clone()))
             .unwrap();
         sketch
             .borrow_mut()
-            .add_primitive(line2_end.clone())
+            .add_primitive(ParametricCell(line2_end.clone()))
             .unwrap();
-        sketch.borrow_mut().add_primitive(line2.clone()).unwrap();
+        sketch
+            .borrow_mut()
+            .add_primitive(ParametricCell(line2.clone()))
+            .unwrap();
 
         let constr1 = Rc::new(RefCell::new(ParallelLines::new(
             line1.clone(),
             line2.clone(),
         )));
-        sketch.borrow_mut().add_constraint(constr1.clone()).unwrap();
+        sketch
+            .borrow_mut()
+            .add_constraint(ConstraintCell(constr1.clone()))
+            .unwrap();
 
         sketch
             .borrow_mut()

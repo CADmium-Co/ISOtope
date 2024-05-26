@@ -80,8 +80,10 @@ mod tests {
     use std::{cell::RefCell, rc::Rc};
 
     use crate::{
-        constraints::coincident::arc_start_point_coincident::ArcStartPointCoincident,
-        primitives::{arc::Arc, line::Line, point2::Point2},
+        constraints::{
+            coincident::arc_start_point_coincident::ArcStartPointCoincident, ConstraintCell,
+        },
+        primitives::{arc::Arc, line::Line, point2::Point2, ParametricCell},
         sketch::Sketch,
         solvers::gradient_based_solver::GradientBasedSolver,
     };
@@ -104,23 +106,35 @@ mod tests {
             line2_start.clone(),
             line2_end.clone(),
         )));
-        sketch.borrow_mut().add_primitive(center.clone()).unwrap();
-        sketch.borrow_mut().add_primitive(arc1.clone()).unwrap();
         sketch
             .borrow_mut()
-            .add_primitive(line2_start.clone())
+            .add_primitive(ParametricCell(center.clone()))
             .unwrap();
         sketch
             .borrow_mut()
-            .add_primitive(line2_end.clone())
+            .add_primitive(ParametricCell(arc1.clone()))
             .unwrap();
-        sketch.borrow_mut().add_primitive(line2.clone()).unwrap();
+        sketch
+            .borrow_mut()
+            .add_primitive(ParametricCell(line2_start.clone()))
+            .unwrap();
+        sketch
+            .borrow_mut()
+            .add_primitive(ParametricCell(line2_end.clone()))
+            .unwrap();
+        sketch
+            .borrow_mut()
+            .add_primitive(ParametricCell(line2.clone()))
+            .unwrap();
 
         let constr1 = Rc::new(RefCell::new(ArcStartPointCoincident::new(
             arc1.clone(),
             line2_end.clone(),
         )));
-        sketch.borrow_mut().add_constraint(constr1.clone()).unwrap();
+        sketch
+            .borrow_mut()
+            .add_constraint(ConstraintCell(constr1.clone()))
+            .unwrap();
 
         sketch
             .borrow_mut()

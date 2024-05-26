@@ -24,12 +24,9 @@ impl Sketch {
         Self::default()
     }
 
-    pub fn add_primitive(
-        &mut self,
-        primitive: Rc<RefCell<dyn Parametric>>,
-    ) -> Result<u64, ISOTopeError> {
+    pub fn add_primitive(&mut self, primitive: ParametricCell) -> Result<u64, ISOTopeError> {
         // Make sure all referenced primitives are added to the sketch before the primitive
-        for reference in primitive.borrow().references() {
+        for reference in primitive.0.borrow().references() {
             if !self
                 .primitives
                 .iter()
@@ -42,24 +39,20 @@ impl Sketch {
         if self
             .primitives
             .iter()
-            .any(|p| Rc::ptr_eq(&p.1 .0, &primitive))
+            .any(|p| Rc::ptr_eq(&p.1 .0, &primitive.0))
         {
             return Err(ISOTopeError::PrimitiveAlreadyInSketch);
         }
         // Add the primitive to the sketch
-        self.primitives
-            .insert(self.primitives_next_id, ParametricCell(primitive));
+        self.primitives.insert(self.primitives_next_id, primitive);
         self.primitives_next_id += 1;
 
         Ok(self.primitives_next_id - 1)
     }
 
-    pub fn add_constraint(
-        &mut self,
-        constraint: Rc<RefCell<dyn Constraint>>,
-    ) -> Result<(), ISOTopeError> {
+    pub fn add_constraint(&mut self, constraint: ConstraintCell) -> Result<(), ISOTopeError> {
         // Make sure all referenced primitives are added to the sketch before the constraint
-        for reference in constraint.borrow().references() {
+        for reference in constraint.0.borrow().references() {
             if !self
                 .primitives
                 .iter()
@@ -70,13 +63,13 @@ impl Sketch {
         }
         // Make sure the constraint is not already in the sketch
         if self.constraints.iter().any(|c| {
-            Rc::ptr_eq(&c.0, &constraint)
-                || c.0.borrow().get_type() == constraint.borrow().get_type()
+            Rc::ptr_eq(&c.0, &constraint.0)
+                || c.0.borrow().get_type() == constraint.0.borrow().get_type()
         }) {
             return Err(ISOTopeError::ConstraintAlreadyInSketch);
         }
 
-        self.constraints.push_back(ConstraintCell(constraint));
+        self.constraints.push_back(constraint);
 
         Ok(())
     }
@@ -270,7 +263,7 @@ mod tests {
             let point = Rc::new(RefCell::new(Point2::new(0.0, 0.0)));
             let arc = Rc::new(RefCell::new(Arc::new(point, 1.0, true, 0.0, 1.0)));
 
-            sketch.add_primitive(arc.clone()).unwrap();
+            sketch.add_primitive(ParametricCell(arc.clone())).unwrap();
         })
         .is_err());
     }
@@ -280,7 +273,7 @@ mod tests {
         assert!(std::panic::catch_unwind(|| {
             let mut sketch = Sketch::new();
 
-            let point = Rc::new(RefCell::new(Point2::new(0.0, 0.0)));
+            let point = ParametricCell(Rc::new(RefCell::new(Point2::new(0.0, 0.0))));
             sketch.add_primitive(point.clone()).unwrap();
             sketch.add_primitive(point.clone()).unwrap();
         })
@@ -295,10 +288,10 @@ mod tests {
             let point = Rc::new(RefCell::new(Point2::new(0.0, 0.0)));
             let arc = Rc::new(RefCell::new(Arc::new(point.clone(), 1.0, true, 0.0, 1.0)));
 
-            sketch.add_primitive(point.clone()).unwrap();
+            sketch.add_primitive(ParametricCell(point.clone())).unwrap();
 
             let constraint = Rc::new(RefCell::new(ArcEndPointCoincident::new(arc, point)));
-            sketch.add_constraint(constraint).unwrap();
+            sketch.add_constraint(ConstraintCell(constraint)).unwrap();
         })
         .is_err());
     }
@@ -311,15 +304,19 @@ mod tests {
             let point = Rc::new(RefCell::new(Point2::new(0.0, 0.0)));
             let arc = Rc::new(RefCell::new(Arc::new(point.clone(), 1.0, true, 0.0, 1.0)));
 
-            sketch.add_primitive(point.clone()).unwrap();
-            sketch.add_primitive(arc.clone()).unwrap();
+            sketch.add_primitive(ParametricCell(point.clone())).unwrap();
+            sketch.add_primitive(ParametricCell(arc.clone())).unwrap();
 
             let constraint = Rc::new(RefCell::new(ArcEndPointCoincident::new(
                 arc.clone(),
                 point.clone(),
             )));
-            sketch.add_constraint(constraint.clone()).unwrap();
-            sketch.add_constraint(constraint.clone()).unwrap();
+            sketch
+                .add_constraint(ConstraintCell(constraint.clone()))
+                .unwrap();
+            sketch
+                .add_constraint(ConstraintCell(constraint.clone()))
+                .unwrap();
         })
         .is_err());
     }
