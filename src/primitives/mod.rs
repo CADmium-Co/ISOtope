@@ -14,4 +14,63 @@ pub trait Parametric {
     fn get_data(&self) -> DVector<f64>;
     fn set_data(&mut self, data: DVectorView<f64>);
     fn get_gradient(&self) -> DVector<f64>;
+    fn as_primitive(self) -> Primitive;
+}
+
+pub enum Primitive {
+    Point2(point2::Point2),
+    Line(line::Line),
+    Arc(arc::Arc),
+    Circle(circle::Circle),
+}
+
+impl Parametric for Primitive {
+    fn references(&self) -> Vec<Rc<RefCell<dyn Parametric>>> {
+        match self {
+            Primitive::Point2(p) => p.references(),
+            Primitive::Line(l) => l.references(),
+            Primitive::Arc(a) => a.references(),
+            Primitive::Circle(c) => c.references(),
+        }
+    }
+
+    fn zero_gradient(&mut self) {
+        match self {
+            Primitive::Point2(p) => p.zero_gradient(),
+            Primitive::Line(l) => l.zero_gradient(),
+            Primitive::Arc(a) => a.zero_gradient(),
+            Primitive::Circle(c) => c.zero_gradient(),
+        }
+    }
+
+    fn get_data(&self) -> DVector<f64> {
+        match self {
+            Primitive::Point2(p) => p.get_data(),
+            Primitive::Line(l) => l.get_data(),
+            Primitive::Arc(a) => a.get_data(),
+            Primitive::Circle(c) => c.get_data(),
+        }
+    }
+
+    fn set_data(&mut self, data: DVectorView<f64>) {
+        match self {
+            Primitive::Point2(p) => p.set_data(data),
+            Primitive::Line(l) => l.set_data(data),
+            Primitive::Arc(a) => a.set_data(data),
+            Primitive::Circle(c) => c.set_data(data),
+        }
+    }
+
+    fn get_gradient(&self) -> DVector<f64> {
+        match self {
+            Primitive::Point2(p) => p.get_gradient(),
+            Primitive::Line(l) => l.get_gradient(),
+            Primitive::Arc(a) => a.get_gradient(),
+            Primitive::Circle(c) => c.get_gradient(),
+        }
+    }
+
+    fn as_primitive(self) -> Primitive {
+        self
+    }
 }

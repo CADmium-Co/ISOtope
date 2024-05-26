@@ -171,4 +171,8 @@ impl Parametric for Arc {
     fn set_data(&mut self, data: DVectorView<f64>) {
         self.data = SVector::from_row_slice(data.as_slice());
     }
+
+    fn as_primitive(self) -> super::Primitive {
+        super::Primitive::Arc(self)
+    }
 }

@@ -73,4 +73,8 @@ impl Parametric for Line {
         // empty vector
         DVector::from_row_slice(&[])
     }
+
+    fn as_primitive(self) -> super::Primitive {
+        super::Primitive::Line(self)
+    }
 }

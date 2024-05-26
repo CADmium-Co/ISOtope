@@ -67,4 +67,8 @@ impl Parametric for Point2 {
     fn get_gradient(&self) -> DVector<f64> {
         DVector::from_row_slice(self.gradient.as_slice())
     }
+
+    fn as_primitive(self) -> super::Primitive {
+        super::Primitive::Point2(self)
+    }
 }
