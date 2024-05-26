@@ -3,10 +3,10 @@ use std::{cell::RefCell, rc::Rc};
 use crate::sketch::Sketch;
 
 pub struct GradientBasedSolver {
-    pub sketch: Rc<RefCell<Sketch>>,
-    pub max_iterations: usize,
-    pub min_grad: f64,
-    pub step_size: f64,
+    sketch: Rc<RefCell<Sketch>>,
+    max_iterations: usize,
+    min_grad: f64,
+    step_size: f64,
 }
 
 impl GradientBasedSolver {

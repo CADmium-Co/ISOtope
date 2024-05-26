@@ -65,6 +65,14 @@ impl Sketch {
         data
     }
 
+    pub fn get_loss(&mut self) -> f64 {
+        let mut loss = 0.0;
+        for constraint in self.constraints.iter_mut() {
+            loss += constraint.borrow().loss_value();
+        }
+        loss
+    }
+
     pub fn get_gradient(&mut self) -> DVector<f64> {
         for primitive in self.primitives.iter_mut() {
             primitive.borrow_mut().zero_gradient();
@@ -84,6 +92,14 @@ impl Sketch {
             i += primitive_gradient.len();
         }
         gradient
+    }
+
+    pub fn get_loss_per_constraint(&self) -> DVector<f64> {
+        let mut loss_per_constraint = DVector::zeros(self.constraints.len());
+        for (i, constraint) in self.constraints.iter().enumerate() {
+            loss_per_constraint[i] = constraint.borrow().loss_value();
+        }
+        loss_per_constraint
     }
 
     pub fn get_jacobian(&self) -> DMatrix<f64> {

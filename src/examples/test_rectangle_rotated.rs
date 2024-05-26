@@ -1,22 +1,28 @@
-#[cfg(test)]
-mod tests {
-    use std::{cell::RefCell, rc::Rc};
+use std::{cell::RefCell, rc::Rc};
 
-    use nalgebra::Vector2;
+use nalgebra::Vector2;
 
-    use crate::{
-        constraints::{
-            angle_between_points::AngleBetweenPoints,
-            distance::euclidian_distance_between_points::EuclidianDistanceBetweenPoints,
-            fix_point::FixPoint, lines::perpendicular_lines::PerpendicularLines,
-        },
-        primitives::{line::Line, point2::Point2},
-        sketch::Sketch,
-        solvers::gradient_based_solver::GradientBasedSolver,
-    };
+use crate::{
+    constraints::{
+        angle_between_points::AngleBetweenPoints,
+        distance::euclidian_distance_between_points::EuclidianDistanceBetweenPoints,
+        fix_point::FixPoint, lines::perpendicular_lines::PerpendicularLines,
+    },
+    primitives::{line::Line, point2::Point2},
+    sketch::Sketch,
+};
 
-    #[test]
-    pub fn test_rectangle_rotated() {
+pub struct RotatedRectangleDemo {
+    pub sketch: Rc<RefCell<Sketch>>,
+    pub point_a: Rc<RefCell<Point2>>,
+    pub point_b: Rc<RefCell<Point2>>,
+    pub point_c: Rc<RefCell<Point2>>,
+    pub point_d: Rc<RefCell<Point2>>,
+    pub point_reference: Rc<RefCell<Point2>>,
+}
+
+impl RotatedRectangleDemo {
+    pub fn new() -> Self {
         let sketch = Rc::new(RefCell::new(Sketch::new()));
 
         // This time we have to choose some random start points to break the symmetry
@@ -109,30 +115,61 @@ mod tests {
                 f64::to_radians(45.0),
             ))));
 
+        Self {
+            sketch,
+            point_a,
+            point_b,
+            point_c,
+            point_d,
+            point_reference,
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use nalgebra::Vector2;
+
+    use crate::{
+        examples::test_rectangle_rotated::RotatedRectangleDemo,
+        solvers::gradient_based_solver::GradientBasedSolver,
+    };
+
+    #[test]
+    pub fn test_rectangle_rotated() {
+        let rectangle = RotatedRectangleDemo::new();
+
         // Now solve the sketch
-        let solver = GradientBasedSolver::new_with_params(sketch.clone(), 100000, 1e-6, 1e-2);
+        let solver =
+            GradientBasedSolver::new_with_params(rectangle.sketch.clone(), 100000, 1e-6, 1e-2);
         solver.solve();
 
-        println!("point_a: {:?}", point_a.as_ref().borrow());
-        println!("point_b: {:?}", point_b.as_ref().borrow());
-        println!("point_c: {:?}", point_c.as_ref().borrow());
-        println!("point_d: {:?}", point_d.as_ref().borrow());
-        println!("point_reference: {:?}", point_reference.as_ref().borrow());
+        println!("point_a: {:?}", rectangle.point_a.as_ref().borrow());
+        println!("point_b: {:?}", rectangle.point_b.as_ref().borrow());
+        println!("point_c: {:?}", rectangle.point_c.as_ref().borrow());
+        println!("point_d: {:?}", rectangle.point_d.as_ref().borrow());
+        println!(
+            "point_reference: {:?}",
+            rectangle.point_reference.as_ref().borrow()
+        );
 
-        assert!((point_a.as_ref().borrow().data() - Vector2::new(0.0, 0.0)).norm() < 0.01);
         assert!(
-            (point_b.as_ref().borrow().data() - Vector2::new(f64::sqrt(2.0), -f64::sqrt(2.0)))
-                .norm()
+            (rectangle.point_a.as_ref().borrow().data() - Vector2::new(0.0, 0.0)).norm() < 0.01
+        );
+        assert!(
+            (rectangle.point_b.as_ref().borrow().data()
+                - Vector2::new(f64::sqrt(2.0), -f64::sqrt(2.0)))
+            .norm()
                 < 0.01
         );
         assert!(
-            (point_c.as_ref().borrow().data()
+            (rectangle.point_c.as_ref().borrow().data()
                 - Vector2::new(5.0 / f64::sqrt(2.0), 1.0 / f64::sqrt(2.0)))
             .norm()
                 < 0.01
         );
         assert!(
-            (point_d.as_ref().borrow().data()
+            (rectangle.point_d.as_ref().borrow().data()
                 - Vector2::new(3.0 / f64::sqrt(2.0), 3.0 / f64::sqrt(2.0)))
             .norm()
                 < 0.01
