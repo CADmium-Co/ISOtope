@@ -25,9 +25,8 @@ The **I**terative **SO**lver for 2D Sketches. This project is a dependency free 
 
 ## Todo
 
-- [ ] For perpendicular and parallel constraint: Normalize directions, such that they do not pull to length 0
 - [ ] Gradient descent seems to be to slow for more complex sketches. Use conjugate gradient instead to ensure a constant progress for each constraint.
-- [ ] Get the rectangle rotated test case working
+- [ ] Other approach for solver: x = x + step_size if grad > 0, x = x - step_size if grad < 0. Let step_size decay exponentially. Check if this converges faster.
 
 ## Algorithm
 
