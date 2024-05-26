@@ -60,10 +60,6 @@ impl Parametric for Line {
         // Referenced points will zero their gradients automatically as they are part of the sketch
     }
 
-    fn step(&mut self, _step_size: f64) {
-        // Do nothing, the points will be updated in their own step functions
-    }
-
     fn get_data(&self) -> DVector<f64> {
         // empty vector
         DVector::from_row_slice(&[])

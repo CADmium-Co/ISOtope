@@ -117,50 +117,50 @@ pub fn test_rectangle_axis_aligned() {
     let point_c = Rc::new(RefCell::new(Point2::new(0.0, 0.0)));
     let point_d = Rc::new(RefCell::new(Point2::new(0.0, 0.0)));
 
-    sketch.add_primitive(point_a.clone());
-    sketch.add_primitive(point_b.clone());
-    sketch.add_primitive(point_c.clone());
-    sketch.add_primitive(point_d.clone());
+    sketch.borrow_mut().add_primitive(point_a.clone());
+    sketch.borrow_mut().add_primitive(point_b.clone());
+    sketch.borrow_mut().add_primitive(point_c.clone());
+    sketch.borrow_mut().add_primitive(point_d.clone());
 
     let line_a = Rc::new(RefCell::new(Line::new(point_a.clone(), point_b.clone())));
     let line_b = Rc::new(RefCell::new(Line::new(point_b.clone(), point_c.clone())));
     let line_c = Rc::new(RefCell::new(Line::new(point_c.clone(), point_d.clone())));
     let line_d = Rc::new(RefCell::new(Line::new(point_d.clone(), point_a.clone())));
 
-    sketch.add_primitive(line_a.clone());
-    sketch.add_primitive(line_b.clone());
-    sketch.add_primitive(line_c.clone());
-    sketch.add_primitive(line_d.clone());
+    sketch.borrow_mut().add_primitive(line_a.clone());
+    sketch.borrow_mut().add_primitive(line_b.clone());
+    sketch.borrow_mut().add_primitive(line_c.clone());
+    sketch.borrow_mut().add_primitive(line_d.clone());
 
     // Fix point a to origin
-    sketch.add_constraint(Rc::new(RefCell::new(FixPoint::new(
+    sketch.borrow_mut().add_constraint(Rc::new(RefCell::new(FixPoint::new(
         point_a.clone(),
         Vector2::new(0.0, 0.0),
     ))));
 
     // Constrain line_a and line_c to be horizontal
-    sketch.add_constraint(Rc::new(RefCell::new(
+    sketch.borrow_mut().add_constraint(Rc::new(RefCell::new(
         HorizontalLine::new(line_a.clone()),
     )));
-    sketch.add_constraint(Rc::new(RefCell::new(
+    sketch.borrow_mut().add_constraint(Rc::new(RefCell::new(
         HorizontalLine::new(line_c.clone()),
     )));
 
     // Constrain line_b and line_d to be vertical
-    sketch.add_constraint(Rc::new(RefCell::new(
+    sketch.borrow_mut().add_constraint(Rc::new(RefCell::new(
         VerticalLine::new(line_b.clone()),
     )));
-    sketch.add_constraint(Rc::new(RefCell::new(
+    sketch.borrow_mut().add_constraint(Rc::new(RefCell::new(
         VerticalLine::new(line_d.clone()),
     )));
 
     // Constrain the length of line_a to 2
-    sketch.add_constraint(Rc::new(RefCell::new(
+    sketch.borrow_mut().add_constraint(Rc::new(RefCell::new(
         HorizontalDistanceBetweenPoints::new(point_a.clone(), point_b.clone(), 2.0),
     )));
 
     // Constrain the length of line_b to 3
-    sketch.add_constraint(Rc::new(RefCell::new(
+    sketch.borrow_mut().add_constraint(Rc::new(RefCell::new(
         VerticalDistanceBetweenPoints::new(point_a.clone(), point_d.clone(), 3.0),
     )));
 

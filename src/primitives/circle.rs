@@ -62,10 +62,6 @@ impl Parametric for Circle {
         self.gradient = SVector::<f64, 1>::zeros();
     }
 
-    fn step(&mut self, step_size: f64) {
-        self.data -= step_size * self.gradient;
-    }
-
     fn get_data(&self) -> DVector<f64> {
         DVector::from_row_slice(self.data.as_slice())
     }

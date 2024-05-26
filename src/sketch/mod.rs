@@ -45,34 +45,57 @@ impl Sketch {
         self.constraints.push_back(constraint);
     }
 
-    pub fn step(&mut self, step_size: f64) {
+    pub fn get_n_dofs(&self) -> usize {
+        let mut n_dofs = 0;
+        for primitive in self.primitives.iter() {
+            n_dofs += primitive.borrow().get_data().len();
+        }
+        n_dofs
+    }
+
+    pub fn get_data(&self) -> DVector<f64> {
+        let mut data = DVector::zeros(self.get_n_dofs());
+        let mut i = 0;
+        for primitive in self.primitives.iter() {
+            let primitive_data = primitive.borrow().get_data();
+            data.rows_mut(i, primitive_data.len())
+                .copy_from(&primitive_data);
+            i += primitive_data.len();
+        }
+        data
+    }
+
+    pub fn get_gradient(&self) -> DVector<f64> {
+        let mut gradient = DVector::zeros(self.get_n_dofs());
+        let mut i = 0;
+        for primitive in self.primitives.iter() {
+            let primitive_gradient = primitive.borrow().get_gradient();
+            gradient
+                .rows_mut(i, primitive_gradient.len())
+                .copy_from(&primitive_gradient);
+            i += primitive_gradient.len();
+        }
+        gradient
+    }
+
+    pub fn set_data(&mut self, data: DVector<f64>) {
+        assert!(data.len() == self.get_n_dofs());
+        let mut i = 0;
+        for primitive in self.primitives.iter_mut() {
+            let n = primitive.borrow().get_data().len();
+            primitive.borrow_mut().set_data(data.rows(i, n).as_view());
+            i += n;
+        }
+    }
+
+    pub fn update(&mut self) {
+        // Collect everything into a VectorD
         for primitive in self.primitives.iter_mut() {
             primitive.borrow_mut().zero_gradient();
         }
 
         for constraint in self.constraints.iter_mut() {
             constraint.borrow_mut().update_gradient();
-        }
-
-        for primitive in self.primitives.iter_mut() {
-            primitive.borrow_mut().step(step_size);
-        }
-    }
-
-    pub fn solve(&mut self, step_size: f64, max_steps: usize) {
-        for i in 0..max_steps {
-            self.step(step_size);
-
-            let gradient_sum = self
-                .primitives
-                .iter()
-                .map(|p| p.borrow().get_gradient().norm())
-                .sum::<f64>();
-
-            if gradient_sum < 1e-6 {
-                println!("Converged after {} steps", i + 1);
-                break;
-            }
         }
     }
 
@@ -84,7 +107,7 @@ impl Sketch {
         check_epsilon: f64,
     ) {
         // Update all gradients
-        self.step(0.0);
+        self.update();
 
         // Compare to numerical gradients
         let constraint_loss = constraint.borrow().loss_value();

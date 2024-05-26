@@ -11,7 +11,6 @@ pub mod point2;
 pub trait Parametric {
     fn references(&self) -> Vec<Rc<RefCell<dyn Parametric>>>;
     fn zero_gradient(&mut self);
-    fn step(&mut self, step_size: f64);
     fn get_data(&self) -> DVector<f64>;
     fn set_data(&mut self, data: DVectorView<f64>);
     fn get_gradient(&self) -> DVector<f64>;

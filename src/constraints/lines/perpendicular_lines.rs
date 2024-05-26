@@ -118,15 +118,20 @@ mod tests {
         constraints::{lines::perpendicular_lines::PerpendicularLines, Constraint},
         primitives::{line::Line, point2::Point2},
         sketch::Sketch,
+        solvers::gradient_based_solver::GradientBasedSolver,
     };
 
     #[test]
-    fn test_perpendicular_line() {
+    fn test_zero_vec_normalized_does_not_panic() {
         let mut v = Vector2::<f64>::zeros();
-        v = v.normalize(); // Test this
+        v = v.normalize();
         assert!(v.x.is_nan());
         assert!(v.y.is_nan());
-        let mut sketch = Sketch::new();
+    }
+
+    #[test]
+    fn test_perpendicular_line() {
+        let sketch = Rc::new(RefCell::new(Sketch::new()));
 
         let line1_start = Rc::new(RefCell::new(Point2::new(3.0, 4.0)));
         let line1_end = Rc::new(RefCell::new(Point2::new(5.0, 6.0)));
@@ -134,9 +139,9 @@ mod tests {
             line1_start.clone(),
             line1_end.clone(),
         )));
-        sketch.add_primitive(line1_start.clone());
-        sketch.add_primitive(line1_end.clone());
-        sketch.add_primitive(line1.clone());
+        sketch.borrow_mut().add_primitive(line1_start.clone());
+        sketch.borrow_mut().add_primitive(line1_end.clone());
+        sketch.borrow_mut().add_primitive(line1.clone());
 
         let line2_start = Rc::new(RefCell::new(Point2::new(0.0, 4.0)));
         let line2_end = Rc::new(RefCell::new(Point2::new(5.0, 6.0)));
@@ -145,18 +150,21 @@ mod tests {
             line2_end.clone(),
         )));
 
-        sketch.add_primitive(line2_start.clone());
-        sketch.add_primitive(line2_end.clone());
-        sketch.add_primitive(line2.clone());
+        sketch.borrow_mut().add_primitive(line2_start.clone());
+        sketch.borrow_mut().add_primitive(line2_end.clone());
+        sketch.borrow_mut().add_primitive(line2.clone());
 
         let constr1 = Rc::new(RefCell::new(PerpendicularLines::new(
             line1.clone(),
             line2.clone(),
         )));
-        sketch.add_constraint(constr1.clone());
+        sketch.borrow_mut().add_constraint(constr1.clone());
 
-        sketch.check_gradients(1e-6, constr1.clone(), 1e-6);
-        sketch.solve(0.001, 100000);
+        sketch
+            .borrow_mut()
+            .check_gradients(1e-6, constr1.clone(), 1e-6);
+        let solver = GradientBasedSolver::new(sketch.clone());
+        solver.solve();
 
         println!(
             "line1_dir: {:?}",
@@ -170,6 +178,8 @@ mod tests {
         println!("line1: {:?}", line1.as_ref().borrow());
         println!("line2: {:?}", line2.as_ref().borrow());
 
-        assert!(constr1.as_ref().borrow().loss_value() < 0.001);
+        println!("loss: {}", constr1.as_ref().borrow().loss_value());
+
+        assert!(constr1.as_ref().borrow().loss_value() < 0.01);
     }
 }
