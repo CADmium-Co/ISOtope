@@ -1,14 +1,23 @@
 use std::{cell::RefCell, collections::VecDeque, rc::Rc};
 
 use nalgebra::{DMatrix, DVector};
+use serde::{Deserialize, Serialize};
 
 use crate::error::ISOTopeError;
 
 use super::{constraints::Constraint, primitives::Parametric};
 
-#[derive(Default)]
+#[derive(Default, Clone, Serialize, Deserialize)]
 pub struct Sketch {
+    #[serde(
+        serialize_with = "crate::primitives::serialize_primitives",
+        deserialize_with = "crate::primitives::deserialize_primitives"
+    )]
     primitives: VecDeque<Rc<RefCell<dyn Parametric>>>,
+    #[serde(
+        serialize_with = "crate::constraints::serialize_constraints",
+        deserialize_with = "crate::constraints::deserialize_constraints"
+    )]
     constraints: VecDeque<Rc<RefCell<dyn Constraint>>>,
 }
 
@@ -155,7 +164,7 @@ impl Sketch {
     pub fn check_gradients(
         &mut self,
         epsilon: f64,
-        constraint: Rc<RefCell<dyn Constraint>>,
+        constraint: Rc<RefCell<impl Constraint>>,
         check_epsilon: f64,
     ) {
         // Update all gradients

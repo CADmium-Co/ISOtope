@@ -1,9 +1,11 @@
 use std::{cell::RefCell, rc::Rc};
 
+use serde::{Deserialize, Serialize};
+
 use crate::{constraints::Constraint, primitives::line::Line};
 
 // This is a sketch constraint that makes the end point of an arc coincident with a point.
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd, Serialize, Deserialize)]
 pub struct EqualLength {
     line1: Rc<RefCell<Line>>,
     line2: Rc<RefCell<Line>>,
@@ -77,6 +79,10 @@ impl Constraint for EqualLength {
         self.line2.borrow_mut().add_to_gradient(
             (grad_from_difference * grad_difference_from_d2 * (grad_end2 - grad_start2)).as_view(),
         );
+    }
+
+    fn get_type(&self) -> crate::constraints::ConstraintType {
+        crate::constraints::ConstraintType::EqualLength(self.clone())
     }
 }
 

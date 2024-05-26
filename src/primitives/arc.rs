@@ -1,16 +1,18 @@
-use std::{cell::RefCell, rc::Rc};
+use std::cell::RefCell;
+use std::rc::Rc;
 
 use nalgebra::{DVector, DVectorView, SMatrix, SMatrixView, SVector, Vector2};
+use serde::{Deserialize, Serialize};
 
 use super::{point2::Point2, Parametric};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, PartialOrd, Serialize, Deserialize)]
 pub struct Arc {
-    center: Rc<RefCell<Point2>>,
-    data: SVector<f64, 3>,
-    gradient: SVector<f64, 3>,
+    pub center: Rc<RefCell<Point2>>,
+    pub data: SVector<f64, 3>,
+    pub gradient: SVector<f64, 3>,
 
-    clockwise: bool,
+    pub clockwise: bool,
 }
 
 impl Arc {

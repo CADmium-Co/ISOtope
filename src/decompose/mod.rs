@@ -7,7 +7,7 @@ pub mod ring;
 pub mod segment;
 
 pub fn decompose_sketch(sketch: &Sketch) -> Vec<Face> {
-    let primitives = sketch
+    let _primitives = sketch
         .primitives()
         .iter()
         .map(|p| p.borrow().to_primitive())

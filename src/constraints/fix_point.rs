@@ -1,11 +1,12 @@
 use std::{cell::RefCell, rc::Rc};
 
 use nalgebra::Vector2;
+use serde::{Deserialize, Serialize};
 
 use crate::{constraints::Constraint, primitives::point2::Point2};
 
 // This is a sketch constraint that makes the end point of an arc coincident with a point.
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd, Serialize, Deserialize)]
 pub struct FixPoint {
     point: Rc<RefCell<Point2>>,
 
@@ -51,6 +52,10 @@ impl Constraint for FixPoint {
 
         let grad = d.transpose();
         self.point.borrow_mut().add_to_gradient(grad.as_view());
+    }
+
+    fn get_type(&self) -> super::ConstraintType {
+        super::ConstraintType::FixPoint(self.clone())
     }
 }
 

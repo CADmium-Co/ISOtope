@@ -2,7 +2,7 @@ use nalgebra::Vector2;
 
 use crate::primitives::{arc::Arc, line::Line};
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub enum Segment {
     Line(Line),
     Arc(Arc),

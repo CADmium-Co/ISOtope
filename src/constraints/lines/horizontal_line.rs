@@ -1,11 +1,12 @@
 use std::{cell::RefCell, rc::Rc};
 
 use nalgebra::SMatrix;
+use serde::{Deserialize, Serialize};
 
 use crate::{constraints::Constraint, primitives::line::Line};
 
 // This is a sketch constraint that makes the end point of an arc coincident with a point.
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd, Serialize, Deserialize)]
 pub struct HorizontalLine {
     line: Rc<RefCell<Line>>,
 }
@@ -52,6 +53,10 @@ impl Constraint for HorizontalLine {
         self.line
             .borrow_mut()
             .add_to_gradient((gradient_constraint * grad_end).as_view());
+    }
+
+    fn get_type(&self) -> crate::constraints::ConstraintType {
+        crate::constraints::ConstraintType::HorizontalLine(self.clone())
     }
 }
 

@@ -1,6 +1,12 @@
-use std::{cell::RefCell, rc::Rc};
+use std::cell::RefCell;
+use std::collections::VecDeque;
+use std::fmt::Debug;
+use std::rc::Rc;
 
 use nalgebra::{DVector, DVectorView};
+use serde::de::{SeqAccess, Visitor};
+use serde::ser::SerializeSeq;
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 pub mod arc;
 pub mod circle;
@@ -17,7 +23,7 @@ pub trait Parametric {
     fn to_primitive(&self) -> Primitive;
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, PartialOrd, Serialize, Deserialize)]
 pub enum Primitive {
     Point2(point2::Point2),
     Line(line::Line),
@@ -74,4 +80,57 @@ impl Parametric for Primitive {
     fn to_primitive(&self) -> Primitive {
         self.clone()
     }
+}
+
+// Custom serialization for VecDeque<Rc<RefCell<dyn Parametric>>>
+pub fn serialize_primitives<S>(
+    primitives: &VecDeque<Rc<RefCell<dyn Parametric>>>,
+    serializer: S,
+) -> Result<S::Ok, S::Error>
+where
+    S: Serializer,
+{
+    let mut seq = serializer.serialize_seq(Some(primitives.len()))?;
+    for primitive in primitives {
+        seq.serialize_element(&primitive.borrow().to_primitive())?;
+    }
+    seq.end()
+}
+
+// Custom deserialization for VecDeque<Rc<RefCell<dyn Parametric>>>
+pub fn deserialize_primitives<'de, D>(
+    deserializer: D,
+) -> Result<VecDeque<Rc<RefCell<dyn Parametric>>>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    struct PrimitiveVisitor;
+
+    impl<'de> Visitor<'de> for PrimitiveVisitor {
+        type Value = VecDeque<Rc<RefCell<dyn Parametric>>>;
+
+        fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+            formatter.write_str("a sequence of primitives")
+        }
+
+        fn visit_seq<A>(self, mut seq: A) -> Result<Self::Value, A::Error>
+        where
+            A: SeqAccess<'de>,
+        {
+            let mut primitives = VecDeque::new();
+            while let Some(primitive) = seq.next_element::<Primitive>()? {
+                let parametric: Rc<RefCell<dyn Parametric>> = match primitive {
+                    // TODO: Macro this
+                    Primitive::Arc(inner) => Rc::new(RefCell::new(inner)),
+                    Primitive::Circle(inner) => Rc::new(RefCell::new(inner)),
+                    Primitive::Line(inner) => Rc::new(RefCell::new(inner)),
+                    Primitive::Point2(inner) => Rc::new(RefCell::new(inner)),
+                };
+                primitives.push_back(parametric);
+            }
+            Ok(primitives)
+        }
+    }
+
+    deserializer.deserialize_seq(PrimitiveVisitor)
 }

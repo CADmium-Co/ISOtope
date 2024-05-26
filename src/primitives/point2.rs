@@ -1,8 +1,12 @@
+use std::cell::RefCell;
+use std::rc::Rc;
+
 use nalgebra::{DVector, DVectorView, SMatrix, SMatrixView, Vector2};
+use serde::{Deserialize, Serialize};
 
 use super::Parametric;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, PartialOrd, Serialize, Deserialize)]
 pub struct Point2 {
     data: Vector2<f64>,
     gradient: Vector2<f64>,
@@ -48,7 +52,7 @@ impl Point2 {
 }
 
 impl Parametric for Point2 {
-    fn references(&self) -> Vec<std::rc::Rc<std::cell::RefCell<dyn Parametric>>> {
+    fn references(&self) -> Vec<Rc<RefCell<dyn Parametric>>> {
         vec![]
     }
 

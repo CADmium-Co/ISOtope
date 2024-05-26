@@ -1,6 +1,7 @@
 use std::{cell::RefCell, rc::Rc};
 
 use nalgebra::SMatrix;
+use serde::{Deserialize, Serialize};
 
 use crate::{
     constraints::Constraint,
@@ -8,7 +9,7 @@ use crate::{
 };
 
 // This is a sketch constraint that makes the end point of an arc coincident with a point.
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd, Serialize, Deserialize)]
 pub struct ArcEndPointCoincident {
     arc: Rc<RefCell<Arc>>,
     point: Rc<RefCell<Point2>>,
@@ -66,6 +67,10 @@ impl Constraint for ArcEndPointCoincident {
         self.point
             .borrow_mut()
             .add_to_gradient((-gradient_constraint * grad_point).as_view());
+    }
+
+    fn get_type(&self) -> crate::constraints::ConstraintType {
+        crate::constraints::ConstraintType::ArcEndPointCoincident(self.clone())
     }
 }
 

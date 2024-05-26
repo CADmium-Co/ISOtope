@@ -1,11 +1,12 @@
 use std::{cell::RefCell, rc::Rc};
 
 use nalgebra::Matrix1x2;
+use serde::{Deserialize, Serialize};
 
 use crate::{constraints::Constraint, primitives::point2::Point2};
 
 // This is a sketch constraint that makes the end point of an arc coincident with a point.
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd, Serialize, Deserialize)]
 pub struct HorizontalDistanceBetweenPoints {
     point1: Rc<RefCell<Point2>>,
     point2: Rc<RefCell<Point2>>,
@@ -97,6 +98,10 @@ impl Constraint for HorizontalDistanceBetweenPoints {
         self.point2
             .borrow_mut()
             .add_to_gradient(grad_from_point2.as_view());
+    }
+
+    fn get_type(&self) -> crate::constraints::ConstraintType {
+        crate::constraints::ConstraintType::HorizontalDistance(self.clone())
     }
 }
 

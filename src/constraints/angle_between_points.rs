@@ -1,9 +1,11 @@
 use std::{cell::RefCell, rc::Rc};
 
+use serde::{Deserialize, Serialize};
+
 use crate::{constraints::Constraint, primitives::point2::Point2};
 
 // This is a sketch constraint that makes the end point of an arc coincident with a point.
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd, Serialize, Deserialize)]
 pub struct AngleBetweenPoints {
     point1: Rc<RefCell<Point2>>,
     point2: Rc<RefCell<Point2>>,
@@ -153,6 +155,10 @@ impl Constraint for AngleBetweenPoints {
         self.middle_point.borrow_mut().add_to_gradient(
             (-grad_from_d1 * grad_middle_point - grad_from_d2 * grad_middle_point).as_view(),
         );
+    }
+
+    fn get_type(&self) -> super::ConstraintType {
+        super::ConstraintType::AngleBetweenPoints(self.clone())
     }
 }
 
