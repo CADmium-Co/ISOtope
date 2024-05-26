@@ -174,5 +174,9 @@ mod tests {
             .norm()
                 < 0.01
         );
+        assert!(
+            (rectangle.point_reference.as_ref().borrow().data() - Vector2::new(1.0, 0.0)).norm()
+                < 0.1
+        );
     }
 }

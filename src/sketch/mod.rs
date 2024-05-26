@@ -117,8 +117,8 @@ impl Sketch {
                 let primitive_gradient = primitive.borrow().get_gradient();
                 jacobian
                     .row_mut(i)
-                    .rows_mut(j, primitive_gradient.len())
-                    .copy_from(&primitive_gradient);
+                    .columns_mut(j, primitive_gradient.len())
+                    .copy_from(&primitive_gradient.transpose());
                 j += primitive_gradient.len();
             }
         }
@@ -178,6 +178,7 @@ impl Sketch {
 mod tests {
     use crate::{
         constraints::coincident::arc_end_point_coincident::ArcEndPointCoincident,
+        examples::test_rectangle_rotated::RotatedRectangleDemo,
         primitives::{arc::Arc, point2::Point2},
     };
 
@@ -243,5 +244,16 @@ mod tests {
             sketch.add_constraint(constraint.clone());
         })
         .is_err());
+    }
+
+    #[test]
+    fn test_data_and_grad_functions() {
+        let rect = RotatedRectangleDemo::new();
+        let mut sketch = rect.sketch.borrow_mut();
+        sketch.get_data();
+        sketch.get_loss();
+        sketch.get_gradient();
+        sketch.get_loss_per_constraint();
+        sketch.get_jacobian();
     }
 }

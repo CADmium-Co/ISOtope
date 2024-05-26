@@ -77,9 +77,10 @@ mod tests {
         )));
 
         // Now solve the sketch
-        let solver = GradientBasedSolver::new_with_params(sketch.clone(), 100000, 1e-6, 1e-2);
+        let solver = GradientBasedSolver::new_with_params(sketch.clone(), 10000, 1e-6, 1e-1);
         solver.solve();
 
+        println!("loss = {:?}", sketch.borrow_mut().get_loss());
         println!("point_a: {:?}", point_a.as_ref().borrow());
         println!("point_b: {:?}", point_b.as_ref().borrow());
         println!("point_c: {:?}", point_c.as_ref().borrow());

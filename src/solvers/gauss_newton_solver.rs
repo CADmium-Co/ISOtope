@@ -60,3 +60,58 @@ impl GaussNewtonSolver {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use nalgebra::Vector2;
+
+    use crate::{
+        examples::test_rectangle_rotated::RotatedRectangleDemo,
+        solvers::gauss_newton_solver::GaussNewtonSolver,
+    };
+
+    #[test]
+    pub fn test_gauss_newton_solver() {
+        let rectangle = RotatedRectangleDemo::new();
+
+        // Now solve the sketch
+        let solver = GaussNewtonSolver::new_with_params(rectangle.sketch.clone(), 500, 1e-8, 1e0);
+        solver.solve().unwrap();
+
+        println!("loss: {:?}", rectangle.sketch.borrow_mut().get_loss());
+        println!("point_a: {:?}", rectangle.point_a.as_ref().borrow());
+        println!("point_b: {:?}", rectangle.point_b.as_ref().borrow());
+        println!("point_c: {:?}", rectangle.point_c.as_ref().borrow());
+        println!("point_d: {:?}", rectangle.point_d.as_ref().borrow());
+        println!(
+            "point_reference: {:?}",
+            rectangle.point_reference.as_ref().borrow()
+        );
+
+        assert!(
+            (rectangle.point_a.as_ref().borrow().data() - Vector2::new(0.0, 0.0)).norm() < 0.01
+        );
+        assert!(
+            (rectangle.point_b.as_ref().borrow().data()
+                - Vector2::new(f64::sqrt(2.0), -f64::sqrt(2.0)))
+            .norm()
+                < 0.1
+        );
+        assert!(
+            (rectangle.point_c.as_ref().borrow().data()
+                - Vector2::new(5.0 / f64::sqrt(2.0), 1.0 / f64::sqrt(2.0)))
+            .norm()
+                < 0.1
+        );
+        assert!(
+            (rectangle.point_d.as_ref().borrow().data()
+                - Vector2::new(3.0 / f64::sqrt(2.0), 3.0 / f64::sqrt(2.0)))
+            .norm()
+                < 0.1
+        );
+        assert!(
+            (rectangle.point_reference.as_ref().borrow().data() - Vector2::new(1.0, 0.0)).norm()
+                < 0.1
+        );
+    }
+}
