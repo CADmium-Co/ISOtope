@@ -77,12 +77,15 @@ mod tests {
             line_start.clone(),
             line_end.clone(),
         )));
-        sketch.borrow_mut().add_primitive(line_start.clone());
-        sketch.borrow_mut().add_primitive(line_end.clone());
-        sketch.borrow_mut().add_primitive(line.clone());
+        sketch
+            .borrow_mut()
+            .add_primitive(line_start.clone())
+            .unwrap();
+        sketch.borrow_mut().add_primitive(line_end.clone()).unwrap();
+        sketch.borrow_mut().add_primitive(line.clone()).unwrap();
 
         let constr1 = Rc::new(RefCell::new(VerticalLine::new(line.clone())));
-        sketch.borrow_mut().add_constraint(constr1.clone());
+        sketch.borrow_mut().add_constraint(constr1.clone()).unwrap();
 
         sketch
             .borrow_mut()

@@ -174,9 +174,12 @@ mod tests {
         let point_a = Rc::new(RefCell::new(Point2::new(1.0, 0.0)));
         let point_b = Rc::new(RefCell::new(Point2::new(0.0, 1.0)));
         let point_middle = Rc::new(RefCell::new(Point2::new(0.0, 0.0)));
-        sketch.borrow_mut().add_primitive(point_a.clone());
-        sketch.borrow_mut().add_primitive(point_b.clone());
-        sketch.borrow_mut().add_primitive(point_middle.clone());
+        sketch.borrow_mut().add_primitive(point_a.clone()).unwrap();
+        sketch.borrow_mut().add_primitive(point_b.clone()).unwrap();
+        sketch
+            .borrow_mut()
+            .add_primitive(point_middle.clone())
+            .unwrap();
 
         let constr1 = Rc::new(RefCell::new(AngleBetweenPoints::new(
             point_a.clone(),
@@ -184,7 +187,7 @@ mod tests {
             point_middle.clone(),
             std::f64::consts::PI / 4.0,
         )));
-        sketch.borrow_mut().add_constraint(constr1.clone());
+        sketch.borrow_mut().add_constraint(constr1.clone()).unwrap();
 
         println!(
             "current angle: {}",

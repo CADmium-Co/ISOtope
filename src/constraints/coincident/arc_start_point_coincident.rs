@@ -99,17 +99,23 @@ mod tests {
             line2_start.clone(),
             line2_end.clone(),
         )));
-        sketch.borrow_mut().add_primitive(center.clone());
-        sketch.borrow_mut().add_primitive(arc1.clone());
-        sketch.borrow_mut().add_primitive(line2_start.clone());
-        sketch.borrow_mut().add_primitive(line2_end.clone());
-        sketch.borrow_mut().add_primitive(line2.clone());
+        sketch.borrow_mut().add_primitive(center.clone()).unwrap();
+        sketch.borrow_mut().add_primitive(arc1.clone()).unwrap();
+        sketch
+            .borrow_mut()
+            .add_primitive(line2_start.clone())
+            .unwrap();
+        sketch
+            .borrow_mut()
+            .add_primitive(line2_end.clone())
+            .unwrap();
+        sketch.borrow_mut().add_primitive(line2.clone()).unwrap();
 
         let constr1 = Rc::new(RefCell::new(ArcStartPointCoincident::new(
             arc1.clone(),
             line2_end.clone(),
         )));
-        sketch.borrow_mut().add_constraint(constr1.clone());
+        sketch.borrow_mut().add_constraint(constr1.clone()).unwrap();
 
         sketch
             .borrow_mut()

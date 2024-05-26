@@ -73,13 +73,13 @@ mod tests {
         let sketch = Rc::new(RefCell::new(Sketch::new()));
 
         let point = Rc::new(RefCell::new(Point2::new(1.0, 0.0)));
-        sketch.borrow_mut().add_primitive(point.clone());
+        sketch.borrow_mut().add_primitive(point.clone()).unwrap();
 
         let constr1 = Rc::new(RefCell::new(FixPoint::new(
             point.clone(),
             Vector2::new(1.0, 1.0),
         )));
-        sketch.borrow_mut().add_constraint(constr1.clone());
+        sketch.borrow_mut().add_constraint(constr1.clone()).unwrap();
 
         sketch
             .borrow_mut()

@@ -139,9 +139,15 @@ mod tests {
             line1_start.clone(),
             line1_end.clone(),
         )));
-        sketch.borrow_mut().add_primitive(line1_start.clone());
-        sketch.borrow_mut().add_primitive(line1_end.clone());
-        sketch.borrow_mut().add_primitive(line1.clone());
+        sketch
+            .borrow_mut()
+            .add_primitive(line1_start.clone())
+            .unwrap();
+        sketch
+            .borrow_mut()
+            .add_primitive(line1_end.clone())
+            .unwrap();
+        sketch.borrow_mut().add_primitive(line1.clone()).unwrap();
 
         let line2_start = Rc::new(RefCell::new(Point2::new(0.0, 4.0)));
         let line2_end = Rc::new(RefCell::new(Point2::new(5.0, 6.0)));
@@ -150,15 +156,21 @@ mod tests {
             line2_end.clone(),
         )));
 
-        sketch.borrow_mut().add_primitive(line2_start.clone());
-        sketch.borrow_mut().add_primitive(line2_end.clone());
-        sketch.borrow_mut().add_primitive(line2.clone());
+        sketch
+            .borrow_mut()
+            .add_primitive(line2_start.clone())
+            .unwrap();
+        sketch
+            .borrow_mut()
+            .add_primitive(line2_end.clone())
+            .unwrap();
+        sketch.borrow_mut().add_primitive(line2.clone()).unwrap();
 
         let constr1 = Rc::new(RefCell::new(PerpendicularLines::new(
             line1.clone(),
             line2.clone(),
         )));
-        sketch.borrow_mut().add_constraint(constr1.clone());
+        sketch.borrow_mut().add_constraint(constr1.clone()).unwrap();
 
         sketch
             .borrow_mut()
