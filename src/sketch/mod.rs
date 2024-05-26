@@ -2,6 +2,8 @@ use std::{cell::RefCell, collections::VecDeque, rc::Rc};
 
 use nalgebra::{DMatrix, DVector};
 
+use crate::error::ISOTopeError;
+
 use super::{constraints::Constraint, primitives::Parametric};
 
 #[derive(Default)]
@@ -15,34 +17,44 @@ impl Sketch {
         Self::default()
     }
 
-    pub fn add_primitive(&mut self, primitive: Rc<RefCell<dyn Parametric>>) {
+    pub fn add_primitive(
+        &mut self,
+        primitive: Rc<RefCell<dyn Parametric>>,
+    ) -> Result<(), ISOTopeError> {
         // Make sure all referenced primitives are added to the sketch before the primitive
         for reference in primitive.borrow().references() {
             if !self.primitives.iter().any(|p| Rc::ptr_eq(p, &reference)) {
-                panic!("All references must be added to the sketch before the primitive");
+                return Err(ISOTopeError::MissingSketchReferences);
             }
         }
         // Check that the primitive is not already in the sketch
         if self.primitives.iter().any(|p| Rc::ptr_eq(p, &primitive)) {
-            panic!("The primitive is already in the sketch");
+            return Err(ISOTopeError::PrimitiveAlreadyInSketch);
         }
         // Add the primitive to the sketch
         self.primitives.push_back(primitive);
+
+        Ok(())
     }
 
-    pub fn add_constraint(&mut self, constraint: Rc<RefCell<dyn Constraint>>) {
+    pub fn add_constraint(
+        &mut self,
+        constraint: Rc<RefCell<dyn Constraint>>,
+    ) -> Result<(), ISOTopeError> {
         // Make sure all referenced primitives are added to the sketch before the constraint
         for reference in constraint.borrow().references() {
             if !self.primitives.iter().any(|p| Rc::ptr_eq(p, &reference)) {
-                panic!("All references must be added to the sketch before the constraint");
+                return Err(ISOTopeError::MissingSketchReferences);
             }
         }
         // Make sure the constraint is not already in the sketch
         if self.constraints.iter().any(|c| Rc::ptr_eq(c, &constraint)) {
-            panic!("The constraint is already in the sketch");
+            return Err(ISOTopeError::ConstraintAlreadyInSketch);
         }
 
         self.constraints.push_back(constraint);
+
+        Ok(())
     }
 
     pub fn get_n_dofs(&self) -> usize {
@@ -192,7 +204,7 @@ mod tests {
             let point = Rc::new(RefCell::new(Point2::new(0.0, 0.0)));
             let arc = Rc::new(RefCell::new(Arc::new(point, 1.0, true, 0.0, 1.0)));
 
-            sketch.add_primitive(arc.clone());
+            sketch.add_primitive(arc.clone()).unwrap();
         })
         .is_err());
     }
@@ -203,8 +215,8 @@ mod tests {
             let mut sketch = Sketch::new();
 
             let point = Rc::new(RefCell::new(Point2::new(0.0, 0.0)));
-            sketch.add_primitive(point.clone());
-            sketch.add_primitive(point.clone());
+            sketch.add_primitive(point.clone()).unwrap();
+            sketch.add_primitive(point.clone()).unwrap();
         })
         .is_err());
     }
@@ -217,10 +229,10 @@ mod tests {
             let point = Rc::new(RefCell::new(Point2::new(0.0, 0.0)));
             let arc = Rc::new(RefCell::new(Arc::new(point.clone(), 1.0, true, 0.0, 1.0)));
 
-            sketch.add_primitive(point.clone());
+            sketch.add_primitive(point.clone()).unwrap();
 
             let constraint = Rc::new(RefCell::new(ArcEndPointCoincident::new(arc, point)));
-            sketch.add_constraint(constraint);
+            sketch.add_constraint(constraint).unwrap();
         })
         .is_err());
     }
@@ -233,15 +245,15 @@ mod tests {
             let point = Rc::new(RefCell::new(Point2::new(0.0, 0.0)));
             let arc = Rc::new(RefCell::new(Arc::new(point.clone(), 1.0, true, 0.0, 1.0)));
 
-            sketch.add_primitive(point.clone());
-            sketch.add_primitive(arc.clone());
+            sketch.add_primitive(point.clone()).unwrap();
+            sketch.add_primitive(arc.clone()).unwrap();
 
             let constraint = Rc::new(RefCell::new(ArcEndPointCoincident::new(
                 arc.clone(),
                 point.clone(),
             )));
-            sketch.add_constraint(constraint.clone());
-            sketch.add_constraint(constraint.clone());
+            sketch.add_constraint(constraint.clone()).unwrap();
+            sketch.add_constraint(constraint.clone()).unwrap();
         })
         .is_err());
     }
