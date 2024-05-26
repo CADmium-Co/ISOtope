@@ -60,7 +60,7 @@ impl Sketch {
     }
 
     pub fn solve(&mut self, step_size: f64, max_steps: usize) {
-        for _ in 0..max_steps {
+        for i in 0..max_steps {
             self.step(step_size);
 
             let gradient_sum = self
@@ -70,6 +70,7 @@ impl Sketch {
                 .sum::<f64>();
 
             if gradient_sum < 1e-6 {
+                println!("Converged after {} steps", i + 1);
                 break;
             }
         }

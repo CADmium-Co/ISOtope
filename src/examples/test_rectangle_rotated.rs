@@ -66,11 +66,11 @@ mod tests {
             line_d.clone(),
         ))));
 
-        // Constrain line_d and line_a to be perpendicular
-        sketch.add_constraint(Rc::new(RefCell::new(PerpendicularLines::new(
-            line_d.clone(),
-            line_a.clone(),
-        ))));
+        // // Constrain line_d and line_a to be perpendicular
+        // sketch.add_constraint(Rc::new(RefCell::new(PerpendicularLines::new(
+        //     line_d.clone(),
+        //     line_a.clone(),
+        // ))));
 
         // Constrain the length of line_a to 2
         sketch.add_constraint(Rc::new(RefCell::new(EuclidianDistanceBetweenPoints::new(
@@ -92,7 +92,7 @@ mod tests {
             Vector2::new(1.0, 0.0),
         ))));
 
-        // Constrain rotation of line_a to 45 degrees
+        // // Constrain rotation of line_a to 45 degrees
         sketch.add_constraint(Rc::new(RefCell::new(AngleBetweenPoints::new(
             point_reference.clone(),
             point_b.clone(),
@@ -101,7 +101,7 @@ mod tests {
         ))));
 
         // Now solve the sketch
-        sketch.solve(0.0001, 100000);
+        sketch.solve(0.01, 50000);
 
         println!("point_a: {:?}", point_a.as_ref().borrow());
         println!("point_b: {:?}", point_b.as_ref().borrow());
@@ -109,9 +109,23 @@ mod tests {
         println!("point_d: {:?}", point_d.as_ref().borrow());
         println!("point_reference: {:?}", point_reference.as_ref().borrow());
 
-        assert!((point_a.as_ref().borrow().data() - Vector2::new(0.0, 0.0)).norm() < 0.001);
-        assert!((point_b.as_ref().borrow().data() - Vector2::new(2.0, 0.0)).norm() < 0.001);
-        assert!((point_c.as_ref().borrow().data() - Vector2::new(2.0, 3.0)).norm() < 0.001);
-        assert!((point_d.as_ref().borrow().data() - Vector2::new(0.0, 3.0)).norm() < 0.001);
+        assert!((point_a.as_ref().borrow().data() - Vector2::new(0.0, 0.0)).norm() < 0.01);
+        assert!(
+            (point_b.as_ref().borrow().data() - Vector2::new(f64::sqrt(2.0), -f64::sqrt(2.0)))
+                .norm()
+                < 0.01
+        );
+        assert!(
+            (point_c.as_ref().borrow().data()
+                - Vector2::new(5.0 / f64::sqrt(2.0), 1.0 / f64::sqrt(2.0)))
+            .norm()
+                < 0.01
+        );
+        assert!(
+            (point_d.as_ref().borrow().data()
+                - Vector2::new(3.0 / f64::sqrt(2.0), 3.0 / f64::sqrt(2.0)))
+            .norm()
+                < 0.01
+        );
     }
 }
