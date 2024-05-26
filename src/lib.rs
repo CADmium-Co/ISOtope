@@ -3,10 +3,12 @@
 #![warn(clippy::panic)]
 
 pub mod constraints;
+pub mod decompose;
 pub mod error;
-#[cfg(test)]
-pub mod examples;
 pub mod intersections;
 pub mod primitives;
 pub mod sketch;
 pub mod solvers;
+
+#[cfg(test)]
+pub mod examples;

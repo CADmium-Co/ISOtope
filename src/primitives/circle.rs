@@ -4,6 +4,7 @@ use nalgebra::{DVector, DVectorView, SMatrix, SMatrixView, SVector};
 
 use super::{point2::Point2, Parametric};
 
+#[derive(Debug, Clone)]
 pub struct Circle {
     center: Rc<RefCell<Point2>>,
     data: SVector<f64, 1>,
@@ -74,7 +75,7 @@ impl Parametric for Circle {
         DVector::from_row_slice(self.gradient.as_slice())
     }
 
-    fn as_primitive(self) -> super::Primitive {
-        super::Primitive::Circle(self)
+    fn to_primitive(&self) -> super::Primitive {
+        super::Primitive::Circle(self.clone())
     }
 }

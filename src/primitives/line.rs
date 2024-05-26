@@ -4,7 +4,7 @@ use nalgebra::{DVector, DVectorView, SMatrix, SMatrixView};
 
 use super::{point2::Point2, Parametric};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Line {
     start: Rc<RefCell<Point2>>,
     end: Rc<RefCell<Point2>>,
@@ -74,7 +74,7 @@ impl Parametric for Line {
         DVector::from_row_slice(&[])
     }
 
-    fn as_primitive(self) -> super::Primitive {
-        super::Primitive::Line(self)
+    fn to_primitive(&self) -> super::Primitive {
+        super::Primitive::Line(self.clone())
     }
 }

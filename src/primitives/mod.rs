@@ -14,9 +14,10 @@ pub trait Parametric {
     fn get_data(&self) -> DVector<f64>;
     fn set_data(&mut self, data: DVectorView<f64>);
     fn get_gradient(&self) -> DVector<f64>;
-    fn as_primitive(self) -> Primitive;
+    fn to_primitive(&self) -> Primitive;
 }
 
+#[derive(Debug, Clone)]
 pub enum Primitive {
     Point2(point2::Point2),
     Line(line::Line),
@@ -70,7 +71,7 @@ impl Parametric for Primitive {
         }
     }
 
-    fn as_primitive(self) -> Primitive {
-        self
+    fn to_primitive(&self) -> Primitive {
+        self.clone()
     }
 }

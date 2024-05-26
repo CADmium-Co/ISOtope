@@ -2,7 +2,7 @@ use nalgebra::{DVector, DVectorView, SMatrix, SMatrixView, Vector2};
 
 use super::Parametric;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Point2 {
     data: Vector2<f64>,
     gradient: Vector2<f64>,
@@ -68,7 +68,7 @@ impl Parametric for Point2 {
         DVector::from_row_slice(self.gradient.as_slice())
     }
 
-    fn as_primitive(self) -> super::Primitive {
-        super::Primitive::Point2(self)
+    fn to_primitive(&self) -> super::Primitive {
+        super::Primitive::Point2(self.clone())
     }
 }

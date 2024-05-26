@@ -4,7 +4,7 @@ use nalgebra::{DVector, DVectorView, SMatrix, SMatrixView, SVector, Vector2};
 
 use super::{point2::Point2, Parametric};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Arc {
     center: Rc<RefCell<Point2>>,
     data: SVector<f64, 3>,
@@ -28,6 +28,16 @@ impl Arc {
 
             clockwise,
         }
+    }
+
+    pub fn reverse(&self) -> Self {
+        Arc::new(
+            self.center.clone(),
+            self.radius(),
+            !self.clockwise,
+            self.end_angle(),
+            self.start_angle(),
+        )
     }
 
     pub fn center(&self) -> Rc<RefCell<Point2>> {
@@ -172,7 +182,7 @@ impl Parametric for Arc {
         self.data = SVector::from_row_slice(data.as_slice());
     }
 
-    fn as_primitive(self) -> super::Primitive {
-        super::Primitive::Arc(self)
+    fn to_primitive(&self) -> super::Primitive {
+        super::Primitive::Arc(self.clone())
     }
 }

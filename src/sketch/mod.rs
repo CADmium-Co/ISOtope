@@ -57,6 +57,10 @@ impl Sketch {
         Ok(())
     }
 
+    pub fn primitives(&self) -> VecDeque<Rc<RefCell<dyn Parametric>>> {
+        self.primitives.clone()
+    }
+
     pub fn get_n_dofs(&self) -> usize {
         let mut n_dofs = 0;
         for primitive in self.primitives.iter() {
