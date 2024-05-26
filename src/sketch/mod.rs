@@ -5,23 +5,17 @@ use std::rc::Rc;
 use nalgebra::{DMatrix, DVector};
 use serde::{Deserialize, Serialize};
 
+use crate::constraints::ConstraintCell;
 use crate::error::ISOTopeError;
+use crate::primitives::ParametricCell;
 
 use super::constraints::Constraint;
 use super::primitives::Parametric;
 
 #[derive(Default, Debug, Clone, Serialize, Deserialize)]
 pub struct Sketch {
-    #[serde(
-        serialize_with = "crate::primitives::serialize_primitives",
-        deserialize_with = "crate::primitives::deserialize_primitives"
-    )]
-    primitives: VecDeque<Rc<RefCell<dyn Parametric>>>,
-    #[serde(
-        serialize_with = "crate::constraints::serialize_constraints",
-        deserialize_with = "crate::constraints::deserialize_constraints"
-    )]
-    constraints: VecDeque<Rc<RefCell<dyn Constraint>>>,
+    primitives: VecDeque<ParametricCell>,
+    constraints: VecDeque<ConstraintCell>,
 }
 
 impl Sketch {
@@ -35,16 +29,16 @@ impl Sketch {
     ) -> Result<(), ISOTopeError> {
         // Make sure all referenced primitives are added to the sketch before the primitive
         for reference in primitive.borrow().references() {
-            if !self.primitives.iter().any(|p| Rc::ptr_eq(p, &reference)) {
+            if !self.primitives.iter().any(|p| Rc::ptr_eq(&p.0, &reference)) {
                 return Err(ISOTopeError::MissingSketchReferences);
             }
         }
         // Check that the primitive is not already in the sketch
-        if self.primitives.iter().any(|p| Rc::ptr_eq(p, &primitive)) {
+        if self.primitives.iter().any(|p| Rc::ptr_eq(&p.0, &primitive)) {
             return Err(ISOTopeError::PrimitiveAlreadyInSketch);
         }
         // Add the primitive to the sketch
-        self.primitives.push_back(primitive);
+        self.primitives.push_back(ParametricCell(primitive));
 
         Ok(())
     }
@@ -55,28 +49,32 @@ impl Sketch {
     ) -> Result<(), ISOTopeError> {
         // Make sure all referenced primitives are added to the sketch before the constraint
         for reference in constraint.borrow().references() {
-            if !self.primitives.iter().any(|p| Rc::ptr_eq(p, &reference)) {
+            if !self.primitives.iter().any(|p| Rc::ptr_eq(&p.0, &reference)) {
                 return Err(ISOTopeError::MissingSketchReferences);
             }
         }
         // Make sure the constraint is not already in the sketch
-        if self.constraints.iter().any(|c| Rc::ptr_eq(c, &constraint)) {
+        if self
+            .constraints
+            .iter()
+            .any(|c| Rc::ptr_eq(&c.0, &constraint))
+        {
             return Err(ISOTopeError::ConstraintAlreadyInSketch);
         }
 
-        self.constraints.push_back(constraint);
+        self.constraints.push_back(ConstraintCell(constraint));
 
         Ok(())
     }
 
     pub fn primitives(&self) -> VecDeque<Rc<RefCell<dyn Parametric>>> {
-        self.primitives.clone()
+        self.primitives.iter().map(|p| p.0.clone()).collect()
     }
 
     pub fn get_n_dofs(&self) -> usize {
         let mut n_dofs = 0;
         for primitive in self.primitives.iter() {
-            n_dofs += primitive.borrow().get_data().len();
+            n_dofs += primitive.0.borrow().get_data().len();
         }
         n_dofs
     }
@@ -85,7 +83,7 @@ impl Sketch {
         let mut data = DVector::zeros(self.get_n_dofs());
         let mut i = 0;
         for primitive in self.primitives.iter() {
-            let primitive_data = primitive.borrow().get_data();
+            let primitive_data = primitive.0.borrow().get_data();
             data.rows_mut(i, primitive_data.len())
                 .copy_from(&primitive_data);
             i += primitive_data.len();
@@ -96,24 +94,24 @@ impl Sketch {
     pub fn get_loss(&mut self) -> f64 {
         let mut loss = 0.0;
         for constraint in self.constraints.iter_mut() {
-            loss += constraint.borrow().loss_value();
+            loss += constraint.0.borrow().loss_value();
         }
         loss
     }
 
     pub fn get_gradient(&mut self) -> DVector<f64> {
         for primitive in self.primitives.iter_mut() {
-            primitive.borrow_mut().zero_gradient();
+            primitive.0.borrow_mut().zero_gradient();
         }
 
         for constraint in self.constraints.iter_mut() {
-            constraint.borrow_mut().update_gradient();
+            constraint.0.borrow_mut().update_gradient();
         }
 
         let mut gradient = DVector::zeros(self.get_n_dofs());
         let mut i = 0;
         for primitive in self.primitives.iter() {
-            let primitive_gradient = primitive.borrow().get_gradient();
+            let primitive_gradient = primitive.0.borrow().get_gradient();
             gradient
                 .rows_mut(i, primitive_gradient.len())
                 .copy_from(&primitive_gradient);
@@ -125,7 +123,7 @@ impl Sketch {
     pub fn get_loss_per_constraint(&self) -> DVector<f64> {
         let mut loss_per_constraint = DVector::zeros(self.constraints.len());
         for (i, constraint) in self.constraints.iter().enumerate() {
-            loss_per_constraint[i] = constraint.borrow().loss_value();
+            loss_per_constraint[i] = constraint.0.borrow().loss_value();
         }
         loss_per_constraint
     }
@@ -135,14 +133,14 @@ impl Sketch {
         for (i, constraint) in self.constraints.iter().enumerate() {
             // Zero the gradients of all primitives
             for primitive in self.primitives.iter() {
-                primitive.borrow_mut().zero_gradient();
+                primitive.0.borrow_mut().zero_gradient();
             }
             // Update the gradient of the constraint
-            constraint.borrow_mut().update_gradient();
+            constraint.0.borrow_mut().update_gradient();
             // Copy the gradient of the constraint to the jacobian
             let mut j = 0;
             for primitive in self.primitives.iter() {
-                let primitive_gradient = primitive.borrow().get_gradient();
+                let primitive_gradient = primitive.0.borrow().get_gradient();
                 jacobian
                     .row_mut(i)
                     .columns_mut(j, primitive_gradient.len())
@@ -157,8 +155,8 @@ impl Sketch {
         assert!(data.len() == self.get_n_dofs());
         let mut i = 0;
         for primitive in self.primitives.iter_mut() {
-            let n = primitive.borrow().get_data().len();
-            primitive.borrow_mut().set_data(data.rows(i, n).as_view());
+            let n = primitive.0.borrow().get_data().len();
+            primitive.0.borrow_mut().set_data(data.rows(i, n).as_view());
             i += n;
         }
     }
@@ -176,17 +174,21 @@ impl Sketch {
         // Compare to numerical gradients
         let constraint_loss = constraint.borrow().loss_value();
         for primitive in self.primitives.iter_mut() {
-            let original_value = primitive.borrow().get_data();
-            let analytical_gradient = primitive.borrow().get_gradient();
+            let original_value = primitive.0.borrow().get_data();
+            let analytical_gradient = primitive.0.borrow().get_gradient();
             let mut numerical_gradient = DVector::zeros(original_value.len());
-            let n = primitive.borrow().get_data().len();
+            let n = primitive.0.borrow().get_data().len();
             assert!(n == analytical_gradient.len());
             for i in 0..n {
                 let mut new_value = original_value.clone();
                 new_value[i] += epsilon;
-                primitive.borrow_mut().set_data(new_value.clone().as_view());
+                primitive
+                    .0
+                    .borrow_mut()
+                    .set_data(new_value.clone().as_view());
                 let new_loss = constraint.borrow().loss_value();
                 primitive
+                    .0
                     .borrow_mut()
                     .set_data(original_value.clone().as_view());
                 numerical_gradient[i] = (new_loss - constraint_loss) / epsilon;
