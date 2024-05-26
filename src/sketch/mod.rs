@@ -1,13 +1,16 @@
-use std::{cell::RefCell, collections::VecDeque, rc::Rc};
+use std::cell::RefCell;
+use std::collections::VecDeque;
+use std::rc::Rc;
 
 use nalgebra::{DMatrix, DVector};
 use serde::{Deserialize, Serialize};
 
 use crate::error::ISOTopeError;
 
-use super::{constraints::Constraint, primitives::Parametric};
+use super::constraints::Constraint;
+use super::primitives::Parametric;
 
-#[derive(Default, Clone, Serialize, Deserialize)]
+#[derive(Default, Debug, Clone, Serialize, Deserialize)]
 pub struct Sketch {
     #[serde(
         serialize_with = "crate::primitives::serialize_primitives",

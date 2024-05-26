@@ -1,5 +1,7 @@
+use std::cell::RefCell;
 use std::collections::VecDeque;
-use std::{cell::RefCell, rc::Rc};
+use std::fmt::Debug;
+use std::rc::Rc;
 
 use serde::de::{SeqAccess, Visitor};
 use serde::ser::SerializeSeq;
@@ -13,7 +15,7 @@ pub mod distance;
 pub mod fix_point;
 pub mod lines;
 
-pub trait Constraint {
+pub trait Constraint: Debug {
     fn references(&self) -> Vec<Rc<RefCell<dyn Parametric>>>;
     fn loss_value(&self) -> f64;
     fn update_gradient(&mut self);
