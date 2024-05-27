@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 #[cfg(feature = "tsify")]
 use tsify::Tsify;
 
-use super::{point2::Point2, Parametric, ParametricCell};
+use super::{point2::Point2, PrimitiveLike, PrimitiveCell};
 
 #[derive(Debug, Clone, PartialEq, PartialOrd, Serialize, Deserialize)]
 #[cfg_attr(feature = "tsify", derive(Tsify))]
@@ -168,9 +168,9 @@ impl Arc {
     }
 }
 
-impl Parametric for Arc {
-    fn references(&self) -> Vec<ParametricCell> {
-        vec![ParametricCell::Point2(self.center.clone())]
+impl PrimitiveLike for Arc {
+    fn references(&self) -> Vec<PrimitiveCell> {
+        vec![PrimitiveCell::Point2(self.center.clone())]
     }
 
     fn zero_gradient(&mut self) {

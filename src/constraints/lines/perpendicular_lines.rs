@@ -7,8 +7,8 @@ use serde::{Deserialize, Serialize};
 use tsify::Tsify;
 
 use crate::{
-    constraints::Constraint,
-    primitives::{line::Line, ParametricCell},
+    constraints::ConstraintLike,
+    primitives::{line::Line, PrimitiveCell},
 };
 
 // This is a sketch constraint that makes the end point of an arc coincident with a point.
@@ -42,11 +42,11 @@ impl PerpendicularLines {
     }
 }
 
-impl Constraint for PerpendicularLines {
-    fn references(&self) -> Vec<ParametricCell> {
+impl ConstraintLike for PerpendicularLines {
+    fn references(&self) -> Vec<PrimitiveCell> {
         vec![
-            ParametricCell::Line(self.line1.clone()),
-            ParametricCell::Line(self.line2.clone()),
+            PrimitiveCell::Line(self.line1.clone()),
+            PrimitiveCell::Line(self.line2.clone()),
         ]
     }
 
@@ -118,8 +118,8 @@ impl Constraint for PerpendicularLines {
         );
     }
 
-    fn get_type(&self) -> crate::constraints::ConstraintType {
-        crate::constraints::ConstraintType::PerpendicularLines(self.clone())
+    fn get_type(&self) -> crate::constraints::Constraint {
+        crate::constraints::Constraint::PerpendicularLines(self.clone())
     }
 }
 
@@ -131,8 +131,8 @@ mod tests {
     use nalgebra::Vector2;
 
     use crate::{
-        constraints::{lines::perpendicular_lines::PerpendicularLines, Constraint, ConstraintCell},
-        primitives::{line::Line, point2::Point2, ParametricCell},
+        constraints::{lines::perpendicular_lines::PerpendicularLines, ConstraintLike, ConstraintCell},
+        primitives::{line::Line, point2::Point2, PrimitiveCell},
         sketch::Sketch,
         solvers::gradient_based_solver::GradientBasedSolver,
     };
@@ -157,15 +157,15 @@ mod tests {
         )));
         sketch
             .borrow_mut()
-            .add_primitive(ParametricCell::Point2(line1_start.clone()))
+            .add_primitive(PrimitiveCell::Point2(line1_start.clone()))
             .unwrap();
         sketch
             .borrow_mut()
-            .add_primitive(ParametricCell::Point2(line1_end.clone()))
+            .add_primitive(PrimitiveCell::Point2(line1_end.clone()))
             .unwrap();
         sketch
             .borrow_mut()
-            .add_primitive(ParametricCell::Line(line1.clone()))
+            .add_primitive(PrimitiveCell::Line(line1.clone()))
             .unwrap();
 
         let line2_start = Rc::new(RefCell::new(Point2::new(0.0, 4.0)));
@@ -177,15 +177,15 @@ mod tests {
 
         sketch
             .borrow_mut()
-            .add_primitive(ParametricCell::Point2(line2_start.clone()))
+            .add_primitive(PrimitiveCell::Point2(line2_start.clone()))
             .unwrap();
         sketch
             .borrow_mut()
-            .add_primitive(ParametricCell::Point2(line2_end.clone()))
+            .add_primitive(PrimitiveCell::Point2(line2_end.clone()))
             .unwrap();
         sketch
             .borrow_mut()
-            .add_primitive(ParametricCell::Line(line2.clone()))
+            .add_primitive(PrimitiveCell::Line(line2.clone()))
             .unwrap();
 
         let constr1 = Rc::new(RefCell::new(PerpendicularLines::new(

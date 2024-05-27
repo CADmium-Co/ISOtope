@@ -8,7 +8,7 @@ use crate::{
         distance::euclidian_distance_between_points::EuclidianDistanceBetweenPoints,
         fix_point::FixPoint, lines::perpendicular_lines::PerpendicularLines, ConstraintCell,
     },
-    primitives::{line::Line, point2::Point2, ParametricCell},
+    primitives::{line::Line, point2::Point2, PrimitiveCell},
     sketch::Sketch,
 };
 
@@ -35,23 +35,23 @@ impl RotatedRectangleDemo {
 
         sketch
             .borrow_mut()
-            .add_primitive(ParametricCell::Point2(point_a.clone()))
+            .add_primitive(PrimitiveCell::Point2(point_a.clone()))
             .unwrap();
         sketch
             .borrow_mut()
-            .add_primitive(ParametricCell::Point2(point_b.clone()))
+            .add_primitive(PrimitiveCell::Point2(point_b.clone()))
             .unwrap();
         sketch
             .borrow_mut()
-            .add_primitive(ParametricCell::Point2(point_c.clone()))
+            .add_primitive(PrimitiveCell::Point2(point_c.clone()))
             .unwrap();
         sketch
             .borrow_mut()
-            .add_primitive(ParametricCell::Point2(point_d.clone()))
+            .add_primitive(PrimitiveCell::Point2(point_d.clone()))
             .unwrap();
         sketch
             .borrow_mut()
-            .add_primitive(ParametricCell::Point2(point_reference.clone()))
+            .add_primitive(PrimitiveCell::Point2(point_reference.clone()))
             .unwrap();
 
         let line_a = Rc::new(RefCell::new(Line::new(point_a.clone(), point_b.clone())));
@@ -61,19 +61,19 @@ impl RotatedRectangleDemo {
 
         sketch
             .borrow_mut()
-            .add_primitive(ParametricCell::Line(line_a.clone()))
+            .add_primitive(PrimitiveCell::Line(line_a.clone()))
             .unwrap();
         sketch
             .borrow_mut()
-            .add_primitive(ParametricCell::Line(line_b.clone()))
+            .add_primitive(PrimitiveCell::Line(line_b.clone()))
             .unwrap();
         sketch
             .borrow_mut()
-            .add_primitive(ParametricCell::Line(line_c.clone()))
+            .add_primitive(PrimitiveCell::Line(line_c.clone()))
             .unwrap();
         sketch
             .borrow_mut()
-            .add_primitive(ParametricCell::Line(line_d.clone()))
+            .add_primitive(PrimitiveCell::Line(line_d.clone()))
             .unwrap();
 
         // Fix point a to origin

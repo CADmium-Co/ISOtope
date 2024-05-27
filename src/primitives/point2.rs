@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 #[cfg(feature = "tsify")]
 use tsify::Tsify;
 
-use super::{Parametric, ParametricCell};
+use super::{PrimitiveCell, PrimitiveLike};
 
 #[derive(Debug, Clone, PartialEq, PartialOrd, Serialize, Deserialize)]
 #[cfg_attr(feature = "tsify", derive(Tsify))]
@@ -53,8 +53,8 @@ impl Point2 {
     }
 }
 
-impl Parametric for Point2 {
-    fn references(&self) -> Vec<ParametricCell> {
+impl PrimitiveLike for Point2 {
+    fn references(&self) -> Vec<PrimitiveCell> {
         vec![]
     }
 

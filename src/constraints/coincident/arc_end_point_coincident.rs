@@ -7,8 +7,8 @@ use serde::{Deserialize, Serialize};
 use tsify::Tsify;
 
 use crate::{
-    constraints::Constraint,
-    primitives::{arc::Arc, point2::Point2, ParametricCell},
+    constraints::ConstraintLike,
+    primitives::{arc::Arc, point2::Point2, PrimitiveCell},
 };
 
 // This is a sketch constraint that makes the end point of an arc coincident with a point.
@@ -42,11 +42,11 @@ impl ArcEndPointCoincident {
     }
 }
 
-impl Constraint for ArcEndPointCoincident {
-    fn references(&self) -> Vec<ParametricCell> {
+impl ConstraintLike for ArcEndPointCoincident {
+    fn references(&self) -> Vec<PrimitiveCell> {
         vec![
-            ParametricCell::Arc(self.arc.clone()),
-            ParametricCell::Point2(self.point.clone()),
+            PrimitiveCell::Arc(self.arc.clone()),
+            PrimitiveCell::Point2(self.point.clone()),
         ]
     }
 
@@ -77,8 +77,8 @@ impl Constraint for ArcEndPointCoincident {
             .add_to_gradient((-gradient_constraint * grad_point).as_view());
     }
 
-    fn get_type(&self) -> crate::constraints::ConstraintType {
-        crate::constraints::ConstraintType::ArcEndPointCoincident(self.clone())
+    fn get_type(&self) -> crate::constraints::Constraint {
+        crate::constraints::Constraint::ArcEndPointCoincident(self.clone())
     }
 }
 
@@ -91,7 +91,7 @@ mod tests {
         constraints::{
             coincident::arc_end_point_coincident::ArcEndPointCoincident, ConstraintCell,
         },
-        primitives::{arc::Arc, line::Line, point2::Point2, ParametricCell},
+        primitives::{arc::Arc, line::Line, point2::Point2, PrimitiveCell},
         sketch::Sketch,
         solvers::gradient_based_solver::GradientBasedSolver,
     };
@@ -116,23 +116,23 @@ mod tests {
         )));
         sketch
             .borrow_mut()
-            .add_primitive(ParametricCell::Point2(center.clone()))
+            .add_primitive(PrimitiveCell::Point2(center.clone()))
             .unwrap();
         sketch
             .borrow_mut()
-            .add_primitive(ParametricCell::Arc(arc1.clone()))
+            .add_primitive(PrimitiveCell::Arc(arc1.clone()))
             .unwrap();
         sketch
             .borrow_mut()
-            .add_primitive(ParametricCell::Point2(line2_start.clone()))
+            .add_primitive(PrimitiveCell::Point2(line2_start.clone()))
             .unwrap();
         sketch
             .borrow_mut()
-            .add_primitive(ParametricCell::Point2(line2_end.clone()))
+            .add_primitive(PrimitiveCell::Point2(line2_end.clone()))
             .unwrap();
         sketch
             .borrow_mut()
-            .add_primitive(ParametricCell::Line(line2.clone()))
+            .add_primitive(PrimitiveCell::Line(line2.clone()))
             .unwrap();
 
         let constr1 = Rc::new(RefCell::new(ArcEndPointCoincident::new(

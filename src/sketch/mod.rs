@@ -9,13 +9,13 @@ use crate::constraints::ConstraintCell;
 use crate::decompose::face::Face;
 use crate::decompose::{decompose_sketch, merge_faces};
 use crate::error::ISOTopeError;
-use crate::primitives::{point2, ParametricCell};
+use crate::primitives::{point2, PrimitiveCell};
 
-use super::constraints::Constraint;
+use super::constraints::ConstraintLike;
 
 #[derive(Default, Debug, Clone, Serialize, Deserialize)]
 pub struct Sketch {
-    primitives: BTreeMap<u64, ParametricCell>,
+    primitives: BTreeMap<u64, PrimitiveCell>,
     primitives_next_id: u64,
     constraints: VecDeque<ConstraintCell>,
 }
@@ -25,7 +25,7 @@ impl Sketch {
         Self::default()
     }
 
-    pub fn add_primitive(&mut self, primitive: ParametricCell) -> Result<u64, ISOTopeError> {
+    pub fn add_primitive(&mut self, primitive: PrimitiveCell) -> Result<u64, ISOTopeError> {
         // Make sure all referenced primitives are added to the sketch before the primitive
         for reference in primitive.borrow().references().iter() {
             if !self.primitives.iter().any(|(_, p)| reference == p) {
@@ -79,7 +79,7 @@ impl Sketch {
         Ok(())
     }
 
-    pub fn primitives(&self) -> BTreeMap<u64, ParametricCell> {
+    pub fn primitives(&self) -> BTreeMap<u64, PrimitiveCell> {
         self.primitives
             .iter()
             .map(|(k, v)| (*k, v.clone()))
@@ -180,7 +180,7 @@ impl Sketch {
     pub fn check_gradients(
         &mut self,
         epsilon: f64,
-        constraint: Rc<RefCell<impl Constraint>>,
+        constraint: Rc<RefCell<impl ConstraintLike>>,
         check_epsilon: f64,
     ) {
         // Update all gradients
@@ -232,7 +232,7 @@ impl Sketch {
             .collect()
     }
 
-    pub fn get_primitive_id(&self, primitive: &ParametricCell) -> Option<u64> {
+    pub fn get_primitive_id(&self, primitive: &PrimitiveCell) -> Option<u64> {
         self.primitives
             .iter()
             .find(|(_, p)| primitive == *p)
@@ -267,7 +267,7 @@ mod tests {
             let arc = Rc::new(RefCell::new(Arc::new(point, 1.0, true, 0.0, 1.0)));
 
             sketch
-                .add_primitive(ParametricCell::Arc(arc.clone()))
+                .add_primitive(PrimitiveCell::Arc(arc.clone()))
                 .unwrap();
         })
         .is_err());
@@ -278,7 +278,7 @@ mod tests {
         assert!(std::panic::catch_unwind(|| {
             let mut sketch = Sketch::new();
 
-            let point = ParametricCell::Point2(Rc::new(RefCell::new(Point2::new(0.0, 0.0))));
+            let point = PrimitiveCell::Point2(Rc::new(RefCell::new(Point2::new(0.0, 0.0))));
             sketch.add_primitive(point.clone()).unwrap();
             sketch.add_primitive(point.clone()).unwrap();
         })
@@ -294,7 +294,7 @@ mod tests {
             let arc = Rc::new(RefCell::new(Arc::new(point.clone(), 1.0, true, 0.0, 1.0)));
 
             sketch
-                .add_primitive(ParametricCell::Point2(point.clone()))
+                .add_primitive(PrimitiveCell::Point2(point.clone()))
                 .unwrap();
 
             let constraint = Rc::new(RefCell::new(ArcEndPointCoincident::new(arc, point)));
@@ -314,10 +314,10 @@ mod tests {
             let arc = Rc::new(RefCell::new(Arc::new(point.clone(), 1.0, true, 0.0, 1.0)));
 
             sketch
-                .add_primitive(ParametricCell::Point2(point.clone()))
+                .add_primitive(PrimitiveCell::Point2(point.clone()))
                 .unwrap();
             sketch
-                .add_primitive(ParametricCell::Arc(arc.clone()))
+                .add_primitive(PrimitiveCell::Arc(arc.clone()))
                 .unwrap();
 
             let constraint = Rc::new(RefCell::new(ArcEndPointCoincident::new(

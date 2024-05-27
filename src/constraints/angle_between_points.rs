@@ -6,8 +6,8 @@ use serde::{Deserialize, Serialize};
 use tsify::Tsify;
 
 use crate::{
-    constraints::Constraint,
-    primitives::{point2::Point2, ParametricCell},
+    constraints::ConstraintLike,
+    primitives::{point2::Point2, PrimitiveCell},
 };
 
 // This is a sketch constraint that makes the end point of an arc coincident with a point.
@@ -86,12 +86,12 @@ impl AngleBetweenPoints {
     }
 }
 
-impl Constraint for AngleBetweenPoints {
-    fn references(&self) -> Vec<ParametricCell> {
+impl ConstraintLike for AngleBetweenPoints {
+    fn references(&self) -> Vec<PrimitiveCell> {
         vec![
-            ParametricCell::Point2(self.point1.clone()),
-            ParametricCell::Point2(self.point2.clone()),
-            ParametricCell::Point2(self.middle_point.clone()),
+            PrimitiveCell::Point2(self.point1.clone()),
+            PrimitiveCell::Point2(self.point2.clone()),
+            PrimitiveCell::Point2(self.middle_point.clone()),
         ]
     }
 
@@ -165,8 +165,8 @@ impl Constraint for AngleBetweenPoints {
         );
     }
 
-    fn get_type(&self) -> super::ConstraintType {
-        super::ConstraintType::AngleBetweenPoints(self.clone())
+    fn get_type(&self) -> super::Constraint {
+        super::Constraint::AngleBetweenPoints(self.clone())
     }
 }
 
@@ -176,9 +176,9 @@ mod tests {
     use std::{cell::RefCell, rc::Rc};
 
     use crate::constraints::ConstraintCell;
-    use crate::primitives::ParametricCell;
+    use crate::primitives::PrimitiveCell;
     use crate::{
-        constraints::angle_between_points::AngleBetweenPoints, constraints::Constraint,
+        constraints::angle_between_points::AngleBetweenPoints, constraints::ConstraintLike,
         primitives::point2::Point2, sketch::Sketch,
         solvers::gradient_based_solver::GradientBasedSolver,
     };
@@ -192,15 +192,15 @@ mod tests {
         let point_middle = Rc::new(RefCell::new(Point2::new(0.0, 0.0)));
         sketch
             .borrow_mut()
-            .add_primitive(ParametricCell::Point2(point_a.clone()))
+            .add_primitive(PrimitiveCell::Point2(point_a.clone()))
             .unwrap();
         sketch
             .borrow_mut()
-            .add_primitive(ParametricCell::Point2(point_b.clone()))
+            .add_primitive(PrimitiveCell::Point2(point_b.clone()))
             .unwrap();
         sketch
             .borrow_mut()
-            .add_primitive(ParametricCell::Point2(point_middle.clone()))
+            .add_primitive(PrimitiveCell::Point2(point_middle.clone()))
             .unwrap();
 
         let constr1 = Rc::new(RefCell::new(AngleBetweenPoints::new(

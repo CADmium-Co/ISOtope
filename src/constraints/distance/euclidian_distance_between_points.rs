@@ -6,8 +6,8 @@ use serde::{Deserialize, Serialize};
 use tsify::Tsify;
 
 use crate::{
-    constraints::Constraint,
-    primitives::{point2::Point2, ParametricCell},
+    constraints::ConstraintLike,
+    primitives::{point2::Point2, PrimitiveCell},
 };
 
 // This is a sketch constraint that makes the end point of an arc coincident with a point.
@@ -67,11 +67,11 @@ impl EuclidianDistanceBetweenPoints {
     }
 }
 
-impl Constraint for EuclidianDistanceBetweenPoints {
-    fn references(&self) -> Vec<ParametricCell> {
+impl ConstraintLike for EuclidianDistanceBetweenPoints {
+    fn references(&self) -> Vec<PrimitiveCell> {
         vec![
-            ParametricCell::Point2(self.point1.clone()),
-            ParametricCell::Point2(self.point2.clone()),
+            PrimitiveCell::Point2(self.point1.clone()),
+            PrimitiveCell::Point2(self.point2.clone()),
         ]
     }
 
@@ -111,8 +111,8 @@ impl Constraint for EuclidianDistanceBetweenPoints {
             .add_to_gradient(grad_from_point2.as_view());
     }
 
-    fn get_type(&self) -> crate::constraints::ConstraintType {
-        crate::constraints::ConstraintType::EuclideanDistance(self.clone())
+    fn get_type(&self) -> crate::constraints::Constraint {
+        crate::constraints::Constraint::EuclideanDistance(self.clone())
     }
 }
 
@@ -124,9 +124,9 @@ mod tests {
     use crate::{
         constraints::{
             distance::euclidian_distance_between_points::EuclidianDistanceBetweenPoints,
-            Constraint, ConstraintCell,
+            ConstraintCell, ConstraintLike,
         },
-        primitives::{point2::Point2, ParametricCell},
+        primitives::{point2::Point2, PrimitiveCell},
         sketch::Sketch,
         solvers::gradient_based_solver::GradientBasedSolver,
     };
@@ -139,11 +139,11 @@ mod tests {
         let point_b = Rc::new(RefCell::new(Point2::new(0.0, 1.0)));
         sketch
             .borrow_mut()
-            .add_primitive(ParametricCell::Point2(point_a.clone()))
+            .add_primitive(PrimitiveCell::Point2(point_a.clone()))
             .unwrap();
         sketch
             .borrow_mut()
-            .add_primitive(ParametricCell::Point2(point_b.clone()))
+            .add_primitive(PrimitiveCell::Point2(point_b.clone()))
             .unwrap();
 
         let constr1 = Rc::new(RefCell::new(EuclidianDistanceBetweenPoints::new(

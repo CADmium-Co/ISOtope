@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 use tsify::Tsify;
 
 use super::point2::Point2;
-use super::{Parametric, ParametricCell};
+use super::{PrimitiveCell, PrimitiveLike};
 
 #[derive(Debug, Clone, PartialEq, PartialOrd, Serialize, Deserialize)]
 #[cfg_attr(feature = "tsify", derive(Tsify))]
@@ -59,11 +59,11 @@ impl Line {
     }
 }
 
-impl Parametric for Line {
-    fn references(&self) -> Vec<ParametricCell> {
+impl PrimitiveLike for Line {
+    fn references(&self) -> Vec<PrimitiveCell> {
         vec![
-            ParametricCell::Point2(self.start.clone()),
-            ParametricCell::Point2(self.end.clone()),
+            PrimitiveCell::Point2(self.start.clone()),
+            PrimitiveCell::Point2(self.end.clone()),
         ]
     }
 

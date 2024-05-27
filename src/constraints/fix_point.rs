@@ -7,8 +7,8 @@ use serde::{Deserialize, Serialize};
 use tsify::Tsify;
 
 use crate::{
-    constraints::Constraint,
-    primitives::{point2::Point2, ParametricCell},
+    constraints::ConstraintLike,
+    primitives::{point2::Point2, PrimitiveCell},
 };
 
 // This is a sketch constraint that makes the end point of an arc coincident with a point.
@@ -43,9 +43,9 @@ impl FixPoint {
     }
 }
 
-impl Constraint for FixPoint {
-    fn references(&self) -> Vec<ParametricCell> {
-        vec![ParametricCell::Point2(self.point.clone())]
+impl ConstraintLike for FixPoint {
+    fn references(&self) -> Vec<PrimitiveCell> {
+        vec![PrimitiveCell::Point2(self.point.clone())]
     }
 
     fn loss_value(&self) -> f64 {
@@ -62,8 +62,8 @@ impl Constraint for FixPoint {
         self.point.borrow_mut().add_to_gradient(grad.as_view());
     }
 
-    fn get_type(&self) -> super::ConstraintType {
-        super::ConstraintType::FixPoint(self.clone())
+    fn get_type(&self) -> super::Constraint {
+        super::Constraint::FixPoint(self.clone())
     }
 }
 
@@ -75,8 +75,8 @@ mod tests {
     use nalgebra::Vector2;
 
     use crate::{
-        constraints::{fix_point::FixPoint, Constraint, ConstraintCell},
-        primitives::{point2::Point2, ParametricCell},
+        constraints::{fix_point::FixPoint, ConstraintCell, ConstraintLike},
+        primitives::{point2::Point2, PrimitiveCell},
         sketch::Sketch,
         solvers::gradient_based_solver::GradientBasedSolver,
     };
@@ -88,7 +88,7 @@ mod tests {
         let point = Rc::new(RefCell::new(Point2::new(1.0, 0.0)));
         sketch
             .borrow_mut()
-            .add_primitive(ParametricCell::Point2(point.clone()))
+            .add_primitive(PrimitiveCell::Point2(point.clone()))
             .unwrap();
 
         let constr1 = Rc::new(RefCell::new(FixPoint::new(

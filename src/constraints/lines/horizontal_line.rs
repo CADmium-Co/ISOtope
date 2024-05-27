@@ -7,8 +7,8 @@ use serde::{Deserialize, Serialize};
 use tsify::Tsify;
 
 use crate::{
-    constraints::Constraint,
-    primitives::{line::Line, ParametricCell},
+    constraints::ConstraintLike,
+    primitives::{line::Line, PrimitiveCell},
 };
 
 // This is a sketch constraint that makes the end point of an arc coincident with a point.
@@ -33,9 +33,9 @@ impl HorizontalLine {
     }
 }
 
-impl Constraint for HorizontalLine {
-    fn references(&self) -> Vec<ParametricCell> {
-        vec![ParametricCell::Line(self.line.clone())]
+impl ConstraintLike for HorizontalLine {
+    fn references(&self) -> Vec<PrimitiveCell> {
+        vec![PrimitiveCell::Line(self.line.clone())]
     }
 
     fn loss_value(&self) -> f64 {
@@ -63,8 +63,8 @@ impl Constraint for HorizontalLine {
             .add_to_gradient((gradient_constraint * grad_end).as_view());
     }
 
-    fn get_type(&self) -> crate::constraints::ConstraintType {
-        crate::constraints::ConstraintType::HorizontalLine(self.clone())
+    fn get_type(&self) -> crate::constraints::Constraint {
+        crate::constraints::Constraint::HorizontalLine(self.clone())
     }
 }
 
@@ -75,7 +75,7 @@ mod tests {
 
     use crate::{
         constraints::{lines::horizontal_line::HorizontalLine, ConstraintCell},
-        primitives::{line::Line, point2::Point2, ParametricCell},
+        primitives::{line::Line, point2::Point2, PrimitiveCell},
         sketch::Sketch,
         solvers::gradient_based_solver::GradientBasedSolver,
     };
@@ -92,15 +92,15 @@ mod tests {
         )));
         sketch
             .borrow_mut()
-            .add_primitive(ParametricCell::Point2(line_start.clone()))
+            .add_primitive(PrimitiveCell::Point2(line_start.clone()))
             .unwrap();
         sketch
             .borrow_mut()
-            .add_primitive(ParametricCell::Point2(line_end.clone()))
+            .add_primitive(PrimitiveCell::Point2(line_end.clone()))
             .unwrap();
         sketch
             .borrow_mut()
-            .add_primitive(ParametricCell::Line(line.clone()))
+            .add_primitive(PrimitiveCell::Line(line.clone()))
             .unwrap();
 
         let constr1 = Rc::new(RefCell::new(HorizontalLine::new(line.clone())));
