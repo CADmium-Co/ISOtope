@@ -3,6 +3,8 @@ use nalgebra::Vector2;
 
 use crate::primitives::{arc::Arc, circle::Circle, line::Line, point2::Point2, Primitive};
 
+const INTERSECT_EPS: f64 = 1e-6;
+
 pub fn intersections(_a: Primitive, _b: Primitive) -> Vec<Vector2<f64>> {
     // We only deal with point intersections for now
     // In case two lines do overlap in parallel, we just treat the whole sketch as invalid
@@ -32,7 +34,7 @@ impl Intersect2D for Line {
         let collinear = relative_eq!(
             line_vector.cross(&point_vector).magnitude(),
             0.0,
-            epsilon = 1e-6
+            epsilon = INTERSECT_EPS
         );
         if !collinear {
             return None; // Early exit
@@ -40,9 +42,9 @@ impl Intersect2D for Line {
 
         // check that P lies between Start and End by comparing either it's x or y.
         let within_segment = if line_start.x != line_end.x {
-            within_range(p.x(), line_start.x, line_end.x, 1e-6)
+            within_range(p.x(), line_start.x, line_end.x, INTERSECT_EPS)
         } else {
-            within_range(p.y(), line_start.y, line_end.y, 1e-6)
+            within_range(p.y(), line_start.y, line_end.y, INTERSECT_EPS)
         };
 
         if !within_segment {
