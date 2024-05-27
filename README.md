@@ -93,7 +93,7 @@ $$
 \nabla L(q)
 $$
 
-### Solving via gradient descent
+### Solving with gradient descent
 
 Now all we have to do is a simple gradient descent
 
