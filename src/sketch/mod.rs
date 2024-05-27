@@ -45,17 +45,13 @@ impl Sketch {
 
     pub fn add_constraint(&mut self, constraint: ConstraintCell) -> Result<(), ISOTopeError> {
         // Make sure all referenced primitives are added to the sketch before the constraint
-        for reference in constraint.0.borrow().references().iter() {
+        for reference in constraint.borrow().references().iter() {
             if !self.primitives.iter().any(|(_, p)| p == reference) {
                 return Err(ISOTopeError::MissingSketchReferences);
             }
         }
         // Make sure the constraint is not already in the sketch
-        if self
-            .constraints
-            .iter()
-            .any(|c| Rc::ptr_eq(&c.0, &constraint.0))
-        {
+        if self.constraints.iter().any(|c| c == &constraint) {
             return Err(ISOTopeError::ConstraintAlreadyInSketch);
         }
 
@@ -72,15 +68,9 @@ impl Sketch {
         Ok(())
     }
 
-    pub fn delete_constraint(
-        &mut self,
-        constraint: Rc<RefCell<dyn Constraint>>,
-    ) -> Result<(), ISOTopeError> {
+    pub fn delete_constraint(&mut self, constraint: ConstraintCell) -> Result<(), ISOTopeError> {
         let init_len = self.constraints.len();
-        self.constraints.retain(|c| {
-            Rc::ptr_eq(&c.0, &constraint)
-                || c.0.borrow().get_type() == constraint.borrow().get_type()
-        });
+        self.constraints.retain(|c| c == &constraint);
 
         if init_len == self.constraints.len() {
             return Err(ISOTopeError::ConstraintNotFound);
@@ -119,7 +109,7 @@ impl Sketch {
     pub fn get_loss(&mut self) -> f64 {
         let mut loss = 0.0;
         for constraint in self.constraints.iter_mut() {
-            loss += constraint.0.borrow().loss_value();
+            loss += constraint.borrow().loss_value();
         }
         loss
     }
@@ -130,7 +120,7 @@ impl Sketch {
         }
 
         for constraint in self.constraints.iter_mut() {
-            constraint.0.borrow_mut().update_gradient();
+            constraint.borrow_mut().update_gradient();
         }
 
         let mut gradient = DVector::zeros(self.get_n_dofs());
@@ -148,7 +138,7 @@ impl Sketch {
     pub fn get_loss_per_constraint(&self) -> DVector<f64> {
         let mut loss_per_constraint = DVector::zeros(self.constraints.len());
         for (i, constraint) in self.constraints.iter().enumerate() {
-            loss_per_constraint[i] = constraint.0.borrow().loss_value();
+            loss_per_constraint[i] = constraint.borrow().loss_value();
         }
         loss_per_constraint
     }
@@ -161,7 +151,7 @@ impl Sketch {
                 primitive.1.borrow_mut().zero_gradient();
             }
             // Update the gradient of the constraint
-            constraint.0.borrow_mut().update_gradient();
+            constraint.borrow_mut().update_gradient();
             // Copy the gradient of the constraint to the jacobian
             let mut j = 0;
             for primitive in self.primitives.iter() {
@@ -308,7 +298,9 @@ mod tests {
                 .unwrap();
 
             let constraint = Rc::new(RefCell::new(ArcEndPointCoincident::new(arc, point)));
-            sketch.add_constraint(ConstraintCell(constraint)).unwrap();
+            sketch
+                .add_constraint(ConstraintCell::ArcEndPointCoincident(constraint))
+                .unwrap();
         })
         .is_err());
     }
@@ -333,10 +325,10 @@ mod tests {
                 point.clone(),
             )));
             sketch
-                .add_constraint(ConstraintCell(constraint.clone()))
+                .add_constraint(ConstraintCell::ArcEndPointCoincident(constraint.clone()))
                 .unwrap();
             sketch
-                .add_constraint(ConstraintCell(constraint.clone()))
+                .add_constraint(ConstraintCell::ArcEndPointCoincident(constraint.clone()))
                 .unwrap();
         })
         .is_err());

@@ -70,44 +70,43 @@ mod tests {
         // Fix point a to origin
         sketch
             .borrow_mut()
-            .add_constraint(ConstraintCell(Rc::new(RefCell::new(FixPoint::new(
-                point_a.clone(),
-                Vector2::new(0.0, 0.0),
-            )))))
+            .add_constraint(ConstraintCell::FixPoint(Rc::new(RefCell::new(
+                FixPoint::new(point_a.clone(), Vector2::new(0.0, 0.0)),
+            ))))
             .unwrap();
 
         // Constrain line_a and line_c to be horizontal
         sketch
             .borrow_mut()
-            .add_constraint(ConstraintCell(Rc::new(RefCell::new(HorizontalLine::new(
-                line_a.clone(),
-            )))))
+            .add_constraint(ConstraintCell::HorizontalLine(Rc::new(RefCell::new(
+                HorizontalLine::new(line_a.clone()),
+            ))))
             .unwrap();
         sketch
             .borrow_mut()
-            .add_constraint(ConstraintCell(Rc::new(RefCell::new(HorizontalLine::new(
-                line_c.clone(),
-            )))))
+            .add_constraint(ConstraintCell::HorizontalLine(Rc::new(RefCell::new(
+                HorizontalLine::new(line_c.clone()),
+            ))))
             .unwrap();
 
         // Constrain line_b and line_d to be vertical
         sketch
             .borrow_mut()
-            .add_constraint(ConstraintCell(Rc::new(RefCell::new(VerticalLine::new(
-                line_b.clone(),
-            )))))
+            .add_constraint(ConstraintCell::VerticalLine(Rc::new(RefCell::new(
+                VerticalLine::new(line_b.clone()),
+            ))))
             .unwrap();
         sketch
             .borrow_mut()
-            .add_constraint(ConstraintCell(Rc::new(RefCell::new(VerticalLine::new(
-                line_d.clone(),
-            )))))
+            .add_constraint(ConstraintCell::VerticalLine(Rc::new(RefCell::new(
+                VerticalLine::new(line_d.clone()),
+            ))))
             .unwrap();
 
         // Constrain the length of line_a to 2
         sketch
             .borrow_mut()
-            .add_constraint(ConstraintCell(Rc::new(RefCell::new(
+            .add_constraint(ConstraintCell::HorizontalDistance(Rc::new(RefCell::new(
                 HorizontalDistanceBetweenPoints::new(point_a.clone(), point_b.clone(), 2.0),
             ))))
             .unwrap();
@@ -115,7 +114,7 @@ mod tests {
         // Constrain the length of line_b to 3
         sketch
             .borrow_mut()
-            .add_constraint(ConstraintCell(Rc::new(RefCell::new(
+            .add_constraint(ConstraintCell::VerticalDistance(Rc::new(RefCell::new(
                 VerticalDistanceBetweenPoints::new(point_a.clone(), point_d.clone(), 3.0),
             ))))
             .unwrap();

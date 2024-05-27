@@ -1,5 +1,6 @@
 use std::cell::{Ref, RefCell, RefMut};
 use std::fmt::Debug;
+use std::ptr;
 use std::rc::Rc;
 
 use nalgebra::{DVector, DVectorView};
@@ -113,81 +114,44 @@ impl ParametricCell {
         }
     }
 
-    pub fn ptr_eq(&self, other: &ParametricCell) -> bool {
-        match (self, other) {
-            (ParametricCell::Point2(p1), ParametricCell::Point2(p2)) => Rc::ptr_eq(p1, p2),
-            (ParametricCell::Line(l1), ParametricCell::Line(l2)) => Rc::ptr_eq(l1, l2),
-            (ParametricCell::Arc(a1), ParametricCell::Arc(a2)) => Rc::ptr_eq(a1, a2),
-            (ParametricCell::Circle(c1), ParametricCell::Circle(c2)) => Rc::ptr_eq(c1, c2),
-            _ => false,
+    pub fn as_ptr(&self) -> *const dyn Parametric {
+        match self {
+            ParametricCell::Point2(p) => p.as_ptr(),
+            ParametricCell::Line(l) => l.as_ptr(),
+            ParametricCell::Arc(a) => a.as_ptr(),
+            ParametricCell::Circle(c) => c.as_ptr(),
         }
     }
 }
 
-impl Parametric for ParametricCell {
-    fn references(&self) -> Vec<ParametricCell> {
-        match self {
-            ParametricCell::Point2(p) => p.borrow().references(),
-            ParametricCell::Line(l) => l.borrow().references(),
-            ParametricCell::Arc(a) => a.borrow().references(),
-            ParametricCell::Circle(c) => c.borrow().references(),
-        }
-    }
+// impl Parametric for ParametricCell {
+//     fn references(&self) -> Vec<ParametricCell> {
+//         self.borrow().references()
+//     }
 
-    fn zero_gradient(&mut self) {
-        match self {
-            ParametricCell::Point2(p) => p.borrow_mut().zero_gradient(),
-            ParametricCell::Line(l) => l.borrow_mut().zero_gradient(),
-            ParametricCell::Arc(a) => a.borrow_mut().zero_gradient(),
-            ParametricCell::Circle(c) => c.borrow_mut().zero_gradient(),
-        }
-    }
+//     fn zero_gradient(&mut self) {
+//         self.borrow_mut().zero_gradient();
+//     }
 
-    fn get_data(&self) -> DVector<f64> {
-        match self {
-            ParametricCell::Point2(p) => p.borrow().get_data(),
-            ParametricCell::Line(l) => l.borrow().get_data(),
-            ParametricCell::Arc(a) => a.borrow().get_data(),
-            ParametricCell::Circle(c) => c.borrow().get_data(),
-        }
-    }
+//     fn get_data(&self) -> DVector<f64> {
+//         self.borrow().get_data()
+//     }
 
-    fn set_data(&mut self, data: DVectorView<f64>) {
-        match self {
-            ParametricCell::Point2(p) => p.borrow_mut().set_data(data),
-            ParametricCell::Line(l) => l.borrow_mut().set_data(data),
-            ParametricCell::Arc(a) => a.borrow_mut().set_data(data),
-            ParametricCell::Circle(c) => c.borrow_mut().set_data(data),
-        }
-    }
+//     fn set_data(&mut self, data: DVectorView<f64>) {
+//         self.borrow_mut().set_data(data);
+//     }
 
-    fn get_gradient(&self) -> DVector<f64> {
-        match self {
-            ParametricCell::Point2(p) => p.borrow().get_gradient(),
-            ParametricCell::Line(l) => l.borrow().get_gradient(),
-            ParametricCell::Arc(a) => a.borrow().get_gradient(),
-            ParametricCell::Circle(c) => c.borrow().get_gradient(),
-        }
-    }
+//     fn get_gradient(&self) -> DVector<f64> {
+//         self.borrow().get_gradient()
+//     }
 
-    fn to_primitive(&self) -> Primitive {
-        match self {
-            ParametricCell::Point2(p) => Primitive::Point2(p.borrow().clone()),
-            ParametricCell::Line(l) => Primitive::Line(l.borrow().clone()),
-            ParametricCell::Arc(a) => Primitive::Arc(a.borrow().clone()),
-            ParametricCell::Circle(c) => Primitive::Circle(c.borrow().clone()),
-        }
-    }
-}
+//     fn to_primitive(&self) -> Primitive {
+//         self.borrow().to_primitive()
+//     }
+// }
 
 impl PartialEq for ParametricCell {
     fn eq(&self, other: &Self) -> bool {
-        match (self, other) {
-            (ParametricCell::Point2(p1), ParametricCell::Point2(p2)) => Rc::ptr_eq(p1, p2),
-            (ParametricCell::Line(l1), ParametricCell::Line(l2)) => Rc::ptr_eq(l1, l2),
-            (ParametricCell::Arc(a1), ParametricCell::Arc(a2)) => Rc::ptr_eq(a1, a2),
-            (ParametricCell::Circle(c1), ParametricCell::Circle(c2)) => Rc::ptr_eq(c1, c2),
-            _ => false,
-        }
+        ptr::eq(self.as_ptr(), other.as_ptr())
     }
 }

@@ -97,7 +97,7 @@ mod tests {
         )));
         sketch
             .borrow_mut()
-            .add_constraint(ConstraintCell(constr1.clone()))
+            .add_constraint(ConstraintCell::FixPoint(constr1.clone()))
             .unwrap();
 
         sketch

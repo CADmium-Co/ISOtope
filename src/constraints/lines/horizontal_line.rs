@@ -106,7 +106,7 @@ mod tests {
         let constr1 = Rc::new(RefCell::new(HorizontalLine::new(line.clone())));
         sketch
             .borrow_mut()
-            .add_constraint(ConstraintCell(constr1.clone()))
+            .add_constraint(ConstraintCell::HorizontalLine(constr1.clone()))
             .unwrap();
 
         sketch

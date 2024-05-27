@@ -155,7 +155,7 @@ mod tests {
         let constr1 = Rc::new(RefCell::new(EqualLength::new(line1.clone(), line2.clone())));
         sketch
             .borrow_mut()
-            .add_constraint(ConstraintCell(constr1.clone()))
+            .add_constraint(ConstraintCell::EqualLength(constr1.clone()))
             .unwrap();
 
         sketch

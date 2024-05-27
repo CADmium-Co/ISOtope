@@ -194,7 +194,7 @@ mod tests {
         )));
         sketch
             .borrow_mut()
-            .add_constraint(ConstraintCell(constr1.clone()))
+            .add_constraint(ConstraintCell::PerpendicularLines(constr1.clone()))
             .unwrap();
 
         sketch
