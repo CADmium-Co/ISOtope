@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 #[cfg(feature = "tsify")]
 use tsify::Tsify;
 
-use super::{point2::Point2, Parametric};
+use super::{point2::Point2, Parametric, ParametricCell};
 
 #[derive(Debug, Clone, PartialEq, PartialOrd, Serialize, Deserialize)]
 #[cfg_attr(feature = "tsify", derive(Tsify))]
@@ -62,8 +62,8 @@ impl Circle {
 }
 
 impl Parametric for Circle {
-    fn references(&self) -> Vec<Rc<RefCell<dyn Parametric>>> {
-        vec![self.center.clone()]
+    fn references(&self) -> Vec<ParametricCell> {
+        vec![ParametricCell::Point2(self.center.clone())]
     }
 
     fn zero_gradient(&mut self) {

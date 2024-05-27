@@ -5,7 +5,10 @@ use serde::{Deserialize, Serialize};
 #[cfg(feature = "tsify")]
 use tsify::Tsify;
 
-use crate::{constraints::Constraint, primitives::point2::Point2};
+use crate::{
+    constraints::Constraint,
+    primitives::{point2::Point2, ParametricCell},
+};
 
 // This is a sketch constraint that makes the end point of an arc coincident with a point.
 #[derive(Debug, Clone, PartialEq, PartialOrd, Serialize, Deserialize)]
@@ -84,11 +87,11 @@ impl AngleBetweenPoints {
 }
 
 impl Constraint for AngleBetweenPoints {
-    fn references(&self) -> Vec<Rc<RefCell<dyn crate::primitives::Parametric>>> {
+    fn references(&self) -> Vec<ParametricCell> {
         vec![
-            self.point1.clone(),
-            self.point2.clone(),
-            self.middle_point.clone(),
+            ParametricCell::Point2(self.point1.clone()),
+            ParametricCell::Point2(self.point2.clone()),
+            ParametricCell::Point2(self.middle_point.clone()),
         ]
     }
 
@@ -189,15 +192,15 @@ mod tests {
         let point_middle = Rc::new(RefCell::new(Point2::new(0.0, 0.0)));
         sketch
             .borrow_mut()
-            .add_primitive(ParametricCell(point_a.clone()))
+            .add_primitive(ParametricCell::Point2(point_a.clone()))
             .unwrap();
         sketch
             .borrow_mut()
-            .add_primitive(ParametricCell(point_b.clone()))
+            .add_primitive(ParametricCell::Point2(point_b.clone()))
             .unwrap();
         sketch
             .borrow_mut()
-            .add_primitive(ParametricCell(point_middle.clone()))
+            .add_primitive(ParametricCell::Point2(point_middle.clone()))
             .unwrap();
 
         let constr1 = Rc::new(RefCell::new(AngleBetweenPoints::new(

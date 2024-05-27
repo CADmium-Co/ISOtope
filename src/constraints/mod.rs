@@ -7,7 +7,7 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 #[cfg(feature = "tsify")]
 use tsify::Tsify;
 
-use crate::primitives::Parametric;
+use crate::primitives::ParametricCell;
 
 pub mod angle_between_points;
 pub mod coincident;
@@ -16,7 +16,7 @@ pub mod fix_point;
 pub mod lines;
 
 pub trait Constraint: Debug {
-    fn references(&self) -> Vec<Rc<RefCell<dyn Parametric>>>;
+    fn references(&self) -> Vec<ParametricCell>;
     fn loss_value(&self) -> f64;
     fn update_gradient(&mut self);
     fn get_type(&self) -> ConstraintType;

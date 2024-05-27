@@ -6,7 +6,10 @@ use serde::{Deserialize, Serialize};
 #[cfg(feature = "tsify")]
 use tsify::Tsify;
 
-use crate::{constraints::Constraint, primitives::point2::Point2};
+use crate::{
+    constraints::Constraint,
+    primitives::{point2::Point2, ParametricCell},
+};
 
 // This is a sketch constraint that makes the end point of an arc coincident with a point.
 #[derive(Debug, Clone, PartialEq, PartialOrd, Serialize, Deserialize)]
@@ -41,8 +44,8 @@ impl FixPoint {
 }
 
 impl Constraint for FixPoint {
-    fn references(&self) -> Vec<Rc<RefCell<dyn crate::primitives::Parametric>>> {
-        vec![self.point.clone()]
+    fn references(&self) -> Vec<ParametricCell> {
+        vec![ParametricCell::Point2(self.point.clone())]
     }
 
     fn loss_value(&self) -> f64 {
@@ -85,7 +88,7 @@ mod tests {
         let point = Rc::new(RefCell::new(Point2::new(1.0, 0.0)));
         sketch
             .borrow_mut()
-            .add_primitive(ParametricCell(point.clone()))
+            .add_primitive(ParametricCell::Point2(point.clone()))
             .unwrap();
 
         let constr1 = Rc::new(RefCell::new(FixPoint::new(

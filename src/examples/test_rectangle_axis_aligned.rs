@@ -30,19 +30,19 @@ mod tests {
 
         sketch
             .borrow_mut()
-            .add_primitive(ParametricCell(point_a.clone()))
+            .add_primitive(ParametricCell::Point2(point_a.clone()))
             .unwrap();
         sketch
             .borrow_mut()
-            .add_primitive(ParametricCell(point_b.clone()))
+            .add_primitive(ParametricCell::Point2(point_b.clone()))
             .unwrap();
         sketch
             .borrow_mut()
-            .add_primitive(ParametricCell(point_c.clone()))
+            .add_primitive(ParametricCell::Point2(point_c.clone()))
             .unwrap();
         sketch
             .borrow_mut()
-            .add_primitive(ParametricCell(point_d.clone()))
+            .add_primitive(ParametricCell::Point2(point_d.clone()))
             .unwrap();
 
         let line_a = Rc::new(RefCell::new(Line::new(point_a.clone(), point_b.clone())));
@@ -52,19 +52,19 @@ mod tests {
 
         sketch
             .borrow_mut()
-            .add_primitive(ParametricCell(line_a.clone()))
+            .add_primitive(ParametricCell::Line(line_a.clone()))
             .unwrap();
         sketch
             .borrow_mut()
-            .add_primitive(ParametricCell(line_b.clone()))
+            .add_primitive(ParametricCell::Line(line_b.clone()))
             .unwrap();
         sketch
             .borrow_mut()
-            .add_primitive(ParametricCell(line_c.clone()))
+            .add_primitive(ParametricCell::Line(line_c.clone()))
             .unwrap();
         sketch
             .borrow_mut()
-            .add_primitive(ParametricCell(line_d.clone()))
+            .add_primitive(ParametricCell::Line(line_d.clone()))
             .unwrap();
 
         // Fix point a to origin

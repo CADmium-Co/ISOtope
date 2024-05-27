@@ -5,7 +5,10 @@ use serde::{Deserialize, Serialize};
 #[cfg(feature = "tsify")]
 use tsify::Tsify;
 
-use crate::{constraints::Constraint, primitives::line::Line};
+use crate::{
+    constraints::Constraint,
+    primitives::{line::Line, ParametricCell},
+};
 
 // This is a sketch constraint that makes the end point of an arc coincident with a point.
 #[derive(Debug, Clone, PartialEq, PartialOrd, Serialize, Deserialize)]
@@ -39,8 +42,11 @@ impl EqualLength {
 }
 
 impl Constraint for EqualLength {
-    fn references(&self) -> Vec<Rc<RefCell<dyn crate::primitives::Parametric>>> {
-        vec![self.line1.clone(), self.line2.clone()]
+    fn references(&self) -> Vec<ParametricCell> {
+        vec![
+            ParametricCell::Line(self.line1.clone()),
+            ParametricCell::Line(self.line2.clone()),
+        ]
     }
 
     fn loss_value(&self) -> f64 {
@@ -115,15 +121,15 @@ mod tests {
         )));
         sketch
             .borrow_mut()
-            .add_primitive(ParametricCell(line1_start.clone()))
+            .add_primitive(ParametricCell::Point2(line1_start.clone()))
             .unwrap();
         sketch
             .borrow_mut()
-            .add_primitive(ParametricCell(line1_end.clone()))
+            .add_primitive(ParametricCell::Point2(line1_end.clone()))
             .unwrap();
         sketch
             .borrow_mut()
-            .add_primitive(ParametricCell(line1.clone()))
+            .add_primitive(ParametricCell::Line(line1.clone()))
             .unwrap();
 
         let line2_start = Rc::new(RefCell::new(Point2::new(0.0, 4.0)));
@@ -135,15 +141,15 @@ mod tests {
 
         sketch
             .borrow_mut()
-            .add_primitive(ParametricCell(line2_start.clone()))
+            .add_primitive(ParametricCell::Point2(line2_start.clone()))
             .unwrap();
         sketch
             .borrow_mut()
-            .add_primitive(ParametricCell(line2_end.clone()))
+            .add_primitive(ParametricCell::Point2(line2_end.clone()))
             .unwrap();
         sketch
             .borrow_mut()
-            .add_primitive(ParametricCell(line2.clone()))
+            .add_primitive(ParametricCell::Line(line2.clone()))
             .unwrap();
 
         let constr1 = Rc::new(RefCell::new(EqualLength::new(line1.clone(), line2.clone())));
