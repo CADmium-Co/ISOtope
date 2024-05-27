@@ -20,3 +20,7 @@ pub fn decompose_sketch(sketch: &Sketch) -> Vec<Face> {
 
     todo!("Decompose the sketch into faces")
 }
+
+pub fn merge_faces(faces: Vec<Face>) -> Vec<Face> {
+    todo!("Merge the faces into a single face")
+}

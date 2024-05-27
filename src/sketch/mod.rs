@@ -6,6 +6,8 @@ use nalgebra::{DMatrix, DVector};
 use serde::{Deserialize, Serialize};
 
 use crate::constraints::ConstraintCell;
+use crate::decompose::face::Face;
+use crate::decompose::{decompose_sketch, merge_faces};
 use crate::error::ISOTopeError;
 use crate::primitives::{point2, ParametricCell};
 
@@ -262,6 +264,14 @@ impl Sketch {
             .iter()
             .find(|(_, p)| Rc::ptr_eq(&p.0, &primitive))
             .map(|(k, _)| *k)
+    }
+
+    pub fn get_faces(&self) -> Vec<Face> {
+        decompose_sketch(self)
+    }
+
+    pub fn get_merged_faces(&self) -> Vec<Face> {
+        merge_faces(self.get_faces())
     }
 }
 
