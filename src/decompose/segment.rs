@@ -42,4 +42,26 @@ impl Segment {
         // determines if this segment connects to the prior segment
         prior_segment.get_end() == self.get_start() || prior_segment.get_end() == self.get_end()
     }
+
+    pub fn start_angle(&self) -> f64 {
+        match self {
+            Segment::Line(line) => {
+                let start = line.start().borrow().data();
+                let end = line.end().borrow().data();
+                (end.y - start.y).atan2(end.x - start.x)
+            }
+            Segment::Arc(arc) => arc.start_angle(),
+        }
+    }
+
+    pub fn end_angle(&self) -> f64 {
+        match self {
+            Segment::Line(_line) => self.start_angle(),
+            Segment::Arc(arc) => arc.end_angle(),
+        }
+    }
+
+    pub fn equals_or_reverse_equals(&self, other: &Segment) -> bool {
+        self == other || self == &other.reverse()
+    }
 }
