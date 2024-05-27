@@ -4,9 +4,14 @@ use std::rc::Rc;
 use nalgebra::{DVector, DVectorView, SMatrix, SMatrixView, SVector, Vector2};
 use serde::{Deserialize, Serialize};
 
+#[cfg(feature = "tsify")]
+use tsify::Tsify;
+
 use super::{point2::Point2, Parametric};
 
 #[derive(Debug, Clone, PartialEq, PartialOrd, Serialize, Deserialize)]
+#[cfg_attr(feature = "tsify", derive(Tsify))]
+#[cfg_attr(feature = "tsify", tsify(into_wasm_abi, from_wasm_abi))]
 pub struct Arc {
     pub center: Rc<RefCell<Point2>>,
     pub data: SVector<f64, 3>,

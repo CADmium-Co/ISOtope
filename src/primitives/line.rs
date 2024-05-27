@@ -4,10 +4,15 @@ use std::rc::Rc;
 use nalgebra::{DVector, DVectorView, SMatrix, SMatrixView};
 use serde::{Deserialize, Serialize};
 
+#[cfg(feature = "tsify")]
+use tsify::Tsify;
+
 use super::point2::Point2;
 use super::Parametric;
 
 #[derive(Debug, Clone, PartialEq, PartialOrd, Serialize, Deserialize)]
+#[cfg_attr(feature = "tsify", derive(Tsify))]
+#[cfg_attr(feature = "tsify", tsify(into_wasm_abi, from_wasm_abi))]
 pub struct Line {
     start: Rc<RefCell<Point2>>,
     end: Rc<RefCell<Point2>>,
