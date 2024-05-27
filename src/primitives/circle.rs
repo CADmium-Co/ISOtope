@@ -1,10 +1,12 @@
-use std::{cell::RefCell, rc::Rc};
+use std::cell::RefCell;
+use std::rc::Rc;
 
 use nalgebra::{DVector, DVectorView, SMatrix, SMatrixView, SVector};
+use serde::{Deserialize, Serialize};
 
 use super::{point2::Point2, Parametric};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, PartialOrd, Serialize, Deserialize)]
 pub struct Circle {
     center: Rc<RefCell<Point2>>,
     data: SVector<f64, 1>,
@@ -55,7 +57,7 @@ impl Circle {
 }
 
 impl Parametric for Circle {
-    fn references(&self) -> Vec<std::rc::Rc<std::cell::RefCell<dyn Parametric>>> {
+    fn references(&self) -> Vec<Rc<RefCell<dyn Parametric>>> {
         vec![self.center.clone()]
     }
 

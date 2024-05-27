@@ -1,8 +1,9 @@
 use nalgebra::Vector2;
+use serde::{Deserialize, Serialize};
 
 use crate::primitives::{arc::Arc, line::Line};
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd, Serialize, Deserialize)]
 pub enum Segment {
     Line(Line),
     Arc(Arc),

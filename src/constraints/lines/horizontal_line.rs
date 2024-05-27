@@ -1,11 +1,12 @@
 use std::{cell::RefCell, rc::Rc};
 
 use nalgebra::SMatrix;
+use serde::{Deserialize, Serialize};
 
 use crate::{constraints::Constraint, primitives::line::Line};
 
 // This is a sketch constraint that makes the end point of an arc coincident with a point.
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd, Serialize, Deserialize)]
 pub struct HorizontalLine {
     line: Rc<RefCell<Line>>,
 }
@@ -53,6 +54,10 @@ impl Constraint for HorizontalLine {
             .borrow_mut()
             .add_to_gradient((gradient_constraint * grad_end).as_view());
     }
+
+    fn get_type(&self) -> crate::constraints::ConstraintType {
+        crate::constraints::ConstraintType::HorizontalLine(self.clone())
+    }
 }
 
 // Run some tests
@@ -61,8 +66,8 @@ mod tests {
     use std::{cell::RefCell, rc::Rc};
 
     use crate::{
-        constraints::lines::horizontal_line::HorizontalLine,
-        primitives::{line::Line, point2::Point2},
+        constraints::{lines::horizontal_line::HorizontalLine, ConstraintCell},
+        primitives::{line::Line, point2::Point2, ParametricCell},
         sketch::Sketch,
         solvers::gradient_based_solver::GradientBasedSolver,
     };
@@ -79,13 +84,22 @@ mod tests {
         )));
         sketch
             .borrow_mut()
-            .add_primitive(line_start.clone())
+            .add_primitive(ParametricCell(line_start.clone()))
             .unwrap();
-        sketch.borrow_mut().add_primitive(line_end.clone()).unwrap();
-        sketch.borrow_mut().add_primitive(line.clone()).unwrap();
+        sketch
+            .borrow_mut()
+            .add_primitive(ParametricCell(line_end.clone()))
+            .unwrap();
+        sketch
+            .borrow_mut()
+            .add_primitive(ParametricCell(line.clone()))
+            .unwrap();
 
         let constr1 = Rc::new(RefCell::new(HorizontalLine::new(line.clone())));
-        sketch.borrow_mut().add_constraint(constr1.clone()).unwrap();
+        sketch
+            .borrow_mut()
+            .add_constraint(ConstraintCell(constr1.clone()))
+            .unwrap();
 
         sketch
             .borrow_mut()

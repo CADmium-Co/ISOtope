@@ -1,9 +1,11 @@
 use std::{cell::RefCell, rc::Rc};
 
+use serde::{Deserialize, Serialize};
+
 use crate::{constraints::Constraint, primitives::point2::Point2};
 
 // This is a sketch constraint that makes the end point of an arc coincident with a point.
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd, Serialize, Deserialize)]
 pub struct AngleBetweenPoints {
     point1: Rc<RefCell<Point2>>,
     point2: Rc<RefCell<Point2>>,
@@ -154,6 +156,10 @@ impl Constraint for AngleBetweenPoints {
             (-grad_from_d1 * grad_middle_point - grad_from_d2 * grad_middle_point).as_view(),
         );
     }
+
+    fn get_type(&self) -> super::ConstraintType {
+        super::ConstraintType::AngleBetweenPoints(self.clone())
+    }
 }
 
 // Run some tests
@@ -161,6 +167,8 @@ impl Constraint for AngleBetweenPoints {
 mod tests {
     use std::{cell::RefCell, rc::Rc};
 
+    use crate::constraints::ConstraintCell;
+    use crate::primitives::ParametricCell;
     use crate::{
         constraints::angle_between_points::AngleBetweenPoints, constraints::Constraint,
         primitives::point2::Point2, sketch::Sketch,
@@ -174,11 +182,17 @@ mod tests {
         let point_a = Rc::new(RefCell::new(Point2::new(1.0, 0.0)));
         let point_b = Rc::new(RefCell::new(Point2::new(0.0, 1.0)));
         let point_middle = Rc::new(RefCell::new(Point2::new(0.0, 0.0)));
-        sketch.borrow_mut().add_primitive(point_a.clone()).unwrap();
-        sketch.borrow_mut().add_primitive(point_b.clone()).unwrap();
         sketch
             .borrow_mut()
-            .add_primitive(point_middle.clone())
+            .add_primitive(ParametricCell(point_a.clone()))
+            .unwrap();
+        sketch
+            .borrow_mut()
+            .add_primitive(ParametricCell(point_b.clone()))
+            .unwrap();
+        sketch
+            .borrow_mut()
+            .add_primitive(ParametricCell(point_middle.clone()))
             .unwrap();
 
         let constr1 = Rc::new(RefCell::new(AngleBetweenPoints::new(
@@ -187,7 +201,10 @@ mod tests {
             point_middle.clone(),
             std::f64::consts::PI / 4.0,
         )));
-        sketch.borrow_mut().add_constraint(constr1.clone()).unwrap();
+        sketch
+            .borrow_mut()
+            .add_constraint(ConstraintCell(constr1.clone()))
+            .unwrap();
 
         println!(
             "current angle: {}",

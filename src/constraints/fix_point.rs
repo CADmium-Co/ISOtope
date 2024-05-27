@@ -1,11 +1,12 @@
 use std::{cell::RefCell, rc::Rc};
 
 use nalgebra::Vector2;
+use serde::{Deserialize, Serialize};
 
 use crate::{constraints::Constraint, primitives::point2::Point2};
 
 // This is a sketch constraint that makes the end point of an arc coincident with a point.
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd, Serialize, Deserialize)]
 pub struct FixPoint {
     point: Rc<RefCell<Point2>>,
 
@@ -52,6 +53,10 @@ impl Constraint for FixPoint {
         let grad = d.transpose();
         self.point.borrow_mut().add_to_gradient(grad.as_view());
     }
+
+    fn get_type(&self) -> super::ConstraintType {
+        super::ConstraintType::FixPoint(self.clone())
+    }
 }
 
 // Run some tests
@@ -62,8 +67,8 @@ mod tests {
     use nalgebra::Vector2;
 
     use crate::{
-        constraints::{fix_point::FixPoint, Constraint},
-        primitives::point2::Point2,
+        constraints::{fix_point::FixPoint, Constraint, ConstraintCell},
+        primitives::{point2::Point2, ParametricCell},
         sketch::Sketch,
         solvers::gradient_based_solver::GradientBasedSolver,
     };
@@ -73,13 +78,19 @@ mod tests {
         let sketch = Rc::new(RefCell::new(Sketch::new()));
 
         let point = Rc::new(RefCell::new(Point2::new(1.0, 0.0)));
-        sketch.borrow_mut().add_primitive(point.clone()).unwrap();
+        sketch
+            .borrow_mut()
+            .add_primitive(ParametricCell(point.clone()))
+            .unwrap();
 
         let constr1 = Rc::new(RefCell::new(FixPoint::new(
             point.clone(),
             Vector2::new(1.0, 1.0),
         )));
-        sketch.borrow_mut().add_constraint(constr1.clone()).unwrap();
+        sketch
+            .borrow_mut()
+            .add_constraint(ConstraintCell(constr1.clone()))
+            .unwrap();
 
         sketch
             .borrow_mut()

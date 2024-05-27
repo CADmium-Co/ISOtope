@@ -1,10 +1,13 @@
-use std::{cell::RefCell, rc::Rc};
+use std::cell::RefCell;
+use std::rc::Rc;
 
 use nalgebra::{DVector, DVectorView, SMatrix, SMatrixView};
+use serde::{Deserialize, Serialize};
 
-use super::{point2::Point2, Parametric};
+use super::point2::Point2;
+use super::Parametric;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, PartialOrd, Serialize, Deserialize)]
 pub struct Line {
     start: Rc<RefCell<Point2>>,
     end: Rc<RefCell<Point2>>,
@@ -52,7 +55,7 @@ impl Line {
 }
 
 impl Parametric for Line {
-    fn references(&self) -> Vec<std::rc::Rc<std::cell::RefCell<dyn Parametric>>> {
+    fn references(&self) -> Vec<Rc<RefCell<dyn Parametric>>> {
         vec![self.start.clone(), self.end.clone()]
     }
 

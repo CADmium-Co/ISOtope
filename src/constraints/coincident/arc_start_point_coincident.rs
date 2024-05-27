@@ -1,6 +1,7 @@
 use std::{cell::RefCell, rc::Rc};
 
 use nalgebra::SMatrix;
+use serde::{Deserialize, Serialize};
 
 use crate::{
     constraints::Constraint,
@@ -8,7 +9,7 @@ use crate::{
 };
 
 // This is a sketch constraint that makes the start point of an arc coincident with a point.
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd, Serialize, Deserialize)]
 pub struct ArcStartPointCoincident {
     arc: Rc<RefCell<Arc>>,
     point: Rc<RefCell<Point2>>,
@@ -67,6 +68,10 @@ impl Constraint for ArcStartPointCoincident {
             .borrow_mut()
             .add_to_gradient((-gradient_constraint * grad_point).as_view());
     }
+
+    fn get_type(&self) -> crate::constraints::ConstraintType {
+        crate::constraints::ConstraintType::ArcStartPointCoincident(self.clone())
+    }
 }
 
 // Run some tests
@@ -75,8 +80,10 @@ mod tests {
     use std::{cell::RefCell, rc::Rc};
 
     use crate::{
-        constraints::coincident::arc_start_point_coincident::ArcStartPointCoincident,
-        primitives::{arc::Arc, line::Line, point2::Point2},
+        constraints::{
+            coincident::arc_start_point_coincident::ArcStartPointCoincident, ConstraintCell,
+        },
+        primitives::{arc::Arc, line::Line, point2::Point2, ParametricCell},
         sketch::Sketch,
         solvers::gradient_based_solver::GradientBasedSolver,
     };
@@ -99,23 +106,35 @@ mod tests {
             line2_start.clone(),
             line2_end.clone(),
         )));
-        sketch.borrow_mut().add_primitive(center.clone()).unwrap();
-        sketch.borrow_mut().add_primitive(arc1.clone()).unwrap();
         sketch
             .borrow_mut()
-            .add_primitive(line2_start.clone())
+            .add_primitive(ParametricCell(center.clone()))
             .unwrap();
         sketch
             .borrow_mut()
-            .add_primitive(line2_end.clone())
+            .add_primitive(ParametricCell(arc1.clone()))
             .unwrap();
-        sketch.borrow_mut().add_primitive(line2.clone()).unwrap();
+        sketch
+            .borrow_mut()
+            .add_primitive(ParametricCell(line2_start.clone()))
+            .unwrap();
+        sketch
+            .borrow_mut()
+            .add_primitive(ParametricCell(line2_end.clone()))
+            .unwrap();
+        sketch
+            .borrow_mut()
+            .add_primitive(ParametricCell(line2.clone()))
+            .unwrap();
 
         let constr1 = Rc::new(RefCell::new(ArcStartPointCoincident::new(
             arc1.clone(),
             line2_end.clone(),
         )));
-        sketch.borrow_mut().add_constraint(constr1.clone()).unwrap();
+        sketch
+            .borrow_mut()
+            .add_constraint(ConstraintCell(constr1.clone()))
+            .unwrap();
 
         sketch
             .borrow_mut()

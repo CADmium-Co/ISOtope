@@ -1,11 +1,12 @@
 use std::{cell::RefCell, rc::Rc};
 
 use nalgebra::Matrix1x2;
+use serde::{Deserialize, Serialize};
 
 use crate::{constraints::Constraint, primitives::point2::Point2};
 
 // This is a sketch constraint that makes the end point of an arc coincident with a point.
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd, Serialize, Deserialize)]
 pub struct VerticalDistanceBetweenPoints {
     point1: Rc<RefCell<Point2>>,
     point2: Rc<RefCell<Point2>>,
@@ -98,6 +99,10 @@ impl Constraint for VerticalDistanceBetweenPoints {
             .borrow_mut()
             .add_to_gradient(grad_from_point2.as_view());
     }
+
+    fn get_type(&self) -> crate::constraints::ConstraintType {
+        crate::constraints::ConstraintType::VerticalDistance(self.clone())
+    }
 }
 
 // Run some tests
@@ -108,8 +113,9 @@ mod tests {
     use crate::{
         constraints::{
             distance::vertical_distance_between_points::VerticalDistanceBetweenPoints, Constraint,
+            ConstraintCell,
         },
-        primitives::point2::Point2,
+        primitives::{point2::Point2, ParametricCell},
         sketch::Sketch,
         solvers::gradient_based_solver::GradientBasedSolver,
     };
@@ -120,15 +126,24 @@ mod tests {
 
         let point_a = Rc::new(RefCell::new(Point2::new(1.0, 0.0)));
         let point_b = Rc::new(RefCell::new(Point2::new(0.0, 1.0)));
-        sketch.borrow_mut().add_primitive(point_a.clone()).unwrap();
-        sketch.borrow_mut().add_primitive(point_b.clone()).unwrap();
+        sketch
+            .borrow_mut()
+            .add_primitive(ParametricCell(point_a.clone()))
+            .unwrap();
+        sketch
+            .borrow_mut()
+            .add_primitive(ParametricCell(point_b.clone()))
+            .unwrap();
 
         let constr1 = Rc::new(RefCell::new(VerticalDistanceBetweenPoints::new(
             point_a.clone(),
             point_b.clone(),
             3.0,
         )));
-        sketch.borrow_mut().add_constraint(constr1.clone()).unwrap();
+        sketch
+            .borrow_mut()
+            .add_constraint(ConstraintCell(constr1.clone()))
+            .unwrap();
 
         sketch
             .borrow_mut()
