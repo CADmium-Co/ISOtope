@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 #[cfg(feature = "tsify")]
 use tsify::Tsify;
 
-use super::{point2::Point2, PrimitiveLike, PrimitiveCell};
+use super::{point2::Point2, PrimitiveCell, PrimitiveLike};
 
 #[derive(Debug, Clone, PartialEq, PartialOrd, Serialize, Deserialize)]
 #[cfg_attr(feature = "tsify", derive(Tsify))]

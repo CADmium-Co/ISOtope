@@ -131,7 +131,9 @@ mod tests {
     use nalgebra::Vector2;
 
     use crate::{
-        constraints::{lines::perpendicular_lines::PerpendicularLines, ConstraintLike, ConstraintCell},
+        constraints::{
+            lines::perpendicular_lines::PerpendicularLines, ConstraintCell, ConstraintLike,
+        },
         primitives::{line::Line, point2::Point2, PrimitiveCell},
         sketch::Sketch,
         solvers::gradient_based_solver::GradientBasedSolver,

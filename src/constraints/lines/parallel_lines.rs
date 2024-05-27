@@ -131,7 +131,7 @@ mod tests {
     use std::{cell::RefCell, rc::Rc};
 
     use crate::{
-        constraints::{lines::parallel_lines::ParallelLines, ConstraintLike, ConstraintCell},
+        constraints::{lines::parallel_lines::ParallelLines, ConstraintCell, ConstraintLike},
         primitives::{line::Line, point2::Point2, PrimitiveCell},
         sketch::Sketch,
         solvers::gradient_based_solver::GradientBasedSolver,
