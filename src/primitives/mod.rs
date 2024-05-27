@@ -124,32 +124,6 @@ impl ParametricCell {
     }
 }
 
-// impl Parametric for ParametricCell {
-//     fn references(&self) -> Vec<ParametricCell> {
-//         self.borrow().references()
-//     }
-
-//     fn zero_gradient(&mut self) {
-//         self.borrow_mut().zero_gradient();
-//     }
-
-//     fn get_data(&self) -> DVector<f64> {
-//         self.borrow().get_data()
-//     }
-
-//     fn set_data(&mut self, data: DVectorView<f64>) {
-//         self.borrow_mut().set_data(data);
-//     }
-
-//     fn get_gradient(&self) -> DVector<f64> {
-//         self.borrow().get_gradient()
-//     }
-
-//     fn to_primitive(&self) -> Primitive {
-//         self.borrow().to_primitive()
-//     }
-// }
-
 impl PartialEq for ParametricCell {
     fn eq(&self, other: &Self) -> bool {
         ptr::eq(self.as_ptr(), other.as_ptr())

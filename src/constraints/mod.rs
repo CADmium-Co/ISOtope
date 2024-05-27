@@ -179,24 +179,6 @@ impl ConstraintCell {
     }
 }
 
-// impl Constraint for ConstraintCell {
-//     fn references(&self) -> Vec<ParametricCell> {
-//         self.borrow().references()
-//     }
-
-//     fn loss_value(&self) -> f64 {
-//         self.borrow().loss_value()
-//     }
-
-//     fn update_gradient(&mut self) {
-//         self.borrow_mut().update_gradient();
-//     }
-
-//     fn get_type(&self) -> ConstraintType {
-//         self.borrow().get_type()
-//     }
-// }
-
 impl PartialEq for ConstraintCell {
     fn eq(&self, other: &Self) -> bool {
         ptr::eq(self.as_ptr(), other.as_ptr())
