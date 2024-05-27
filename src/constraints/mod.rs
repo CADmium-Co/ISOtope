@@ -43,60 +43,22 @@ pub enum Constraint {
     PerpendicularLines(lines::perpendicular_lines::PerpendicularLines),
 }
 
-impl ConstraintLike for Constraint {
-    fn references(&self) -> Vec<PrimitiveCell> {
+impl Constraint {
+    pub fn as_constraint_like(&self) -> &dyn ConstraintLike {
         match self {
-            Constraint::AngleBetweenPoints(c) => c.references(),
-            Constraint::ArcEndPointCoincident(c) => c.references(),
-            Constraint::ArcStartPointCoincident(c) => c.references(),
-            Constraint::EuclideanDistance(c) => c.references(),
-            Constraint::HorizontalDistance(c) => c.references(),
-            Constraint::VerticalDistance(c) => c.references(),
-            Constraint::FixPoint(c) => c.references(),
-            Constraint::EqualLength(c) => c.references(),
-            Constraint::HorizontalLine(c) => c.references(),
-            Constraint::VerticalLine(c) => c.references(),
-            Constraint::ParallelLines(c) => c.references(),
-            Constraint::PerpendicularLines(c) => c.references(),
+            Constraint::AngleBetweenPoints(c) => c,
+            Constraint::ArcEndPointCoincident(c) => c,
+            Constraint::ArcStartPointCoincident(c) => c,
+            Constraint::EuclideanDistance(c) => c,
+            Constraint::HorizontalDistance(c) => c,
+            Constraint::VerticalDistance(c) => c,
+            Constraint::FixPoint(c) => c,
+            Constraint::EqualLength(c) => c,
+            Constraint::HorizontalLine(c) => c,
+            Constraint::VerticalLine(c) => c,
+            Constraint::ParallelLines(c) => c,
+            Constraint::PerpendicularLines(c) => c,
         }
-    }
-
-    fn loss_value(&self) -> f64 {
-        match self {
-            Constraint::AngleBetweenPoints(c) => c.loss_value(),
-            Constraint::ArcEndPointCoincident(c) => c.loss_value(),
-            Constraint::ArcStartPointCoincident(c) => c.loss_value(),
-            Constraint::EuclideanDistance(c) => c.loss_value(),
-            Constraint::HorizontalDistance(c) => c.loss_value(),
-            Constraint::VerticalDistance(c) => c.loss_value(),
-            Constraint::FixPoint(c) => c.loss_value(),
-            Constraint::EqualLength(c) => c.loss_value(),
-            Constraint::HorizontalLine(c) => c.loss_value(),
-            Constraint::VerticalLine(c) => c.loss_value(),
-            Constraint::ParallelLines(c) => c.loss_value(),
-            Constraint::PerpendicularLines(c) => c.loss_value(),
-        }
-    }
-
-    fn update_gradient(&mut self) {
-        match self {
-            Constraint::AngleBetweenPoints(c) => c.update_gradient(),
-            Constraint::ArcEndPointCoincident(c) => c.update_gradient(),
-            Constraint::ArcStartPointCoincident(c) => c.update_gradient(),
-            Constraint::EuclideanDistance(c) => c.update_gradient(),
-            Constraint::HorizontalDistance(c) => c.update_gradient(),
-            Constraint::VerticalDistance(c) => c.update_gradient(),
-            Constraint::FixPoint(c) => c.update_gradient(),
-            Constraint::EqualLength(c) => c.update_gradient(),
-            Constraint::HorizontalLine(c) => c.update_gradient(),
-            Constraint::VerticalLine(c) => c.update_gradient(),
-            Constraint::ParallelLines(c) => c.update_gradient(),
-            Constraint::PerpendicularLines(c) => c.update_gradient(),
-        }
-    }
-
-    fn get_type(&self) -> Constraint {
-        self.clone()
     }
 }
 

@@ -34,54 +34,14 @@ pub enum Primitive {
     Circle(circle::Circle),
 }
 
-impl PrimitiveLike for Primitive {
-    fn references(&self) -> Vec<PrimitiveCell> {
+impl Primitive {
+    pub fn as_primitive_like(&self) -> &dyn PrimitiveLike {
         match self {
-            Primitive::Point2(p) => p.references(),
-            Primitive::Line(l) => l.references(),
-            Primitive::Arc(a) => a.references(),
-            Primitive::Circle(c) => c.references(),
+            Primitive::Point2(p) => p,
+            Primitive::Line(l) => l,
+            Primitive::Arc(a) => a,
+            Primitive::Circle(c) => c,
         }
-    }
-
-    fn zero_gradient(&mut self) {
-        match self {
-            Primitive::Point2(p) => p.zero_gradient(),
-            Primitive::Line(l) => l.zero_gradient(),
-            Primitive::Arc(a) => a.zero_gradient(),
-            Primitive::Circle(c) => c.zero_gradient(),
-        }
-    }
-
-    fn get_data(&self) -> DVector<f64> {
-        match self {
-            Primitive::Point2(p) => p.get_data(),
-            Primitive::Line(l) => l.get_data(),
-            Primitive::Arc(a) => a.get_data(),
-            Primitive::Circle(c) => c.get_data(),
-        }
-    }
-
-    fn set_data(&mut self, data: DVectorView<f64>) {
-        match self {
-            Primitive::Point2(p) => p.set_data(data),
-            Primitive::Line(l) => l.set_data(data),
-            Primitive::Arc(a) => a.set_data(data),
-            Primitive::Circle(c) => c.set_data(data),
-        }
-    }
-
-    fn get_gradient(&self) -> DVector<f64> {
-        match self {
-            Primitive::Point2(p) => p.get_gradient(),
-            Primitive::Line(l) => l.get_gradient(),
-            Primitive::Arc(a) => a.get_gradient(),
-            Primitive::Circle(c) => c.get_gradient(),
-        }
-    }
-
-    fn to_primitive(&self) -> Primitive {
-        self.clone()
     }
 }
 
