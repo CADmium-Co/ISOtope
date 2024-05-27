@@ -4,9 +4,14 @@ use std::rc::Rc;
 use nalgebra::{DVector, DVectorView, SMatrix, SMatrixView, Vector2};
 use serde::{Deserialize, Serialize};
 
+#[cfg(feature = "tsify")]
+use tsify::Tsify;
+
 use super::Parametric;
 
 #[derive(Debug, Clone, PartialEq, PartialOrd, Serialize, Deserialize)]
+#[cfg_attr(feature = "tsify", derive(Tsify))]
+#[cfg_attr(feature = "tsify", tsify(into_wasm_abi, from_wasm_abi))]
 pub struct Point2 {
     data: Vector2<f64>,
     gradient: Vector2<f64>,

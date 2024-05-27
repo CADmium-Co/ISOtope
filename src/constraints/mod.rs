@@ -4,6 +4,9 @@ use std::rc::Rc;
 
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
+#[cfg(feature = "tsify")]
+use tsify::Tsify;
+
 use crate::primitives::Parametric;
 
 pub mod angle_between_points;
@@ -20,6 +23,8 @@ pub trait Constraint: Debug {
 }
 
 #[derive(Debug, Clone, PartialEq, PartialOrd, Serialize, Deserialize)]
+#[cfg_attr(feature = "tsify", derive(Tsify))]
+#[cfg_attr(feature = "tsify", tsify(into_wasm_abi, from_wasm_abi))]
 pub enum ConstraintType {
     AngleBetweenPoints(angle_between_points::AngleBetweenPoints),
     ArcEndPointCoincident(coincident::arc_end_point_coincident::ArcEndPointCoincident),
@@ -39,6 +44,8 @@ pub enum ConstraintType {
 
 #[repr(transparent)]
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "tsify", derive(Tsify))]
+#[cfg_attr(feature = "tsify", tsify(into_wasm_abi, from_wasm_abi))]
 pub struct ConstraintCell(pub Rc<RefCell<dyn Constraint>>);
 
 impl Serialize for ConstraintCell {

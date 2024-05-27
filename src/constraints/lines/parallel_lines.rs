@@ -3,10 +3,15 @@ use std::{cell::RefCell, rc::Rc};
 use nalgebra::{Matrix2, SMatrix};
 use serde::{Deserialize, Serialize};
 
+#[cfg(feature = "tsify")]
+use tsify::Tsify;
+
 use crate::{constraints::Constraint, primitives::line::Line};
 
 // This is a sketch constraint that makes the end point of an arc coincident with a point.
 #[derive(Debug, Clone, PartialEq, PartialOrd, Serialize, Deserialize)]
+#[cfg_attr(feature = "tsify", derive(Tsify))]
+#[cfg_attr(feature = "tsify", tsify(into_wasm_abi, from_wasm_abi))]
 pub struct ParallelLines {
     line1: Rc<RefCell<Line>>,
     line2: Rc<RefCell<Line>>,
