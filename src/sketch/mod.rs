@@ -80,10 +80,11 @@ impl Sketch {
     }
 
     pub fn primitives(&self) -> BTreeMap<u64, PrimitiveCell> {
-        self.primitives
-            .iter()
-            .map(|(k, v)| (*k, v.clone()))
-            .collect()
+        self.primitives.clone()
+    }
+
+    pub fn constraints(&self) -> VecDeque<ConstraintCell> {
+        self.constraints.clone()
     }
 
     pub fn get_n_dofs(&self) -> usize {
