@@ -8,3 +8,8 @@ geo = { version = "0.28.0", features = ["serde"] }
 nalgebra = { version = "0.32.5", features = ["serde-serialize"] }
 serde = { version = "1.0.203", features = ["derive", "rc"] }
 thiserror = "1.0.61"
+tsify = { version = "0.4.5", optional = true }
+wasm-bindgen = { version = "*", optional = true }
+
+[features]
+tsify = ["dep:tsify", "dep:wasm-bindgen"]

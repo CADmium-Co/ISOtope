@@ -5,6 +5,9 @@ use std::rc::Rc;
 use nalgebra::{DVector, DVectorView};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
+#[cfg(feature = "tsify")]
+use tsify::Tsify;
+
 pub mod arc;
 pub mod circle;
 pub mod line;
@@ -21,6 +24,8 @@ pub trait Parametric: Debug {
 }
 
 #[derive(Debug, Clone, PartialEq, PartialOrd, Serialize, Deserialize)]
+#[cfg_attr(feature = "tsify", derive(Tsify))]
+#[cfg_attr(feature = "tsify", tsify(into_wasm_abi, from_wasm_abi))]
 pub enum Primitive {
     Point2(point2::Point2),
     Line(line::Line),
@@ -81,7 +86,21 @@ impl Parametric for Primitive {
 
 #[repr(transparent)]
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "tsify", derive(Tsify))]
+#[cfg_attr(feature = "tsify", tsify(into_wasm_abi, from_wasm_abi))]
 pub struct ParametricCell(pub Rc<RefCell<dyn Parametric>>);
+
+impl Into<Primitive> for ParametricCell {
+    fn into(self) -> Primitive {
+        self.0.borrow().to_primitive()
+    }
+}
+
+impl Into<ParametricCell> for Primitive {
+    fn into(self) -> ParametricCell {
+        ParametricCell(Rc::new(RefCell::new(self)))
+    }
+}
 
 impl Serialize for ParametricCell {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
