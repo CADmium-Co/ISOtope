@@ -1,8 +1,8 @@
 use std::collections::BTreeSet;
 use std::f64::consts::{PI, TAU};
 
-use geo::Contains as _;
 use geo::Polygon;
+use geo::{Contains as _, InteriorPoint as _};
 
 use crate::{primitives::Primitive, sketch::Sketch};
 
@@ -25,7 +25,46 @@ pub fn decompose_sketch(sketch: &Sketch) -> Vec<Face> {
 }
 
 pub fn merge_faces(faces: Vec<Face>) -> Vec<Face> {
-    todo!("Merge the faces into a single face")
+    // check whether each of these new faces should returned or not by picking a
+    // random point on the new face and then checking every one of the original faces
+    // to see if it contains that point. If so, we can keep that new face
+    let mut faces_to_remove: Vec<usize> = vec![];
+    let old_faces_as_polygons: Vec<Polygon> = faces
+        .iter()
+        .map(|face| face.as_polygon())
+        .collect::<Vec<_>>();
+    for (new_face_idx, face) in faces.iter().enumerate() {
+        let as_geo_polygon = face.as_polygon();
+
+        let random_point_on_face = as_geo_polygon
+            .interior_point()
+            .expect("Every polygon should be able to yield an interior point");
+
+        let mut located = false;
+        for (_old_face_idx, old_face) in old_faces_as_polygons.iter().enumerate() {
+            if old_face.contains(&random_point_on_face) {
+                // this means the old face contains the random point on the new face
+                // so we can keep this new face
+                located = true;
+                break;
+            }
+        }
+        if !located {
+            faces_to_remove.push(new_face_idx);
+        }
+    }
+
+    // remove the faces that we don't want
+    faces_to_remove.sort();
+    faces_to_remove.reverse();
+
+    let mut merged_faces = faces.clone();
+
+    for face_to_remove in faces_to_remove {
+        merged_faces.remove(face_to_remove);
+    }
+
+    merged_faces
 }
 
 pub fn find_faces(sketch: &Sketch) -> (Vec<Face>, Vec<Segment>) {
