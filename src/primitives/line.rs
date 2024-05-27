@@ -18,6 +18,10 @@ impl Line {
     pub fn start(&self) -> Rc<RefCell<Point2>> {
         self.start.clone()
     }
+    /// Get the line's start point coordinates
+    pub fn start_pt(&self) -> nalgebra::Point2<f64> {
+        self.start.borrow().data().into()
+    }
 
     pub fn set_start(&mut self, start: Rc<RefCell<Point2>>) {
         self.start = start;
@@ -29,6 +33,10 @@ impl Line {
 
     pub fn end(&self) -> Rc<RefCell<Point2>> {
         self.end.clone()
+    }
+    /// Get the line's end point coordinates
+    pub fn end_pt(&self) -> nalgebra::Point2<f64> {
+        self.end.borrow().data().into()
     }
 
     pub fn set_end(&mut self, end: Rc<RefCell<Point2>>) {
