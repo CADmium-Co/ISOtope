@@ -64,7 +64,6 @@ impl Sketch {
         // Make sure the constraint is not already in the sketch
         if self.constraints.iter().any(|c| {
             Rc::ptr_eq(&c.0, &constraint.0)
-                || c.0.borrow().get_type() == constraint.0.borrow().get_type()
         }) {
             return Err(ISOTopeError::ConstraintAlreadyInSketch);
         }
