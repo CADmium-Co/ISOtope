@@ -9,7 +9,13 @@ pub fn intersections(a: Primitive, b: Primitive) -> Vec<nalgebra::Point2<f64>> {
     // In case two lines do overlap in parallel, we just treat the whole sketch as invalid
     // In case of two arcs or circles with same radius in same position, we treat the whole sketch as invalid, etc.
     match (a, b) {
-        (Primitive::Line(l), Primitive::Point2(p)) => line_intersect_point(&l, &p),
+        (Primitive::Line(l), Primitive::Point2(p)) | (Primitive::Point2(p), Primitive::Line(l)) => {
+            line_intersect_point(&l, &p)
+        }
+        (Primitive::Line(l_a), Primitive::Line(l_b)) => line_intersect_line(&l_a, &l_b),
+        (Primitive::Line(l), Primitive::Circle(c)) | (Primitive::Circle(c), Primitive::Line(l)) => {
+            line_intersect_circle(&l, &c)
+        }
         _ => todo!("Find all intersections between two primitives"),
     }
 }
