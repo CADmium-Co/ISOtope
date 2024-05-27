@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::constraints::ConstraintCell;
 use crate::error::ISOTopeError;
-use crate::primitives::ParametricCell;
+use crate::primitives::{point2, ParametricCell};
 
 use super::constraints::Constraint;
 use super::primitives::Parametric;
@@ -241,6 +241,27 @@ impl Sketch {
             println!("Error: {}", error);
             assert!(error < check_epsilon);
         }
+    }
+
+    // Helper functions
+    pub fn get_all_points(&self) -> BTreeMap<u64, point2::Point2> {
+        self.primitives
+            .iter()
+            .filter_map(|(k, p)| {
+                if let super::primitives::Primitive::Point2(point) = p.0.borrow().to_primitive() {
+                    Some((*k, point))
+                } else {
+                    None
+                }
+            })
+            .collect()
+    }
+
+    pub fn get_primitive_id(&self, primitive: &Rc<RefCell<dyn Parametric>>) -> Option<u64> {
+        self.primitives
+            .iter()
+            .find(|(_, p)| Rc::ptr_eq(&p.0, &primitive))
+            .map(|(k, _)| *k)
     }
 }
 
