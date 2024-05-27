@@ -23,12 +23,9 @@ The **I**terative **SO**lver for 2D Sketches. This project is a dependency free 
     - [ ] Tangent
 - All gradients are checked with finite differences to ensure correctness
 
-## Todo
-
-- [ ] Gradient descent seems to be to slow for more complex sketches. Use conjugate gradient instead to ensure a constant progress for each constraint.
-- [ ] Other approach for solver: x = x + step_size if grad > 0, x = x - step_size if grad < 0. Let step_size decay exponentially. Check if this converges faster.
-
 ## Algorithm
+
+### Modeling
 
 The algorithm is quite simple. First, we create a Sketch that constists of primitives. Primitives can also reference each other. Take for example a line that is defined by two points. If one of the points moves, the line should also move. This is done by creating a reference to the point in the line. The line will then always calculate its position based on the points.
 
@@ -82,6 +79,22 @@ $$
 
 Some constraints are more complex, like a distance constraint, but in the end all of them are a function that map the current state of the sketch to a scalar value which we want to minimize.
 
+### Problem formulation
+
+We take all the constraints and put them into a big function $L(q)$ that takes the current state of the sketch and returns the sum of all the energies of the constraints. Then our goal is
+
+$$
+\min_q L(q)
+$$
+
+Luckily, we are not only provided with $L(q)$, but also with the gradient of $L(q)$, which is a vector that points in the direction of the steepest ascent. We can use this gradient to update the state of the sketch.
+
+$$
+\nabla L(q)
+$$
+
+### Solving via gradient descent
+
 Now all we have to do is a simple gradient descent
 
 $$
@@ -89,6 +102,14 @@ q_{t+1} = q_t - \alpha \sum_i \nabla L_i(q_t)
 $$
 
 Where $\alpha$ is the step size (typicall 0.001) and $\nabla L_i(q_t)$ is the gradient of the energy of the constraints. If we do this often enough, e.g. 100000 times, we will find a state of the sketch that satisfies all the constraints as much as possible. It ends up in the same phyical state as a spring system would. Even though 100000 times sounds a like a lot, it is not for a modern PC. It just takes a couple of milliseconds.
+
+### Solving with BFGS
+
+Gradient descent is not the only way to solve this problem. There are many other solvers that are faster and more robust. One of them is the BFGS solver. It is a quasi-newton method that approximates the hessian of the loss function. This is a matrix that tells us how the gradient changes. It is a bit more complex, but also a lot faster. If you are interested in the details, check out the [wikipedia page](https://en.wikipedia.org/wiki/Broyden%E2%80%93Fletcher%E2%80%93Goldfarb%E2%80%93Shanno_algorithm).
+
+BFGS solver is the default solver people should use. It is faster and more robust than gradient descent. Also, the solutions are much more accurate.
+
+### Conflict resolution
 
 In case of conflicting constraints, we can also figure out which constraints are the ones that actually cause the conflict. Constraints that are satisfied will have a energy/loss of 0.
 
