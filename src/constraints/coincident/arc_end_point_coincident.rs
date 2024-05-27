@@ -8,7 +8,7 @@ use tsify::Tsify;
 
 use crate::{
     constraints::Constraint,
-    primitives::{arc::Arc, point2::Point2},
+    primitives::{arc::Arc, point2::Point2, ParametricCell},
 };
 
 // This is a sketch constraint that makes the end point of an arc coincident with a point.
@@ -43,8 +43,11 @@ impl ArcEndPointCoincident {
 }
 
 impl Constraint for ArcEndPointCoincident {
-    fn references(&self) -> Vec<Rc<RefCell<dyn crate::primitives::Parametric>>> {
-        vec![self.arc.clone(), self.point.clone()]
+    fn references(&self) -> Vec<ParametricCell> {
+        vec![
+            ParametricCell::Arc(self.arc.clone()),
+            ParametricCell::Point2(self.point.clone()),
+        ]
     }
 
     fn loss_value(&self) -> f64 {
@@ -113,23 +116,23 @@ mod tests {
         )));
         sketch
             .borrow_mut()
-            .add_primitive(ParametricCell(center.clone()))
+            .add_primitive(ParametricCell::Point2(center.clone()))
             .unwrap();
         sketch
             .borrow_mut()
-            .add_primitive(ParametricCell(arc1.clone()))
+            .add_primitive(ParametricCell::Arc(arc1.clone()))
             .unwrap();
         sketch
             .borrow_mut()
-            .add_primitive(ParametricCell(line2_start.clone()))
+            .add_primitive(ParametricCell::Point2(line2_start.clone()))
             .unwrap();
         sketch
             .borrow_mut()
-            .add_primitive(ParametricCell(line2_end.clone()))
+            .add_primitive(ParametricCell::Point2(line2_end.clone()))
             .unwrap();
         sketch
             .borrow_mut()
-            .add_primitive(ParametricCell(line2.clone()))
+            .add_primitive(ParametricCell::Line(line2.clone()))
             .unwrap();
 
         let constr1 = Rc::new(RefCell::new(ArcEndPointCoincident::new(

@@ -1,13 +1,10 @@
-use std::cell::RefCell;
-use std::rc::Rc;
-
 use nalgebra::{DVector, DVectorView, SMatrix, SMatrixView, Vector2};
 use serde::{Deserialize, Serialize};
 
 #[cfg(feature = "tsify")]
 use tsify::Tsify;
 
-use super::Parametric;
+use super::{Parametric, ParametricCell};
 
 #[derive(Debug, Clone, PartialEq, PartialOrd, Serialize, Deserialize)]
 #[cfg_attr(feature = "tsify", derive(Tsify))]
@@ -57,7 +54,7 @@ impl Point2 {
 }
 
 impl Parametric for Point2 {
-    fn references(&self) -> Vec<Rc<RefCell<dyn Parametric>>> {
+    fn references(&self) -> Vec<ParametricCell> {
         vec![]
     }
 

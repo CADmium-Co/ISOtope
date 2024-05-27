@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 use tsify::Tsify;
 
 use super::point2::Point2;
-use super::Parametric;
+use super::{Parametric, ParametricCell};
 
 #[derive(Debug, Clone, PartialEq, PartialOrd, Serialize, Deserialize)]
 #[cfg_attr(feature = "tsify", derive(Tsify))]
@@ -60,8 +60,11 @@ impl Line {
 }
 
 impl Parametric for Line {
-    fn references(&self) -> Vec<Rc<RefCell<dyn Parametric>>> {
-        vec![self.start.clone(), self.end.clone()]
+    fn references(&self) -> Vec<ParametricCell> {
+        vec![
+            ParametricCell::Point2(self.start.clone()),
+            ParametricCell::Point2(self.end.clone()),
+        ]
     }
 
     fn zero_gradient(&mut self) {
