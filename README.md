@@ -109,81 +109,125 @@ and can be highlighted to the user.
 Check out the examples folder at [src/examples](src/examples) for more examples.
 
 ```rust
-pub fn test_rectangle_axis_aligned() {
-    let mut sketch = Sketch::new();
+#[test]
+pub fn test_rectangle_rotated() {
+    // Create a new empty sketch
+    let sketch = Rc::new(RefCell::new(Sketch::new()));
 
+    // Create four points
     let point_a = Rc::new(RefCell::new(Point2::new(0.0, 0.0)));
     let point_b = Rc::new(RefCell::new(Point2::new(0.0, 0.0)));
     let point_c = Rc::new(RefCell::new(Point2::new(0.0, 0.0)));
     let point_d = Rc::new(RefCell::new(Point2::new(0.0, 0.0)));
 
-    sketch.borrow_mut().add_primitive(point_a.clone());
-    sketch.borrow_mut().add_primitive(point_b.clone());
-    sketch.borrow_mut().add_primitive(point_c.clone());
-    sketch.borrow_mut().add_primitive(point_d.clone());
+    // Add the points to the sketch
+    sketch
+        .borrow_mut()
+        .add_primitive(PrimitiveCell::Point2(point_a.clone()))
+        .unwrap();
+    sketch
+        .borrow_mut()
+        .add_primitive(PrimitiveCell::Point2(point_b.clone()))
+        .unwrap();
+    sketch
+        .borrow_mut()
+        .add_primitive(PrimitiveCell::Point2(point_c.clone()))
+        .unwrap();
+    sketch
+        .borrow_mut()
+        .add_primitive(PrimitiveCell::Point2(point_d.clone()))
+        .unwrap();
 
+    // Create four lines based on the points
     let line_a = Rc::new(RefCell::new(Line::new(point_a.clone(), point_b.clone())));
     let line_b = Rc::new(RefCell::new(Line::new(point_b.clone(), point_c.clone())));
     let line_c = Rc::new(RefCell::new(Line::new(point_c.clone(), point_d.clone())));
     let line_d = Rc::new(RefCell::new(Line::new(point_d.clone(), point_a.clone())));
 
-    sketch.borrow_mut().add_primitive(line_a.clone());
-    sketch.borrow_mut().add_primitive(line_b.clone());
-    sketch.borrow_mut().add_primitive(line_c.clone());
-    sketch.borrow_mut().add_primitive(line_d.clone());
+    // Add the lines to the sketch
+    sketch
+        .borrow_mut()
+        .add_primitive(PrimitiveCell::Line(line_a.clone()))
+        .unwrap();
+    sketch
+        .borrow_mut()
+        .add_primitive(PrimitiveCell::Line(line_b.clone()))
+        .unwrap();
+    sketch
+        .borrow_mut()
+        .add_primitive(PrimitiveCell::Line(line_c.clone()))
+        .unwrap();
+    sketch
+        .borrow_mut()
+        .add_primitive(PrimitiveCell::Line(line_d.clone()))
+        .unwrap();
 
     // Fix point a to origin
-    sketch.borrow_mut().add_constraint(Rc::new(RefCell::new(FixPoint::new(
-        point_a.clone(),
-        Vector2::new(0.0, 0.0),
-    ))));
+    sketch
+        .borrow_mut()
+        .add_constraint(ConstraintCell::FixPoint(Rc::new(RefCell::new(
+            FixPoint::new(point_a.clone(), Vector2::new(0.0, 0.0)),
+        ))))
+        .unwrap();
 
     // Constrain line_a and line_c to be horizontal
-    sketch.borrow_mut().add_constraint(Rc::new(RefCell::new(
-        HorizontalLine::new(line_a.clone()),
-    )));
-    sketch.borrow_mut().add_constraint(Rc::new(RefCell::new(
-        HorizontalLine::new(line_c.clone()),
-    )));
+    sketch
+        .borrow_mut()
+        .add_constraint(ConstraintCell::HorizontalLine(Rc::new(RefCell::new(
+            HorizontalLine::new(line_a.clone()),
+        ))))
+        .unwrap();
+    sketch
+        .borrow_mut()
+        .add_constraint(ConstraintCell::HorizontalLine(Rc::new(RefCell::new(
+            HorizontalLine::new(line_c.clone()),
+        ))))
+        .unwrap();
 
     // Constrain line_b and line_d to be vertical
-    sketch.borrow_mut().add_constraint(Rc::new(RefCell::new(
-        VerticalLine::new(line_b.clone()),
-    )));
-    sketch.borrow_mut().add_constraint(Rc::new(RefCell::new(
-        VerticalLine::new(line_d.clone()),
-    )));
+    sketch
+        .borrow_mut()
+        .add_constraint(ConstraintCell::VerticalLine(Rc::new(RefCell::new(
+            VerticalLine::new(line_b.clone()),
+        ))))
+        .unwrap();
+    sketch
+        .borrow_mut()
+        .add_constraint(ConstraintCell::VerticalLine(Rc::new(RefCell::new(
+            VerticalLine::new(line_d.clone()),
+        ))))
+        .unwrap();
 
     // Constrain the length of line_a to 2
-    sketch.borrow_mut().add_constraint(Rc::new(RefCell::new(
-        HorizontalDistanceBetweenPoints::new(point_a.clone(), point_b.clone(), 2.0),
-    )));
+    sketch
+        .borrow_mut()
+        .add_constraint(ConstraintCell::HorizontalDistance(Rc::new(RefCell::new(
+            HorizontalDistanceBetweenPoints::new(point_a.clone(), point_b.clone(), 2.0),
+        ))))
+        .unwrap();
 
     // Constrain the length of line_b to 3
-    sketch.borrow_mut().add_constraint(Rc::new(RefCell::new(
-        VerticalDistanceBetweenPoints::new(point_a.clone(), point_d.clone(), 3.0),
-    )));
+    sketch
+        .borrow_mut()
+        .add_constraint(ConstraintCell::VerticalDistance(Rc::new(RefCell::new(
+            VerticalDistanceBetweenPoints::new(point_a.clone(), point_d.clone(), 3.0),
+        ))))
+        .unwrap();
 
     // Now solve the sketch
-    sketch.solve(0.001, 100000);
+    let solver = BFGSSolver::new(sketch.clone());
+    solver.solve();
 
+    println!("loss = {:?}", sketch.borrow_mut().get_loss());
     println!("point_a: {:?}", point_a.as_ref().borrow());
     println!("point_b: {:?}", point_b.as_ref().borrow());
     println!("point_c: {:?}", point_c.as_ref().borrow());
     println!("point_d: {:?}", point_d.as_ref().borrow());
 
-    assert!(
-        (point_a.as_ref().borrow().data() - Vector2::new(0.0, 0.0)).norm() < 0.001
-    );
-    assert!(
-        (point_b.as_ref().borrow().data() - Vector2::new(2.0, 0.0)).norm() < 0.001
-    );
-    assert!(
-        (point_c.as_ref().borrow().data() - Vector2::new(2.0, 3.0)).norm() < 0.001
-    );
-    assert!(
-        (point_d.as_ref().borrow().data() - Vector2::new(0.0, 3.0)).norm() < 0.001
-    );
+    assert!((point_a.as_ref().borrow().data() - Vector2::new(0.0, 0.0)).norm() < 1e-10);
+    assert!((point_b.as_ref().borrow().data() - Vector2::new(2.0, 0.0)).norm() < 1e-10);
+    assert!((point_c.as_ref().borrow().data() - Vector2::new(2.0, 3.0)).norm() < 1e-10);
+    assert!((point_d.as_ref().borrow().data() - Vector2::new(0.0, 3.0)).norm() < 1e-10);
 }
 ```
 

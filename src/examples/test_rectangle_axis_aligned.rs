@@ -21,13 +21,16 @@ mod tests {
 
     #[test]
     pub fn test_rectangle_axis_aligned() {
+        // Create a new empty sketch
         let sketch = Rc::new(RefCell::new(Sketch::new()));
 
+        // Create four points
         let point_a = Rc::new(RefCell::new(Point2::new(0.0, 0.0)));
         let point_b = Rc::new(RefCell::new(Point2::new(0.0, 0.0)));
         let point_c = Rc::new(RefCell::new(Point2::new(0.0, 0.0)));
         let point_d = Rc::new(RefCell::new(Point2::new(0.0, 0.0)));
 
+        // Add the points to the sketch
         sketch
             .borrow_mut()
             .add_primitive(PrimitiveCell::Point2(point_a.clone()))
@@ -45,11 +48,13 @@ mod tests {
             .add_primitive(PrimitiveCell::Point2(point_d.clone()))
             .unwrap();
 
+        // Create four lines based on the points
         let line_a = Rc::new(RefCell::new(Line::new(point_a.clone(), point_b.clone())));
         let line_b = Rc::new(RefCell::new(Line::new(point_b.clone(), point_c.clone())));
         let line_c = Rc::new(RefCell::new(Line::new(point_c.clone(), point_d.clone())));
         let line_d = Rc::new(RefCell::new(Line::new(point_d.clone(), point_a.clone())));
 
+        // Add the lines to the sketch
         sketch
             .borrow_mut()
             .add_primitive(PrimitiveCell::Line(line_a.clone()))
@@ -129,9 +134,9 @@ mod tests {
         println!("point_c: {:?}", point_c.as_ref().borrow());
         println!("point_d: {:?}", point_d.as_ref().borrow());
 
-        assert!((point_a.as_ref().borrow().data() - Vector2::new(0.0, 0.0)).norm() < 0.001);
-        assert!((point_b.as_ref().borrow().data() - Vector2::new(2.0, 0.0)).norm() < 0.001);
-        assert!((point_c.as_ref().borrow().data() - Vector2::new(2.0, 3.0)).norm() < 0.001);
-        assert!((point_d.as_ref().borrow().data() - Vector2::new(0.0, 3.0)).norm() < 0.001);
+        assert!((point_a.as_ref().borrow().data() - Vector2::new(0.0, 0.0)).norm() < 1e-10);
+        assert!((point_b.as_ref().borrow().data() - Vector2::new(2.0, 0.0)).norm() < 1e-10);
+        assert!((point_c.as_ref().borrow().data() - Vector2::new(2.0, 3.0)).norm() < 1e-10);
+        assert!((point_d.as_ref().borrow().data() - Vector2::new(0.0, 3.0)).norm() < 1e-10);
     }
 }
