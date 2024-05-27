@@ -1,3 +1,6 @@
+use std::f64::consts::TAU;
+
+use geo::{LineString, Polygon};
 use serde::{Deserialize, Serialize};
 
 use crate::primitives::circle::Circle;
@@ -22,6 +25,41 @@ impl Ring {
                     area += start.x * end.y - end.x * start.y;
                 }
                 area / 2.0
+            }
+        }
+    }
+
+    pub fn as_polygon(&self) -> Polygon {
+        match self {
+            Ring::Circle(circle) => {
+                let mut b: Vec<(f64, f64)> = vec![];
+                let center_ptr = circle.center();
+                let center = center_ptr.borrow();
+
+                let num_pts = 36;
+                for i in 0..num_pts {
+                    let angle = i as f64 / num_pts as f64 * TAU;
+                    let x = center.x() + circle.radius() * angle.cos();
+                    let y = center.y() + circle.radius() * angle.sin();
+                    b.push((x, y));
+                }
+
+                let polygon = Polygon::new(LineString::from(b), vec![]);
+                polygon
+            }
+            Ring::Segments(segments) => {
+                // we only ever push the start point. Imagine what happens for a closed
+                // square--the final closing segment is inferred.
+                // points.push(segments.last().unwrap().get_end());
+                let points = segments
+                    .iter()
+                    .map(|s| {
+                        let start = s.get_start();
+                        (start.x, start.y)
+                    })
+                    .collect::<Vec<(f64, f64)>>();
+
+                Polygon::new(LineString::from(points), vec![])
             }
         }
     }

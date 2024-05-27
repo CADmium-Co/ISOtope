@@ -5,7 +5,7 @@ use super::ring::Ring;
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Face {
     pub exterior: Ring,
-    pub holes: Vec<Ring>,
+    pub holes: Vec<Face>,
 }
 
 impl Face {
@@ -16,7 +16,7 @@ impl Face {
         }
     }
 
-    pub fn add_hole(&mut self, hole: Ring) {
+    pub fn add_hole(&mut self, hole: Face) {
         self.holes.push(hole);
     }
 }

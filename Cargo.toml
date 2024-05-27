@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+geo = { version = "0.28.0", features = ["serde"] }
 nalgebra = { version = "0.32.5", features = ["serde-serialize"] }
 serde = { version = "1.0.203", features = ["derive", "rc"] }
 thiserror = "1.0.61"

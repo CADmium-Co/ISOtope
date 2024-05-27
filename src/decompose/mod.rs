@@ -1,6 +1,9 @@
 use std::collections::BTreeSet;
 use std::f64::consts::{PI, TAU};
 
+use geo::Contains as _;
+use geo::Polygon;
+
 use crate::{primitives::Primitive, sketch::Sketch};
 
 use self::face::Face;
@@ -12,22 +15,56 @@ pub mod ring;
 pub mod segment;
 
 pub fn decompose_sketch(sketch: &Sketch) -> Vec<Face> {
-    let _primitives = sketch
-        .primitives()
-        .iter()
-        .map(|p| p.1.borrow().to_primitive())
-        .collect::<Vec<Primitive>>();
     // A primitive is now ether a Circle, Line, or Arc. Points can be ignored.
     // Now chain all consecutive primitives that are connected into a ring.
     // - Two primitives are connected if the end of the first primitive is the start of the second primitive.
     // For now, assume there is only one ring in the sketch, such that the construction of the faces is simple.
     // For the future, we will need a more complex algorithm that can handle multiple rings. But for the MVP, this is sufficient.
 
-    todo!("Decompose the sketch into faces")
+    find_faces(sketch).0
 }
 
 pub fn merge_faces(faces: Vec<Face>) -> Vec<Face> {
     todo!("Merge the faces into a single face")
+}
+
+pub fn find_faces(sketch: &Sketch) -> (Vec<Face>, Vec<Segment>) {
+    let (rings, unused_segments) = find_rings(sketch);
+    let mut faces: Vec<Face> = rings.iter().map(|r| Face::from_ring(r.clone())).collect();
+
+    if rings.len() == 0 {
+        return (faces, unused_segments);
+    }
+
+    // this next block of code converts everything to Polygons just so we can
+    // determine what faces contain which other faces. It's a bit of a waste
+    // because geo is a relatively heavy dependency and we don't need all of it
+    let polygons: Vec<Polygon> = rings.iter().map(|r| r.as_polygon()).collect();
+    // they are already sorted from smallest to largest area - self.find_rings does this
+    let mut what_contains_what: Vec<(usize, usize)> = vec![];
+
+    for smaller_polygon_index in 0..polygons.len() - 1 {
+        let smaller_polygon = &polygons[smaller_polygon_index];
+
+        for bigger_polygon_index in smaller_polygon_index + 1..polygons.len() {
+            let bigger_polygon = &polygons[bigger_polygon_index];
+            let inside = bigger_polygon.contains(smaller_polygon);
+
+            if inside {
+                what_contains_what.push((bigger_polygon_index, smaller_polygon_index));
+                break;
+            }
+        }
+    }
+
+    // cool, now we know what faces contain which other faces. Let's just add the holes
+    for (bigger_index, smaller_index) in what_contains_what {
+        // TODO: Can this lookup fail?
+        let smaller_face = faces[smaller_index].clone();
+        faces[bigger_index].add_hole(smaller_face)
+    }
+
+    (faces, unused_segments)
 }
 
 pub fn find_rings(sketch: &Sketch) -> (Vec<Ring>, Vec<Segment>) {
