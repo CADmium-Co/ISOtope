@@ -167,8 +167,7 @@ mod tests {
     use nalgebra::Vector2;
 
     use crate::{
-        examples::test_rectangle_rotated::RotatedRectangleDemo,
-        solvers::gradient_based_solver::GradientBasedSolver,
+        examples::test_rectangle_rotated::RotatedRectangleDemo, solvers::bfgs_solver::BFGSSolver,
     };
 
     #[test]
@@ -176,8 +175,7 @@ mod tests {
         let rectangle = RotatedRectangleDemo::new();
 
         // Now solve the sketch
-        let solver =
-            GradientBasedSolver::new_with_params(rectangle.sketch.clone(), 100000, 1e-6, 1e-2);
+        let solver = BFGSSolver::new(rectangle.sketch.clone());
         solver.solve();
 
         println!("point_a: {:?}", rectangle.point_a.as_ref().borrow());
@@ -190,29 +188,29 @@ mod tests {
         );
 
         assert!(
-            (rectangle.point_a.as_ref().borrow().data() - Vector2::new(0.0, 0.0)).norm() < 0.01
+            (rectangle.point_a.as_ref().borrow().data() - Vector2::new(0.0, 0.0)).norm() < 1e-5
         );
         assert!(
             (rectangle.point_b.as_ref().borrow().data()
-                - Vector2::new(f64::sqrt(2.0), -f64::sqrt(2.0)))
+                - Vector2::new(f64::sqrt(2.0), f64::sqrt(2.0)))
             .norm()
-                < 0.01
+                < 1e-5
         );
         assert!(
             (rectangle.point_c.as_ref().borrow().data()
-                - Vector2::new(5.0 / f64::sqrt(2.0), 1.0 / f64::sqrt(2.0)))
+                - Vector2::new(5.0 / f64::sqrt(2.0), -1.0 / f64::sqrt(2.0)))
             .norm()
-                < 0.01
+                < 1e-5
         );
         assert!(
             (rectangle.point_d.as_ref().borrow().data()
-                - Vector2::new(3.0 / f64::sqrt(2.0), 3.0 / f64::sqrt(2.0)))
+                - Vector2::new(3.0 / f64::sqrt(2.0), -3.0 / f64::sqrt(2.0)))
             .norm()
-                < 0.01
+                < 1e-5
         );
         assert!(
             (rectangle.point_reference.as_ref().borrow().data() - Vector2::new(1.0, 0.0)).norm()
-                < 0.1
+                < 1e-5
         );
     }
 }

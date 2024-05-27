@@ -16,7 +16,7 @@ mod tests {
         },
         primitives::{line::Line, point2::Point2, PrimitiveCell},
         sketch::Sketch,
-        solvers::gradient_based_solver::GradientBasedSolver,
+        solvers::bfgs_solver::BFGSSolver,
     };
 
     #[test]
@@ -120,7 +120,7 @@ mod tests {
             .unwrap();
 
         // Now solve the sketch
-        let solver = GradientBasedSolver::new_with_params(sketch.clone(), 10000, 1e-6, 1e-1);
+        let solver = BFGSSolver::new(sketch.clone());
         solver.solve();
 
         println!("loss = {:?}", sketch.borrow_mut().get_loss());
