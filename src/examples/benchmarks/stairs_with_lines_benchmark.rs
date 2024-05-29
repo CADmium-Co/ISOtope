@@ -1,9 +1,16 @@
 use std::{cell::RefCell, rc::Rc};
 
+use nalgebra::Vector2;
+
 use crate::{
     constraints::{
-        distance::horizontal_distance_between_points::HorizontalDistanceBetweenPoints,
-        lines::horizontal_line::HorizontalLine, ConstraintCell,
+        distance::{
+            horizontal_distance_between_points::HorizontalDistanceBetweenPoints,
+            vertical_distance_between_points::VerticalDistanceBetweenPoints,
+        },
+        fix_point::FixPoint,
+        lines::{horizontal_line::HorizontalLine, vertical_line::VerticalLine},
+        ConstraintCell,
     },
     primitives::{line::Line, point2::Point2, PrimitiveCell},
     sketch::Sketch,
@@ -36,6 +43,13 @@ impl BenchmarkFactory for StairsWithLinesBenchmarkFactory {
             point_references.push(point);
         }
 
+        sketch
+            .borrow_mut()
+            .add_constraint(ConstraintCell::FixPoint(Rc::new(RefCell::new(
+                FixPoint::new(point_references[0].clone(), Vector2::new(0.0, 0.0)),
+            ))))
+            .unwrap();
+
         for i in 0..n - 1 {
             let line = Rc::new(RefCell::new(Line::new(
                 point_references[i].clone(),
@@ -67,8 +81,8 @@ impl BenchmarkFactory for StairsWithLinesBenchmarkFactory {
             } else {
                 sketch
                     .borrow_mut()
-                    .add_constraint(ConstraintCell::HorizontalDistance(Rc::new(RefCell::new(
-                        HorizontalDistanceBetweenPoints::new(
+                    .add_constraint(ConstraintCell::VerticalDistance(Rc::new(RefCell::new(
+                        VerticalDistanceBetweenPoints::new(
                             point_references[i].clone(),
                             point_references[i + 1].clone(),
                             0.8,
@@ -78,8 +92,8 @@ impl BenchmarkFactory for StairsWithLinesBenchmarkFactory {
 
                 sketch
                     .borrow_mut()
-                    .add_constraint(ConstraintCell::HorizontalLine(Rc::new(RefCell::new(
-                        HorizontalLine::new(line.clone()),
+                    .add_constraint(ConstraintCell::VerticalLine(Rc::new(RefCell::new(
+                        VerticalLine::new(line.clone()),
                     ))))
                     .unwrap();
             }
@@ -101,8 +115,8 @@ impl Benchmark for StairsWithLinesBenchmark {
     fn check(&self, eps: f64) -> bool {
         for i in 0..self.point_references.len() - 1 {
             let point = self.point_references[i].as_ref().borrow();
-            let true_x = (i / 2) as f64 * 0.8;
-            let true_y = ((i + 1) / 2) as f64 * 0.8;
+            let true_x = ((i + 1) / 2) as f64 * 0.8;
+            let true_y = ((i + 0) / 2) as f64 * 0.8;
             if (point.x() - true_x).abs() > eps || (point.y() - true_y).abs() > eps {
                 return false;
             }

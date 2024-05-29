@@ -43,6 +43,10 @@ impl Sketch {
         Ok(self.primitives_next_id - 1)
     }
 
+    pub fn get_num_primitives(&self) -> usize {
+        self.primitives.len()
+    }
+
     pub fn add_constraint(&mut self, constraint: ConstraintCell) -> Result<(), ISOTopeError> {
         // Make sure all referenced primitives are added to the sketch before the constraint
         for reference in constraint.borrow().references().iter() {
@@ -58,6 +62,10 @@ impl Sketch {
         self.constraints.push_back(constraint);
 
         Ok(())
+    }
+
+    pub fn get_num_constraints(&self) -> usize {
+        self.constraints.len()
     }
 
     pub fn delete_primitive(&mut self, id: u64) -> Result<(), ISOTopeError> {

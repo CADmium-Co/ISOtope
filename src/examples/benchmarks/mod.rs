@@ -47,8 +47,10 @@ mod tests {
                     let solved = benchmark.check(1e-6);
                     let error = sketch.borrow_mut().get_loss();
                     println!(
-                        "n: {},\tsolver: {},\tsolved: {},\terror: {:.2},\tduration: {}ms",
+                        "n: {:4}, \tprimitives: {:4}, \tconstraints:{:4}, \tsolver: {},\tsolved: {},\terror: {:.2},\tduration: {}ms",
                         n,
+                        sketch.borrow().get_num_primitives(),
+                        sketch.borrow().get_num_constraints(),
                         solver_name,
                         solved,
                         error,
