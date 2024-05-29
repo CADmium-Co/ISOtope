@@ -167,7 +167,8 @@ mod tests {
     use nalgebra::Vector2;
 
     use crate::{
-        examples::test_rectangle_rotated::RotatedRectangleDemo, solvers::bfgs_solver::BFGSSolver,
+        examples::test_rectangle_rotated::RotatedRectangleDemo,
+        solvers::{bfgs_solver::BFGSSolver, Solver},
     };
 
     #[test]
@@ -175,8 +176,8 @@ mod tests {
         let rectangle = RotatedRectangleDemo::new();
 
         // Now solve the sketch
-        let solver = BFGSSolver::new(rectangle.sketch.clone());
-        solver.solve();
+        let solver = BFGSSolver::new();
+        solver.solve(rectangle.sketch.clone()).unwrap();
 
         println!("point_a: {:?}", rectangle.point_a.as_ref().borrow());
         println!("point_b: {:?}", rectangle.point_b.as_ref().borrow());

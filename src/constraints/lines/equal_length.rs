@@ -106,7 +106,7 @@ mod tests {
         constraints::{lines::equal_length::EqualLength, ConstraintCell, ConstraintLike},
         primitives::{line::Line, point2::Point2, PrimitiveCell},
         sketch::Sketch,
-        solvers::gradient_based_solver::GradientBasedSolver,
+        solvers::{gradient_based_solver::GradientBasedSolver, Solver},
     };
 
     #[test]
@@ -161,8 +161,8 @@ mod tests {
         sketch
             .borrow_mut()
             .check_gradients(1e-6, constr1.clone(), 1e-6);
-        let solver = GradientBasedSolver::new(sketch.clone());
-        solver.solve();
+        let solver = GradientBasedSolver::new();
+        solver.solve(sketch.clone()).unwrap();
 
         println!(
             "line1 len: {:?}",

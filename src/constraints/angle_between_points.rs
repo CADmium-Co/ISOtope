@@ -177,6 +177,7 @@ mod tests {
 
     use crate::constraints::ConstraintCell;
     use crate::primitives::PrimitiveCell;
+    use crate::solvers::Solver;
     use crate::{
         constraints::angle_between_points::AngleBetweenPoints, constraints::ConstraintLike,
         primitives::point2::Point2, sketch::Sketch,
@@ -221,8 +222,8 @@ mod tests {
         sketch
             .borrow_mut()
             .check_gradients(1e-6, constr1.clone(), 1e-6);
-        let solver = GradientBasedSolver::new(sketch.clone());
-        solver.solve();
+        let solver = GradientBasedSolver::new();
+        solver.solve(sketch.clone()).unwrap();
 
         println!("point_a: {:?}", point_a.as_ref().borrow());
         println!("point_b: {:?}", point_b.as_ref().borrow());
@@ -280,8 +281,8 @@ mod tests {
         sketch
             .borrow_mut()
             .check_gradients(1e-6, constr1.clone(), 1e-4);
-        let solver = GradientBasedSolver::new(sketch.clone());
-        solver.solve();
+        let solver = GradientBasedSolver::new();
+        solver.solve(sketch.clone()).unwrap();
 
         println!("point_a: {:?}", point_a.as_ref().borrow());
         println!("point_b: {:?}", point_b.as_ref().borrow());

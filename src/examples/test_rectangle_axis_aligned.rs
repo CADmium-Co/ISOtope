@@ -16,7 +16,7 @@ mod tests {
         },
         primitives::{line::Line, point2::Point2, PrimitiveCell},
         sketch::Sketch,
-        solvers::bfgs_solver::BFGSSolver,
+        solvers::{bfgs_solver::BFGSSolver, Solver},
     };
 
     #[test]
@@ -125,8 +125,8 @@ mod tests {
             .unwrap();
 
         // Now solve the sketch
-        let solver = BFGSSolver::new(sketch.clone());
-        solver.solve();
+        let solver = BFGSSolver::new();
+        solver.solve(sketch.clone()).unwrap();
 
         println!("loss = {:?}", sketch.borrow_mut().get_loss());
         println!("point_a: {:?}", point_a.as_ref().borrow());

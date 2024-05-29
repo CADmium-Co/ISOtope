@@ -1,11 +1,12 @@
-use std::{cell::RefCell, rc::Rc};
+use std::{cell::RefCell, error::Error, rc::Rc};
 
 use nalgebra::DMatrix;
 
 use crate::sketch::Sketch;
 
+use super::Solver;
+
 pub struct BFGSSolver {
-    sketch: Rc<RefCell<Sketch>>,
     max_iterations: usize,
     min_loss: f64,
     step_alpha: f64,
@@ -14,9 +15,8 @@ pub struct BFGSSolver {
 }
 
 impl BFGSSolver {
-    pub fn new(sketch: Rc<RefCell<Sketch>>) -> Self {
+    pub fn new() -> Self {
         Self {
-            sketch,
             max_iterations: 1000,
             min_loss: 1e-16,
             step_alpha: 1e-2,
@@ -26,7 +26,6 @@ impl BFGSSolver {
     }
 
     pub fn new_with_params(
-        sketch: Rc<RefCell<Sketch>>,
         max_iterations: usize,
         min_loss: f64,
         step_alpha: f64,
@@ -34,7 +33,6 @@ impl BFGSSolver {
         // step_alpha_decay: f64,
     ) -> Self {
         Self {
-            sketch,
             max_iterations,
             min_loss,
             step_alpha,
@@ -42,31 +40,33 @@ impl BFGSSolver {
             // step_alpha_decay,
         }
     }
+}
 
-    pub fn solve(&self) {
+impl Solver for BFGSSolver {
+    fn solve(&self, sketch: Rc<RefCell<Sketch>>) -> Result<(), Box<dyn Error>> {
         let mut iterations = 0;
         let mut loss = f64::INFINITY;
 
         let mut h = DMatrix::identity(
-            self.sketch.borrow().get_data().len(),
-            self.sketch.borrow().get_data().len(),
+            sketch.borrow().get_data().len(),
+            sketch.borrow().get_data().len(),
         );
 
-        let mut data = self.sketch.borrow().get_data();
+        let mut data = sketch.borrow().get_data();
         let alpha = self.step_alpha;
         while iterations < self.max_iterations && loss > self.min_loss {
             // println!("Data: {:?}", data);
-            let gradient = self.sketch.borrow_mut().get_gradient();
+            let gradient = sketch.borrow_mut().get_gradient();
 
-            loss = self.sketch.borrow_mut().get_loss();
+            loss = sketch.borrow_mut().get_loss();
             // println!("Loss: {:?}", loss);
 
             let p = -(&h) * &gradient;
             let mut best_alpha = f64::INFINITY;
             for i in 0..self.alpha_search_steps {
                 let new_data = &data + alpha * i as f64 * &p;
-                self.sketch.borrow_mut().set_data(new_data);
-                let new_loss = self.sketch.borrow_mut().get_loss();
+                sketch.borrow_mut().set_data(new_data);
+                let new_loss = sketch.borrow_mut().get_loss();
                 if new_loss < loss {
                     best_alpha = alpha * i as f64;
                     loss = new_loss;
@@ -80,10 +80,10 @@ impl BFGSSolver {
             let s = best_alpha * &p;
 
             let new_data = &data + &s;
-            self.sketch.borrow_mut().set_data(new_data.clone());
+            sketch.borrow_mut().set_data(new_data.clone());
             data = new_data;
 
-            let new_gradient = self.sketch.borrow_mut().get_gradient();
+            let new_gradient = sketch.borrow_mut().get_gradient();
             let y = &new_gradient - &gradient;
 
             let s_dot_y = s.dot(&y);
@@ -95,6 +95,8 @@ impl BFGSSolver {
             iterations += 1;
             // alpha *= self.step_alpha_decay;
         }
+
+        Ok(())
     }
 }
 
@@ -103,7 +105,8 @@ mod tests {
     use nalgebra::Vector2;
 
     use crate::{
-        examples::test_rectangle_rotated::RotatedRectangleDemo, solvers::bfgs_solver::BFGSSolver,
+        examples::test_rectangle_rotated::RotatedRectangleDemo,
+        solvers::{bfgs_solver::BFGSSolver, Solver},
     };
 
     #[test]
@@ -111,8 +114,8 @@ mod tests {
         let rectangle = RotatedRectangleDemo::new();
 
         // Now solve the sketch
-        let solver = BFGSSolver::new(rectangle.sketch.clone());
-        solver.solve();
+        let solver = BFGSSolver::new();
+        solver.solve(rectangle.sketch.clone()).unwrap();
 
         println!("loss: {:?}", rectangle.sketch.borrow_mut().get_loss());
         println!("point_a: {:?}", rectangle.point_a.as_ref().borrow());

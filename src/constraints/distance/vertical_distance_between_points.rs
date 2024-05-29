@@ -128,7 +128,7 @@ mod tests {
         },
         primitives::{point2::Point2, PrimitiveCell},
         sketch::Sketch,
-        solvers::gradient_based_solver::GradientBasedSolver,
+        solvers::{gradient_based_solver::GradientBasedSolver, Solver},
     };
 
     #[test]
@@ -159,8 +159,8 @@ mod tests {
         sketch
             .borrow_mut()
             .check_gradients(1e-6, constr1.clone(), 1e-6);
-        let solver = GradientBasedSolver::new(sketch.clone());
-        solver.solve();
+        let solver = GradientBasedSolver::new();
+        solver.solve(sketch.clone()).unwrap();
 
         println!("point_a: {:?}", point_a.as_ref().borrow());
         println!("point_b: {:?}", point_b.as_ref().borrow());

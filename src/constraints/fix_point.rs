@@ -78,7 +78,7 @@ mod tests {
         constraints::{fix_point::FixPoint, ConstraintCell, ConstraintLike},
         primitives::{point2::Point2, PrimitiveCell},
         sketch::Sketch,
-        solvers::gradient_based_solver::GradientBasedSolver,
+        solvers::{gradient_based_solver::GradientBasedSolver, Solver},
     };
 
     #[test]
@@ -103,8 +103,8 @@ mod tests {
         sketch
             .borrow_mut()
             .check_gradients(1e-6, constr1.clone(), 1e-6);
-        let solver = GradientBasedSolver::new(sketch.clone());
-        solver.solve();
+        let solver = GradientBasedSolver::new();
+        solver.solve(sketch.clone()).unwrap();
 
         println!("point: {:?}", point.as_ref().borrow());
         assert!(constr1.borrow().loss_value() < 0.001,);
