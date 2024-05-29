@@ -71,14 +71,29 @@ impl Solver for BFGSSolver {
             // println!("Gradient: {:?}", gradient);
 
             loss = sketch.borrow_mut().get_loss();
-            println!("Loss: {:?}", loss);
-            println!("Alpha: {:?}", alpha);
+            // println!("Loss: {:?}", loss);
+            // println!("Alpha: {:?}", alpha);
 
             let p = -(&h) * &gradient;
             assert!(
                 p.iter().all(|x| x.is_finite()),
                 "p contains non-finite values"
             );
+
+            alpha = alpha * 2.0;
+            loop {
+                let new_data = &data + 20.0 * alpha * &p;
+                sketch.borrow_mut().set_data(new_data);
+                let new_loss = sketch.borrow_mut().get_loss();
+                if new_loss <= loss {
+                    break;
+                }
+                alpha = alpha * 0.5;
+                if alpha < 1e-10 {
+                    return Ok(());
+                }
+            }
+
             let mut best_alpha = 0.0;
             for i in 0..self.alpha_search_steps {
                 let new_data = &data + alpha * i as f64 * &p;
@@ -89,14 +104,6 @@ impl Solver for BFGSSolver {
                     loss = new_loss;
                 }
             }
-
-            // This means we are already at the minimum
-            if best_alpha == 0.0 {
-                alpha = alpha * 0.5;
-                sketch.borrow_mut().set_data(data.clone());
-                continue;
-            }
-            alpha = alpha * 1.5;
 
             let s = best_alpha * &p;
 
@@ -109,7 +116,7 @@ impl Solver for BFGSSolver {
 
             let mut s_dot_y = s.dot(&y);
             if s_dot_y.abs() < 1e-16 {
-                println!("s_dot_y is too small");
+                // println!("s_dot_y is too small");
                 s_dot_y += 1e-6;
             }
             let factor = s_dot_y + (y.transpose() * &h * &y)[(0, 0)];

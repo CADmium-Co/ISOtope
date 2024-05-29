@@ -14,15 +14,7 @@ use crate::{
 
 use super::{Benchmark, BenchmarkFactory};
 
-// This creates a stairs with lines problem that has a lot of constraints
-// It tries to build a sketch like this with n steps (e.g. 6 steps):
-//          _
-//        _|
-//      _|
-//    _|
-//  _|
-// |
-
+// This creates a circle problem from lines
 pub fn circle(n: usize) -> Vec<Vector2<f64>> {
     let mut points = Vec::new();
     for i in 0..n {
@@ -51,25 +43,17 @@ impl BenchmarkFactory for CirclesWithLinesBenchmarkFactory {
             point_references.push(point);
         }
 
-        sketch
-            .borrow_mut()
-            .add_constraint(ConstraintCell::FixPoint(Rc::new(RefCell::new(
-                FixPoint::new(
-                    point_references[0].clone(),
-                    Vector2::new(reference_points[0].x, reference_points[0].y),
-                ),
-            ))))
-            .unwrap();
-
-        sketch
-            .borrow_mut()
-            .add_constraint(ConstraintCell::FixPoint(Rc::new(RefCell::new(
-                FixPoint::new(
-                    point_references[1].clone(),
-                    Vector2::new(reference_points[1].x, reference_points[1].y),
-                ),
-            ))))
-            .unwrap();
+        for i in 0..n {
+            sketch
+                .borrow_mut()
+                .add_constraint(ConstraintCell::FixPoint(Rc::new(RefCell::new(
+                    FixPoint::new(
+                        point_references[i].clone(),
+                        Vector2::new(reference_points[i].x, reference_points[i].y),
+                    ),
+                ))))
+                .unwrap();
+        }
 
         for i in 0..n - 1 {
             let line = Rc::new(RefCell::new(Line::new(
