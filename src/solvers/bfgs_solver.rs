@@ -72,7 +72,7 @@ impl Solver for BFGSSolver {
             let curvature_condition = WOLFE_C2 * m;
             while alpha > 1e-16 {
                 let new_data = &data + alpha * &p;
-                sketch.borrow_mut().set_data(new_data.clone());
+                sketch.borrow_mut().set_data(new_data);
                 let new_loss = sketch.borrow_mut().get_loss();
                 // Sufficient decrease condition
                 if new_loss <= loss + WOLFE_C1 * alpha * m {
