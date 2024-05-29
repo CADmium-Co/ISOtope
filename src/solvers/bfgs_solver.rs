@@ -129,19 +129,19 @@ mod tests {
         );
         assert!(
             (rectangle.point_b.as_ref().borrow().data()
-                - Vector2::new(f64::sqrt(2.0), f64::sqrt(2.0)))
+                - Vector2::new(f64::sqrt(2.0), -f64::sqrt(2.0)))
             .norm()
                 < 1e-5
         );
         assert!(
             (rectangle.point_c.as_ref().borrow().data()
-                - Vector2::new(5.0 / f64::sqrt(2.0), -1.0 / f64::sqrt(2.0)))
+                - Vector2::new(5.0 / f64::sqrt(2.0), 1.0 / f64::sqrt(2.0)))
             .norm()
                 < 1e-5
         );
         assert!(
             (rectangle.point_d.as_ref().borrow().data()
-                - Vector2::new(3.0 / f64::sqrt(2.0), -3.0 / f64::sqrt(2.0)))
+                - Vector2::new(3.0 / f64::sqrt(2.0), 3.0 / f64::sqrt(2.0)))
             .norm()
                 < 1e-5
         );
