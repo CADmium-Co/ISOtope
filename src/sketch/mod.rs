@@ -240,6 +240,10 @@ impl Sketch {
             .map(|(k, _)| *k)
     }
 
+    pub fn get_primitive_by_id(&self, id: u64) -> Option<&PrimitiveCell> {
+        self.primitives.get(&id)
+    }
+
     pub fn get_faces(&self) -> Vec<Face> {
         decompose_sketch(self)
     }

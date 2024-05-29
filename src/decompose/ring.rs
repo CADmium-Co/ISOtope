@@ -7,7 +7,7 @@ use crate::primitives::circle::Circle;
 
 use super::segment::Segment;
 
-#[derive(Debug, Clone, PartialEq, PartialOrd, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialOrd, Serialize, Deserialize)]
 pub enum Ring {
     Circle(Circle),
     Segments(Vec<Segment>),
@@ -26,6 +26,29 @@ impl Ring {
                 }
                 area / 2.0
             }
+        }
+    }
+
+    pub fn adjacent_edges(&self, other: &Self) -> Option<(Vec<usize>, Vec<usize>)> {
+        match (self, other) {
+            (Ring::Segments(segments_a), Ring::Segments(segments_b)) => {
+                let mut edge_indices_a: Vec<usize> = vec![];
+                let mut edge_indices_b: Vec<usize> = vec![];
+                for (index_a, segment_a) in segments_a.iter().enumerate() {
+                    for (index_b, segment_b) in segments_b.iter().enumerate() {
+                        if segment_a.reverse_equals(segment_b) {
+                            edge_indices_a.push(index_a);
+                            edge_indices_b.push(index_b);
+                        }
+                    }
+                }
+                if edge_indices_a.len() == 0 {
+                    return None;
+                } else {
+                    Some((edge_indices_a, edge_indices_b))
+                }
+            }
+            _ => None,
         }
     }
 
@@ -61,6 +84,22 @@ impl Ring {
 
                 Polygon::new(LineString::from(points), vec![])
             }
+        }
+    }
+}
+
+impl PartialEq for Ring {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (Ring::Circle(circle_a), Ring::Circle(circle_b)) => circle_a == circle_b,
+            (Ring::Segments(segments_a), Ring::Segments(segments_b)) => {
+                segments_a.len() == segments_b.len()
+                    && segments_a
+                        .iter()
+                        .zip(segments_b.iter())
+                        .all(|(a, b)| a == b)
+            }
+            _ => false,
         }
     }
 }
