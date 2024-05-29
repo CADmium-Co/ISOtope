@@ -23,7 +23,7 @@ use super::{Benchmark, BenchmarkFactory};
 pub struct StairsWithLinesBenchmarkFactory;
 
 impl BenchmarkFactory for StairsWithLinesBenchmarkFactory {
-    fn new_benchmark(n: usize) -> Box<dyn Benchmark> {
+    fn new_benchmark(&self, n: usize) -> Box<dyn Benchmark> {
         let sketch = Rc::new(RefCell::new(Sketch::new()));
 
         let mut point_references = Vec::new();
