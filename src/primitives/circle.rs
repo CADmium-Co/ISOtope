@@ -75,6 +75,7 @@ impl PrimitiveLike for Circle {
     }
 
     fn set_data(&mut self, data: DVectorView<f64>) {
+        assert!(data.iter().all(|x| x.is_finite()));
         self.data.copy_from(&data);
     }
 

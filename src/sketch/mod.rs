@@ -135,6 +135,10 @@ impl Sketch {
         let mut i = 0;
         for primitive in self.primitives.iter() {
             let primitive_gradient = primitive.1.borrow().get_gradient();
+            assert!(
+                primitive_gradient.iter().all(|x| x.is_finite()),
+                "Gradient contains NaN or Inf"
+            );
             gradient
                 .rows_mut(i, primitive_gradient.len())
                 .copy_from(&primitive_gradient);

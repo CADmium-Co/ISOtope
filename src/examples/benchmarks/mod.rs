@@ -2,6 +2,7 @@ use std::{cell::RefCell, rc::Rc};
 
 use crate::sketch::Sketch;
 
+pub mod circle_with_lines_benchmark;
 pub mod stairs_with_lines_benchmark;
 
 pub trait BenchmarkFactory {
@@ -19,16 +20,22 @@ mod tests {
         bfgs_solver::BFGSSolver, gradient_based_solver::GradientBasedSolver, Solver,
     };
 
-    use super::{stairs_with_lines_benchmark::StairsWithLinesBenchmarkFactory, BenchmarkFactory};
+    use super::{
+        circle_with_lines_benchmark::CirclesWithLinesBenchmarkFactory,
+        stairs_with_lines_benchmark::StairsWithLinesBenchmarkFactory, BenchmarkFactory,
+    };
 
     #[ignore]
     #[test]
     // Run the benchmark manually with `cargo test --release test_benchmark -- --ignored --nocapture`
     pub fn test_benchmark() {
-        let benchmarks: Vec<(&str, Box<dyn BenchmarkFactory>)> = vec![(
-            "StairsWithLinesBenchmarkFactory",
-            Box::new(StairsWithLinesBenchmarkFactory),
-        )];
+        let benchmarks: Vec<(&str, Box<dyn BenchmarkFactory>)> = vec![
+            // (
+            //     "CirclesWithLines",
+            //     Box::new(CirclesWithLinesBenchmarkFactory),
+            // ),
+            ("StairsWithLines", Box::new(StairsWithLinesBenchmarkFactory)),
+        ];
         let solvers: Vec<(&str, Box<dyn Solver>)> = vec![
             ("GradientBasedSolver", Box::new(GradientBasedSolver::new())),
             ("BFGSSolver         ", Box::new(BFGSSolver::new())),
@@ -36,7 +43,7 @@ mod tests {
 
         for (benchmark_name, benchmark) in benchmarks.iter() {
             println!("Benchmark: {}", benchmark_name);
-            for n in &[3, 5, 10, 30, 50, 100, 300] {
+            for n in &[5, 10, 30, 50, 100, 300] {
                 for (solver_name, solver) in &solvers {
                     // Measure the time it takes to solve the benchmark
                     let benchmark = benchmark.new_benchmark(*n);

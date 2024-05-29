@@ -57,12 +57,24 @@ impl Solver for BFGSSolver {
         while iterations < self.max_iterations && loss > self.min_loss {
             // println!("Data: {:?}", data);
             let gradient = sketch.borrow_mut().get_gradient();
+            assert!(
+                gradient.iter().all(|x| x.is_finite()),
+                "gradient contains non-finite values"
+            );
+            if gradient.norm() < 1e-16 {
+                println!("Warning: gradient is too small");
+                println!("Gradient: {:?}", gradient);
+            }
 
             loss = sketch.borrow_mut().get_loss();
             // println!("Loss: {:?}", loss);
 
             let p = -(&h) * &gradient;
-            let mut best_alpha = f64::INFINITY;
+            assert!(
+                p.iter().all(|x| x.is_finite()),
+                "p contains non-finite values"
+            );
+            let mut best_alpha = 0.0;
             for i in 0..self.alpha_search_steps {
                 let new_data = &data + alpha * i as f64 * &p;
                 sketch.borrow_mut().set_data(new_data);
@@ -71,6 +83,11 @@ impl Solver for BFGSSolver {
                     best_alpha = alpha * i as f64;
                     loss = new_loss;
                 }
+            }
+
+            // This means we are already at the minimum
+            if best_alpha == 0.0 {
+                return Ok(());
             }
 
             if best_alpha >= alpha * self.alpha_search_steps as f64 * 0.8 {
@@ -86,7 +103,11 @@ impl Solver for BFGSSolver {
             let new_gradient = sketch.borrow_mut().get_gradient();
             let y = &new_gradient - &gradient;
 
-            let s_dot_y = s.dot(&y);
+            let mut s_dot_y = s.dot(&y);
+            if s_dot_y.abs() < 1e-16 {
+                println!("s_dot_y is too small");
+                s_dot_y += 1e-6;
+            }
             let factor = s_dot_y + (y.transpose() * &h * &y)[(0, 0)];
             let new_h = &h + factor * (&s * s.transpose()) / (s_dot_y * s_dot_y)
                 - (&h * &y * s.transpose() + &s * &y.transpose() * &h) / s_dot_y;

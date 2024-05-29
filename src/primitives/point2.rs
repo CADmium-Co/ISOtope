@@ -39,10 +39,12 @@ impl Point2 {
     }
 
     pub fn set_x(&mut self, x: f64) {
+        assert!(x.is_finite());
         self.data.x = x;
     }
 
     pub fn set_y(&mut self, y: f64) {
+        assert!(y.is_finite());
         self.data.y = y;
     }
 
@@ -67,6 +69,7 @@ impl PrimitiveLike for Point2 {
     }
 
     fn set_data(&mut self, data: DVectorView<f64>) {
+        assert!(data.iter().all(|x| x.is_finite()));
         self.data = Vector2::from_row_slice(data.as_slice());
     }
 

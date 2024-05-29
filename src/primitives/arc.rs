@@ -186,6 +186,7 @@ impl PrimitiveLike for Arc {
     }
 
     fn set_data(&mut self, data: DVectorView<f64>) {
+        assert!(data.iter().all(|x| x.is_finite()));
         self.data = SVector::from_row_slice(data.as_slice());
     }
 

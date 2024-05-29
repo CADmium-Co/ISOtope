@@ -29,6 +29,7 @@ impl AngleBetweenPoints {
         middle_point: Rc<RefCell<Point2>>,
         desired_angle: f64,
     ) -> Self {
+        assert!(desired_angle.is_finite());
         Self {
             point1,
             point2,
@@ -81,7 +82,14 @@ impl AngleBetweenPoints {
         let norm1 = d1.norm();
         let norm2 = d2.norm();
 
+        if norm1.abs() < 1e-6 || norm2.abs() < 1e-6 {
+            return 0.0;
+        }
+
         let cos_theta = dot_product / (norm1 * norm2);
+        if !cos_theta.is_finite() {
+            return 0.0;
+        }
         cos_theta.clamp(-1.0, 1.0).acos()
     }
 }

@@ -28,6 +28,7 @@ impl HorizontalDistanceBetweenPoints {
         point2: Rc<RefCell<Point2>>,
         desired_distance: f64,
     ) -> Self {
+        assert!(desired_distance.is_finite());
         Self {
             point1,
             point2,

@@ -27,6 +27,7 @@ impl EuclidianDistanceBetweenPoints {
         point2: Rc<RefCell<Point2>>,
         desired_distance: f64,
     ) -> Self {
+        assert!(desired_distance.is_finite());
         Self {
             point1,
             point2,
@@ -91,6 +92,9 @@ impl ConstraintLike for EuclidianDistanceBetweenPoints {
         let err = distance - self.desired_distance;
         let _loss = 0.5 * err * err;
 
+        if distance < 1e-6 {
+            return;
+        }
         let grad_loss_from_err = err;
         let grad_err_from_distance = 1.0;
         let grad_distance_from_d = d.transpose() / distance;

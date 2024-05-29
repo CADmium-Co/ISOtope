@@ -23,6 +23,7 @@ pub struct FixPoint {
 
 impl FixPoint {
     pub fn new(point: Rc<RefCell<Point2>>, desired_pos: Vector2<f64>) -> Self {
+        assert!(desired_pos.iter().all(|x| x.is_finite()));
         Self { point, desired_pos }
     }
 
