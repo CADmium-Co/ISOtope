@@ -1,17 +1,18 @@
 use std::{cell::RefCell, error::Error, rc::Rc};
 
-use nalgebra::DMatrix;
+use nalgebra::{DMatrix, UniformNorm};
 
 use crate::sketch::Sketch;
 
 use super::Solver;
 
+const WOLFE_C1: f64 = 1e-4;
+const WOLFE_C2: f64 = 0.9;
+
 pub struct BFGSSolver {
     max_iterations: usize,
     min_loss: f64,
-    step_alpha: f64,
-    alpha_search_steps: usize,
-    // step_alpha_decay: f64,
+    gradient_threshold: f64,
 }
 
 impl BFGSSolver {
@@ -19,25 +20,15 @@ impl BFGSSolver {
         Self {
             max_iterations: 1000,
             min_loss: 1e-16,
-            step_alpha: 1e-2,
-            alpha_search_steps: 400,
-            // step_alpha_decay: f64::powf(0.1, 1.0 / 1000.0),
+            gradient_threshold: 1e-8,
         }
     }
 
-    pub fn new_with_params(
-        max_iterations: usize,
-        min_loss: f64,
-        step_alpha: f64,
-        alpha_search_steps: usize,
-        // step_alpha_decay: f64,
-    ) -> Self {
+    pub fn new_with_params(max_iterations: usize, min_loss: f64, gradient_threshold: f64) -> Self {
         Self {
             max_iterations,
             min_loss,
-            step_alpha,
-            alpha_search_steps,
-            // step_alpha_decay,
+            gradient_threshold,
         }
     }
 }
@@ -45,7 +36,6 @@ impl BFGSSolver {
 impl Solver for BFGSSolver {
     fn solve(&self, sketch: Rc<RefCell<Sketch>>) -> Result<(), Box<dyn Error>> {
         let mut iterations = 0;
-        let mut loss = f64::INFINITY;
 
         let mut h = DMatrix::identity(
             sketch.borrow().get_data().len(),
@@ -53,59 +43,55 @@ impl Solver for BFGSSolver {
         );
 
         let mut data = sketch.borrow().get_data();
-        let mut alpha = self.step_alpha;
-        while iterations < self.max_iterations && loss > self.min_loss {
-            if alpha < 1e-16 {
+        let mut alpha = 1.0;
+        while iterations < self.max_iterations {
+            let loss = sketch.borrow_mut().get_loss();
+            if loss < self.min_loss {
                 break;
             }
 
-            // println!("Data: {:?}", data);
             let gradient = sketch.borrow_mut().get_gradient();
-            assert!(
-                gradient.iter().all(|x| x.is_finite()),
-                "gradient contains non-finite values"
-            );
-            if gradient.norm() < 1e-16 {
-                println!("Warning: gradient is too small");
+            if !gradient.iter().all(|x| x.is_finite()) {
+                return Err("gradient contains non-finite values".into());
             }
-            // println!("Gradient: {:?}", gradient);
 
-            loss = sketch.borrow_mut().get_loss();
-            // println!("Loss: {:?}", loss);
-            // println!("Alpha: {:?}", alpha);
+            if gradient.apply_norm(&UniformNorm) < self.gradient_threshold {
+                break;
+            }
 
             let p = -(&h) * &gradient;
-            assert!(
-                p.iter().all(|x| x.is_finite()),
-                "p contains non-finite values"
-            );
-
-            alpha = alpha * 2.0;
-            loop {
-                let new_data = &data + 20.0 * alpha * &p;
-                sketch.borrow_mut().set_data(new_data);
-                let new_loss = sketch.borrow_mut().get_loss();
-                if new_loss <= loss {
-                    break;
-                }
-                alpha = alpha * 0.5;
-                if alpha < 1e-10 {
-                    return Ok(());
-                }
+            if !p.iter().all(|x| x.is_finite()) {
+                return Err("search direction contains non-finite values".into());
             }
 
-            let mut best_alpha = 0.0;
-            for i in 0..self.alpha_search_steps {
-                let new_data = &data + alpha * i as f64 * &p;
-                sketch.borrow_mut().set_data(new_data);
-                let new_loss = sketch.borrow_mut().get_loss();
-                if new_loss < loss {
-                    best_alpha = alpha * i as f64;
-                    loss = new_loss;
-                }
+            let m = gradient.dot(&p);
+            if m > 0.0 {
+                return Err("search direction is not a descent direction".into());
             }
 
-            let s = best_alpha * &p;
+            let curvature_condition = WOLFE_C2 * m;
+            while alpha > 1e-16 {
+                let new_data = &data + alpha * &p;
+                sketch.borrow_mut().set_data(new_data.clone());
+                let new_loss = sketch.borrow_mut().get_loss();
+                // Sufficient decrease condition
+                if new_loss <= loss + WOLFE_C1 * alpha * m {
+                    // Curvature condition
+                    let new_gradient = sketch.borrow_mut().get_gradient();
+                    let curvature = p.dot(&new_gradient);
+                    if curvature >= curvature_condition {
+                        break;
+                    }
+                    alpha *= 1.5;
+                } else {
+                    alpha *= 0.5;
+                }
+            }
+            if alpha < 1e-16 {
+                return Err("could not find a suitable step size".into());
+            }
+
+            let s = alpha * &p;
 
             let new_data = &data + &s;
             sketch.borrow_mut().set_data(new_data.clone());
@@ -116,7 +102,7 @@ impl Solver for BFGSSolver {
 
             let mut s_dot_y = s.dot(&y);
             if s_dot_y.abs() < 1e-16 {
-                // println!("s_dot_y is too small");
+                println!("Warning: s_dot_y is too small");
                 s_dot_y += 1e-6;
             }
             let factor = s_dot_y + (y.transpose() * &h * &y)[(0, 0)];
@@ -125,7 +111,6 @@ impl Solver for BFGSSolver {
             h = new_h;
 
             iterations += 1;
-            // alpha *= self.step_alpha_decay;
         }
 
         Ok(())
