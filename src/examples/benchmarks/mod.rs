@@ -30,20 +30,20 @@ mod tests {
     // Run the benchmark manually with `cargo test --release test_benchmark -- --ignored --nocapture`
     pub fn test_benchmark() {
         let benchmarks: Vec<(&str, Box<dyn BenchmarkFactory>)> = vec![
-            // (
-            //     "CirclesWithLines",
-            //     Box::new(CirclesWithLinesBenchmarkFactory),
-            // ),
+            (
+                "CirclesWithLines",
+                Box::new(CirclesWithLinesBenchmarkFactory),
+            ),
             ("StairsWithLines", Box::new(StairsWithLinesBenchmarkFactory)),
         ];
         let solvers: Vec<(&str, Box<dyn Solver>)> = vec![
-            ("GradientBasedSolver", Box::new(GradientBasedSolver::new())),
+            // ("GradientBasedSolver", Box::new(GradientBasedSolver::new())),
             ("BFGSSolver         ", Box::new(BFGSSolver::new())),
         ];
 
         for (benchmark_name, benchmark) in benchmarks.iter() {
             println!("Benchmark: {}", benchmark_name);
-            for n in &[5, 10, 30, 50, 100, 300] {
+            for n in &[30, 50, 100, 300] {
                 for (solver_name, solver) in &solvers {
                     // Measure the time it takes to solve the benchmark
                     let benchmark = benchmark.new_benchmark(*n);
@@ -63,6 +63,7 @@ mod tests {
                         error,
                         duration.as_millis()
                     );
+                    return;
                 }
             }
         }

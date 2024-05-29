@@ -53,8 +53,12 @@ impl Solver for BFGSSolver {
         );
 
         let mut data = sketch.borrow().get_data();
-        let alpha = self.step_alpha;
+        let mut alpha = self.step_alpha;
         while iterations < self.max_iterations && loss > self.min_loss {
+            if alpha < 1e-16 {
+                break;
+            }
+
             // println!("Data: {:?}", data);
             let gradient = sketch.borrow_mut().get_gradient();
             assert!(
@@ -63,11 +67,12 @@ impl Solver for BFGSSolver {
             );
             if gradient.norm() < 1e-16 {
                 println!("Warning: gradient is too small");
-                println!("Gradient: {:?}", gradient);
             }
+            // println!("Gradient: {:?}", gradient);
 
             loss = sketch.borrow_mut().get_loss();
-            // println!("Loss: {:?}", loss);
+            println!("Loss: {:?}", loss);
+            println!("Alpha: {:?}", alpha);
 
             let p = -(&h) * &gradient;
             assert!(
@@ -87,12 +92,11 @@ impl Solver for BFGSSolver {
 
             // This means we are already at the minimum
             if best_alpha == 0.0 {
-                return Ok(());
+                alpha = alpha * 0.5;
+                sketch.borrow_mut().set_data(data.clone());
+                continue;
             }
-
-            if best_alpha >= alpha * self.alpha_search_steps as f64 * 0.8 {
-                println!("Warning: step_alpha is too small or alpha_search_steps is too low");
-            }
+            alpha = alpha * 1.5;
 
             let s = best_alpha * &p;
 
