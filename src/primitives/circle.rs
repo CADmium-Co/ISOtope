@@ -1,7 +1,7 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use nalgebra::{DVector, DVectorView, SMatrix, SMatrixView, SVector};
+use nalgebra::{DVectorView, SMatrix, SMatrixView, SVector};
 use serde::{Deserialize, Serialize};
 
 #[cfg(feature = "tsify")]
@@ -70,8 +70,8 @@ impl PrimitiveLike for Circle {
         self.gradient = SVector::<f64, 1>::zeros();
     }
 
-    fn get_data(&self) -> DVector<f64> {
-        DVector::from_row_slice(self.data.as_slice())
+    fn get_data(&self) -> DVectorView<f64> {
+        self.data.as_view()
     }
 
     fn set_data(&mut self, data: DVectorView<f64>) {
@@ -79,8 +79,8 @@ impl PrimitiveLike for Circle {
         self.data.copy_from(&data);
     }
 
-    fn get_gradient(&self) -> DVector<f64> {
-        DVector::from_row_slice(self.gradient.as_slice())
+    fn get_gradient(&self) -> DVectorView<f64> {
+        self.gradient.as_view()
     }
 
     fn to_primitive(&self) -> super::Primitive {

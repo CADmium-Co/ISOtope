@@ -1,13 +1,12 @@
+use std::ops::DerefMut;
 use std::{cell::RefCell, error::Error, rc::Rc};
 
 use nalgebra::{DMatrix, UniformNorm};
 
 use crate::sketch::Sketch;
+use crate::solvers::line_search::line_search_wolfe;
 
 use super::Solver;
-
-const WOLFE_C1: f64 = 1e-4;
-const WOLFE_C2: f64 = 0.9;
 
 pub struct BFGSSolver {
     max_iterations: usize,
@@ -43,7 +42,6 @@ impl Solver for BFGSSolver {
         );
 
         let mut data = sketch.borrow().get_data();
-        let mut alpha = 1.0;
         while iterations < self.max_iterations {
             let loss = sketch.borrow_mut().get_loss();
             if loss < self.min_loss {
@@ -64,32 +62,7 @@ impl Solver for BFGSSolver {
                 return Err("search direction contains non-finite values".into());
             }
 
-            let m = gradient.dot(&p);
-            if m > 0.0 {
-                return Err("search direction is not a descent direction".into());
-            }
-
-            let curvature_condition = WOLFE_C2 * m;
-            while alpha > 1e-16 {
-                let new_data = &data + alpha * &p;
-                sketch.borrow_mut().set_data(new_data);
-                let new_loss = sketch.borrow_mut().get_loss();
-                // Sufficient decrease condition
-                if new_loss <= loss + WOLFE_C1 * alpha * m {
-                    // Curvature condition
-                    let new_gradient = sketch.borrow_mut().get_gradient();
-                    let curvature = p.dot(&new_gradient);
-                    if curvature >= curvature_condition {
-                        break;
-                    }
-                    alpha *= 1.5;
-                } else {
-                    alpha *= 0.5;
-                }
-            }
-            if alpha < 1e-16 {
-                return Err("could not find a suitable step size".into());
-            }
+            let alpha = line_search_wolfe(sketch.borrow_mut().deref_mut(), &p, &gradient)?;
 
             let s = alpha * &p;
 
@@ -105,10 +78,17 @@ impl Solver for BFGSSolver {
                 // println!("Warning: s_dot_y is too small");
                 s_dot_y += 1e-6;
             }
-            let factor = s_dot_y + (y.transpose() * &h * &y)[(0, 0)];
-            let new_h = &h + factor * (&s * s.transpose()) / (s_dot_y * s_dot_y)
-                - (&h * &y * s.transpose() + &s * &y.transpose() * &h) / s_dot_y;
-            h = new_h;
+
+            let hy = &h * &y;
+            let factor = (s_dot_y + y.dot(&hy)) / (s_dot_y * s_dot_y);
+            // h = 1.0*h + factor * s * s'
+            h.ger(factor, &s, &s, 1.0);
+
+            let hys_factor = -1.0 / s_dot_y;
+            // h = 1.0*h - hy * s' / s_dot_y
+            h.ger(hys_factor, &hy, &s, 1.0);
+            // h = 1.0*h - s' * hy' / s_dot_y
+            h.ger(hys_factor, &s, &hy, 1.0);
 
             iterations += 1;
         }

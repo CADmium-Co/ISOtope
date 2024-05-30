@@ -2,6 +2,8 @@ use std::{cell::RefCell, error::Error, rc::Rc};
 
 use crate::sketch::Sketch;
 
+mod line_search;
+
 pub mod bfgs_solver;
 pub mod gauss_newton_solver;
 pub mod gradient_based_solver;

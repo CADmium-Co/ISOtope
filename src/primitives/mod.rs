@@ -3,7 +3,7 @@ use std::fmt::Debug;
 use std::ptr;
 use std::rc::Rc;
 
-use nalgebra::{DVector, DVectorView};
+use nalgebra::DVectorView;
 use serde::{Deserialize, Serialize};
 
 #[cfg(feature = "tsify")]
@@ -18,9 +18,9 @@ pub mod point2;
 pub trait PrimitiveLike: Debug {
     fn references(&self) -> Vec<PrimitiveCell>;
     fn zero_gradient(&mut self);
-    fn get_data(&self) -> DVector<f64>;
+    fn get_data(&self) -> DVectorView<f64>;
     fn set_data(&mut self, data: DVectorView<f64>);
-    fn get_gradient(&self) -> DVector<f64>;
+    fn get_gradient(&self) -> DVectorView<f64>;
     fn to_primitive(&self) -> Primitive;
 }
 

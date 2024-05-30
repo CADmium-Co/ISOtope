@@ -1,4 +1,4 @@
-use nalgebra::{DVector, DVectorView, SMatrix, SMatrixView, Vector2};
+use nalgebra::{DVectorView, SMatrix, SMatrixView, Vector2};
 use serde::{Deserialize, Serialize};
 
 #[cfg(feature = "tsify")]
@@ -64,8 +64,8 @@ impl PrimitiveLike for Point2 {
         self.gradient = Vector2::zeros();
     }
 
-    fn get_data(&self) -> DVector<f64> {
-        DVector::from_row_slice(self.data.as_slice())
+    fn get_data(&self) -> DVectorView<f64> {
+        self.data.as_view()
     }
 
     fn set_data(&mut self, data: DVectorView<f64>) {
@@ -73,8 +73,8 @@ impl PrimitiveLike for Point2 {
         self.data = Vector2::from_row_slice(data.as_slice());
     }
 
-    fn get_gradient(&self) -> DVector<f64> {
-        DVector::from_row_slice(self.gradient.as_slice())
+    fn get_gradient(&self) -> DVectorView<f64> {
+        self.gradient.as_view()
     }
 
     fn to_primitive(&self) -> super::Primitive {

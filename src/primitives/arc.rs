@@ -1,7 +1,7 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use nalgebra::{DVector, DVectorView, SMatrix, SMatrixView, SVector, Vector2};
+use nalgebra::{DVectorView, SMatrix, SMatrixView, SVector, Vector2};
 use serde::{Deserialize, Serialize};
 
 #[cfg(feature = "tsify")]
@@ -177,12 +177,12 @@ impl PrimitiveLike for Arc {
         self.gradient = SVector::<f64, 3>::zeros();
     }
 
-    fn get_data(&self) -> DVector<f64> {
-        DVector::from_row_slice(self.data.as_slice())
+    fn get_data(&self) -> DVectorView<f64> {
+        self.data.as_view()
     }
 
-    fn get_gradient(&self) -> DVector<f64> {
-        DVector::from_row_slice(self.gradient.as_slice())
+    fn get_gradient(&self) -> DVectorView<f64> {
+        self.gradient.as_view()
     }
 
     fn set_data(&mut self, data: DVectorView<f64>) {
