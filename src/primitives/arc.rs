@@ -1,7 +1,7 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use nalgebra::{DVector, DVectorView, SMatrix, SMatrixView, SVector, Vector2};
+use nalgebra::{DVectorView, SMatrix, SMatrixView, SVector, Vector2};
 use serde::{Deserialize, Serialize};
 
 #[cfg(feature = "tsify")]

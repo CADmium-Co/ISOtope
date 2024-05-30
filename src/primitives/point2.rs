@@ -1,4 +1,4 @@
-use nalgebra::{DVector, DVectorView, SMatrix, SMatrixView, Vector2};
+use nalgebra::{DVectorView, SMatrix, SMatrixView, Vector2};
 use serde::{Deserialize, Serialize};
 
 #[cfg(feature = "tsify")]

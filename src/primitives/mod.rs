@@ -3,7 +3,7 @@ use std::fmt::Debug;
 use std::ptr;
 use std::rc::Rc;
 
-use nalgebra::{DVector, DVectorView};
+use nalgebra::DVectorView;
 use serde::{Deserialize, Serialize};
 
 #[cfg(feature = "tsify")]
