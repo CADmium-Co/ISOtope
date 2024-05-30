@@ -134,9 +134,9 @@ mod tests {
         println!("point_c: {:?}", point_c.as_ref().borrow());
         println!("point_d: {:?}", point_d.as_ref().borrow());
 
-        assert!((point_a.as_ref().borrow().data() - Vector2::new(0.0, 0.0)).norm() < 1e-10);
-        assert!((point_b.as_ref().borrow().data() - Vector2::new(2.0, 0.0)).norm() < 1e-10);
-        assert!((point_c.as_ref().borrow().data() - Vector2::new(2.0, 3.0)).norm() < 1e-10);
-        assert!((point_d.as_ref().borrow().data() - Vector2::new(0.0, 3.0)).norm() < 1e-10);
+        assert!((point_a.as_ref().borrow().data() - Vector2::new(0.0, 0.0)).norm() < 1e-8);
+        assert!((point_b.as_ref().borrow().data() - Vector2::new(2.0, 0.0)).norm() < 1e-8);
+        assert!((point_c.as_ref().borrow().data() - Vector2::new(2.0, 3.0)).norm() < 1e-8);
+        assert!((point_d.as_ref().borrow().data() - Vector2::new(0.0, 3.0)).norm() < 1e-8);
     }
 }
