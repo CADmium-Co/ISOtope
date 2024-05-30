@@ -61,7 +61,11 @@ impl Segment {
         }
     }
 
-    pub fn equals_or_reverse_equals(&self, other: &Segment) -> bool {
-        self == other || self == &other.reverse()
+    pub fn reverse_equals(&self, other: &Self) -> bool {
+        self == &other.reverse()
+    }
+
+    pub fn equals_or_reverse_equals(&self, other: &Self) -> bool {
+        self == other || self.reverse_equals(other)
     }
 }
