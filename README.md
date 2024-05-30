@@ -135,31 +135,31 @@ cargo test --release test_benchmark1 -- --ignored --nocapture
 
 running 1 test
 Benchmark: CirclesWithLines
-n:    3,        primitives:    5,       constraints:   7,       solver: GradientBasedSolver     ,       solved: false,  error: 0.00,    duration: 3ms
-n:    3,        primitives:    5,       constraints:   7,       solver: GaussNewtonSolver       ,       solved: false,  error: 0.00,    duration: 32ms
+n:    3,        primitives:    5,       constraints:   7,       solver: GradientBasedSolver     ,       solved: false,  error: 0.00,    duration: 4ms
+n:    3,        primitives:    5,       constraints:   7,       solver: GaussNewtonSolver       ,       solved: false,  error: 0.00,    duration: 35ms
 n:    3,        primitives:    5,       constraints:   7,       solver: LevenbergMarquardtSolver,       solved: false,  error: 0.00,    duration: 3ms
 n:    3,        primitives:    5,       constraints:   7,       solver: BFGSSolver              ,       solved: true,   error: 0.00,    duration: 0ms
-n:    5,        primitives:    9,       constraints:  13,       solver: GradientBasedSolver     ,       solved: false,  error: 0.00,    duration: 7ms
-n:    5,        primitives:    9,       constraints:  13,       solver: GaussNewtonSolver       ,       solved: false,  error: 0.00,    duration: 74ms
-n:    5,        primitives:    9,       constraints:  13,       solver: LevenbergMarquardtSolver,       solved: false,  error: 0.00,    duration: 7ms
-n:    5,        primitives:    9,       constraints:  13,       solver: BFGSSolver              ,       solved: true,   error: 0.00,    duration: 1ms
-n:   10,        primitives:   19,       constraints:  28,       solver: GradientBasedSolver     ,       solved: false,  error: 0.00,    duration: 13ms
-n:   10,        primitives:   19,       constraints:  28,       solver: GaussNewtonSolver       ,       solved: false,  error: 1.00,    duration: 299ms
-n:   10,        primitives:   19,       constraints:  28,       solver: LevenbergMarquardtSolver,       solved: false,  error: 1.00,    duration: 29ms
-n:   10,        primitives:   19,       constraints:  28,       solver: BFGSSolver              ,       solved: true,   error: 0.00,    duration: 4ms
+n:    5,        primitives:    9,       constraints:  13,       solver: GradientBasedSolver     ,       solved: false,  error: 0.00,    duration: 8ms
+n:    5,        primitives:    9,       constraints:  13,       solver: GaussNewtonSolver       ,       solved: false,  error: 0.00,    duration: 84ms
+n:    5,        primitives:    9,       constraints:  13,       solver: LevenbergMarquardtSolver,       solved: false,  error: 0.00,    duration: 8ms
+n:    5,        primitives:    9,       constraints:  13,       solver: BFGSSolver              ,       solved: true,   error: 0.00,    duration: 0ms
+n:   10,        primitives:   19,       constraints:  28,       solver: GradientBasedSolver     ,       solved: false,  error: 0.00,    duration: 15ms
+n:   10,        primitives:   19,       constraints:  28,       solver: GaussNewtonSolver       ,       solved: false,  error: 1.00,    duration: 337ms
+n:   10,        primitives:   19,       constraints:  28,       solver: LevenbergMarquardtSolver,       solved: false,  error: 1.00,    duration: 32ms
+n:   10,        primitives:   19,       constraints:  28,       solver: BFGSSolver              ,       solved: true,   error: 0.00,    duration: 0ms
 Benchmark: StairsWithLines
-n:    3,        primitives:    5,       constraints:   5,       solver: GradientBasedSolver     ,       solved: false,  error: 0.00,    duration: 3ms
-n:    3,        primitives:    5,       constraints:   5,       solver: GaussNewtonSolver       ,       solved: false,  error: 0.00,    duration: 25ms
+n:    3,        primitives:    5,       constraints:   5,       solver: GradientBasedSolver     ,       solved: false,  error: 0.00,    duration: 4ms
+n:    3,        primitives:    5,       constraints:   5,       solver: GaussNewtonSolver       ,       solved: false,  error: 0.00,    duration: 28ms
 n:    3,        primitives:    5,       constraints:   5,       solver: LevenbergMarquardtSolver,       solved: false,  error: 0.00,    duration: 3ms
 n:    3,        primitives:    5,       constraints:   5,       solver: BFGSSolver              ,       solved: true,   error: 0.00,    duration: 0ms
-n:    5,        primitives:    9,       constraints:   9,       solver: GradientBasedSolver     ,       solved: false,  error: 0.07,    duration: 6ms
-n:    5,        primitives:    9,       constraints:   9,       solver: GaussNewtonSolver       ,       solved: false,  error: 0.00,    duration: 61ms
+n:    5,        primitives:    9,       constraints:   9,       solver: GradientBasedSolver     ,       solved: false,  error: 0.07,    duration: 7ms
+n:    5,        primitives:    9,       constraints:   9,       solver: GaussNewtonSolver       ,       solved: false,  error: 0.00,    duration: 63ms
 n:    5,        primitives:    9,       constraints:   9,       solver: LevenbergMarquardtSolver,       solved: false,  error: 0.00,    duration: 7ms
 n:    5,        primitives:    9,       constraints:   9,       solver: BFGSSolver              ,       solved: true,   error: 0.00,    duration: 0ms
 n:   10,        primitives:   19,       constraints:  19,       solver: GradientBasedSolver     ,       solved: false,  error: 0.64,    duration: 13ms
-n:   10,        primitives:   19,       constraints:  19,       solver: GaussNewtonSolver       ,       solved: false,  error: 0.00,    duration: 259ms
+n:   10,        primitives:   19,       constraints:  19,       solver: GaussNewtonSolver       ,       solved: false,  error: 0.00,    duration: 262ms
 n:   10,        primitives:   19,       constraints:  19,       solver: LevenbergMarquardtSolver,       solved: false,  error: 0.00,    duration: 29ms
-n:   10,        primitives:   19,       constraints:  19,       solver: BFGSSolver              ,       solved: true,   error: 0.00,    duration: 2ms
+n:   10,        primitives:   19,       constraints:  19,       solver: BFGSSolver              ,       solved: true,   error: 0.00,    duration: 0ms
 ```
 
 So we run some extended benchmarks on them.
@@ -169,15 +169,15 @@ cargo test --release test_benchmark2 -- --ignored --nocapture
 
 running 1 test
 Benchmark: CirclesWithLines
-n:   30,        primitives:   59,       constraints:  88,       solver: BFGSSolver         ,    solved: true,   error: 0.00,    duration: 21ms
-n:   50,        primitives:   99,       constraints: 148,       solver: BFGSSolver         ,    solved: true,   error: 0.00,    duration: 41ms
-n:  100,        primitives:  199,       constraints: 298,       solver: BFGSSolver         ,    solved: true,   error: 0.00,    duration: 94ms
-n:  300,        primitives:  599,       constraints: 898,       solver: BFGSSolver         ,    solved: true,   error: 0.00,    duration: 625ms
+n:   30,        primitives:   59,       constraints:  88,       solver: BFGSSolver         ,    solved: true,   error: 0.00,    duration: 1ms
+n:   50,        primitives:   99,       constraints: 148,       solver: BFGSSolver         ,    solved: true,   error: 0.00,    duration: 4ms
+n:  100,        primitives:  199,       constraints: 298,       solver: BFGSSolver         ,    solved: true,   error: 0.00,    duration: 23ms
+n:  300,        primitives:  599,       constraints: 898,       solver: BFGSSolver         ,    solved: true,   error: 0.00,    duration: 553ms
 Benchmark: StairsWithLines
-n:   30,        primitives:   59,       constraints:  59,       solver: BFGSSolver         ,    solved: true,   error: 0.00,    duration: 18ms
-n:   50,        primitives:   99,       constraints:  99,       solver: BFGSSolver         ,    solved: true,   error: 0.00,    duration: 49ms
-n:  100,        primitives:  199,       constraints: 199,       solver: BFGSSolver         ,    solved: true,   error: 0.00,    duration: 214ms
-n:  300,        primitives:  599,       constraints: 599,       solver: BFGSSolver         ,    solved: true,   error: 0.00,    duration: 3845ms
+n:   30,        primitives:   59,       constraints:  59,       solver: BFGSSolver         ,    solved: true,   error: 0.00,    duration: 1ms
+n:   50,        primitives:   99,       constraints:  99,       solver: BFGSSolver         ,    solved: true,   error: 0.00,    duration: 6ms
+n:  100,        primitives:  199,       constraints: 199,       solver: BFGSSolver         ,    solved: true,   error: 0.00,    duration: 56ms
+n:  300,        primitives:  599,       constraints: 599,       solver: BFGSSolver         ,    solved: true,   error: 0.00,    duration: 2800ms
 ```
 
 See how it is eben able to solve ridiculously large problems with 200 primitives in less than 1 second. It can also go higher than this.

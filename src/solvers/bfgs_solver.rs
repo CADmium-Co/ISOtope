@@ -102,7 +102,7 @@ impl Solver for BFGSSolver {
 
             let mut s_dot_y = s.dot(&y);
             if s_dot_y.abs() < 1e-16 {
-                println!("Warning: s_dot_y is too small");
+                // println!("Warning: s_dot_y is too small");
                 s_dot_y += 1e-6;
             }
             let factor = s_dot_y + (y.transpose() * &h * &y)[(0, 0)];
