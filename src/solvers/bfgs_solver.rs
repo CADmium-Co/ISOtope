@@ -119,7 +119,7 @@ impl Solver for BFGSSolver {
 
 #[cfg(test)]
 mod tests {
-    use nalgebra::Vector2;
+    use std::error::Error;
 
     use crate::{
         examples::test_rectangle_rotated::RotatedRectangleDemo,
@@ -127,7 +127,7 @@ mod tests {
     };
 
     #[test]
-    pub fn test_bfgs_solver() {
+    pub fn test_bfgs_solver() -> Result<(), Box<dyn Error>> {
         let rectangle = RotatedRectangleDemo::new();
 
         // Now solve the sketch
@@ -144,30 +144,6 @@ mod tests {
             rectangle.point_reference.as_ref().borrow()
         );
 
-        assert!(
-            (rectangle.point_a.as_ref().borrow().data() - Vector2::new(0.0, 0.0)).norm() < 1e-5
-        );
-        assert!(
-            (rectangle.point_b.as_ref().borrow().data()
-                - Vector2::new(f64::sqrt(2.0), -f64::sqrt(2.0)))
-            .norm()
-                < 1e-5
-        );
-        assert!(
-            (rectangle.point_c.as_ref().borrow().data()
-                - Vector2::new(5.0 / f64::sqrt(2.0), 1.0 / f64::sqrt(2.0)))
-            .norm()
-                < 1e-5
-        );
-        assert!(
-            (rectangle.point_d.as_ref().borrow().data()
-                - Vector2::new(3.0 / f64::sqrt(2.0), 3.0 / f64::sqrt(2.0)))
-            .norm()
-                < 1e-5
-        );
-        assert!(
-            (rectangle.point_reference.as_ref().borrow().data() - Vector2::new(1.0, 0.0)).norm()
-                < 1e-5
-        );
+        rectangle.check(1e-5)
     }
 }
