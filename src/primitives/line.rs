@@ -1,7 +1,7 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use nalgebra::{DVector, DVectorView, SMatrix, SMatrixView};
+use nalgebra::{DVector, DVectorView, SMatrix, SMatrixView, SVector};
 use serde::{Deserialize, Serialize};
 
 #[cfg(feature = "tsify")]
@@ -16,11 +16,16 @@ use super::{PrimitiveCell, PrimitiveLike};
 pub struct Line {
     start: Rc<RefCell<Point2>>,
     end: Rc<RefCell<Point2>>,
+    empty: SVector<f64, 0>,
 }
 
 impl Line {
     pub fn new(start: Rc<RefCell<Point2>>, end: Rc<RefCell<Point2>>) -> Self {
-        Self { start, end }
+        Self {
+            start,
+            end,
+            empty: SVector::<f64, 0>::zeros(),
+        }
     }
 
     pub fn start(&self) -> Rc<RefCell<Point2>> {
@@ -71,18 +76,18 @@ impl PrimitiveLike for Line {
         // Referenced points will zero their gradients automatically as they are part of the sketch
     }
 
-    fn get_data(&self) -> DVector<f64> {
+    fn get_data(&self) -> DVectorView<f64> {
         // empty vector
-        DVector::from_row_slice(&[])
+        self.empty.as_view()
     }
 
     fn set_data(&mut self, _data: DVectorView<f64>) {
         // Do nothing
     }
 
-    fn get_gradient(&self) -> DVector<f64> {
+    fn get_gradient(&self) -> DVectorView<f64> {
         // empty vector
-        DVector::from_row_slice(&[])
+        self.empty.as_view()
     }
 
     fn to_primitive(&self) -> super::Primitive {

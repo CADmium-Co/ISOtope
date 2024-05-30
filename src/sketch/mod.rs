@@ -107,7 +107,8 @@ impl Sketch {
         let mut data = DVector::zeros(self.get_n_dofs());
         let mut i = 0;
         for primitive in self.primitives.iter() {
-            let primitive_data = primitive.1.borrow().get_data();
+            let p = primitive.1.borrow();
+            let primitive_data = p.get_data();
             data.rows_mut(i, primitive_data.len())
                 .copy_from(&primitive_data);
             i += primitive_data.len();
@@ -135,7 +136,8 @@ impl Sketch {
         let mut gradient = DVector::zeros(self.get_n_dofs());
         let mut i = 0;
         for primitive in self.primitives.iter() {
-            let primitive_gradient = primitive.1.borrow().get_gradient();
+            let p = primitive.1.borrow();
+            let primitive_gradient = p.get_gradient();
             assert!(
                 primitive_gradient.iter().all(|x| x.is_finite()),
                 "Gradient contains NaN or Inf"
@@ -168,7 +170,8 @@ impl Sketch {
             // Copy the gradient of the constraint to the jacobian
             let mut j = 0;
             for primitive in self.primitives.iter() {
-                let primitive_gradient = primitive.1.borrow().get_gradient();
+                let p = primitive.1.borrow();
+                let primitive_gradient = p.get_gradient();
                 jacobian
                     .row_mut(i)
                     .columns_mut(j, primitive_gradient.len())
@@ -202,13 +205,13 @@ impl Sketch {
         // Compare to numerical gradients
         let constraint_loss = constraint.borrow().loss_value();
         for primitive in self.primitives.iter_mut() {
-            let original_value = primitive.1.borrow().get_data();
-            let analytical_gradient = primitive.1.borrow().get_gradient();
+            let original_value = primitive.1.borrow().get_data().clone_owned();
+            let analytical_gradient = primitive.1.borrow().get_gradient().clone_owned();
             let mut numerical_gradient = DVector::zeros(original_value.len());
             let n = primitive.1.borrow().get_data().len();
             assert!(n == analytical_gradient.len());
             for i in 0..n {
-                let mut new_value = original_value.clone();
+                let mut new_value = original_value.clone_owned();
                 new_value[i] += epsilon;
                 primitive
                     .1
