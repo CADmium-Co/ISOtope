@@ -1,4 +1,4 @@
-use std::{cell::RefCell, error::Error, rc::Rc};
+use std::error::Error;
 
 use crate::sketch::Sketch;
 
@@ -29,18 +29,18 @@ impl GradientBasedSolver {
 }
 
 impl Solver for GradientBasedSolver {
-    fn solve(&self, sketch: Rc<RefCell<Sketch>>) -> Result<(), Box<dyn Error>> {
+    fn solve(&self, sketch: &mut Sketch) -> Result<(), Box<dyn Error>> {
         let mut iterations = 0;
         let mut grad_norm = f64::INFINITY;
 
         while iterations < self.max_iterations && grad_norm > self.min_grad {
-            let mut data = sketch.borrow().get_data();
-            let gradient = sketch.borrow_mut().get_gradient();
+            let mut data = sketch.get_data();
+            let gradient = sketch.get_gradient();
 
             grad_norm = gradient.norm();
             data -= self.step_size * gradient;
 
-            sketch.borrow_mut().set_data(data);
+            sketch.set_data(data);
 
             iterations += 1;
         }

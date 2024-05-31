@@ -22,8 +22,7 @@ mod tests {
     #[test]
     pub fn test_rectangle_axis_aligned() {
         // Create a new empty sketch
-        let sketch = Rc::new(RefCell::new(Sketch::new()));
-
+        let mut sketch = Sketch::new();
         // Create four points
         let point_a = Rc::new(RefCell::new(Point2::new(0.0, 0.0)));
         let point_b = Rc::new(RefCell::new(Point2::new(0.0, 0.0)));
@@ -32,19 +31,15 @@ mod tests {
 
         // Add the points to the sketch
         sketch
-            .borrow_mut()
             .add_primitive(PrimitiveCell::Point2(point_a.clone()))
             .unwrap();
         sketch
-            .borrow_mut()
             .add_primitive(PrimitiveCell::Point2(point_b.clone()))
             .unwrap();
         sketch
-            .borrow_mut()
             .add_primitive(PrimitiveCell::Point2(point_c.clone()))
             .unwrap();
         sketch
-            .borrow_mut()
             .add_primitive(PrimitiveCell::Point2(point_d.clone()))
             .unwrap();
 
@@ -56,25 +51,20 @@ mod tests {
 
         // Add the lines to the sketch
         sketch
-            .borrow_mut()
             .add_primitive(PrimitiveCell::Line(line_a.clone()))
             .unwrap();
         sketch
-            .borrow_mut()
             .add_primitive(PrimitiveCell::Line(line_b.clone()))
             .unwrap();
         sketch
-            .borrow_mut()
             .add_primitive(PrimitiveCell::Line(line_c.clone()))
             .unwrap();
         sketch
-            .borrow_mut()
             .add_primitive(PrimitiveCell::Line(line_d.clone()))
             .unwrap();
 
         // Fix point a to origin
         sketch
-            .borrow_mut()
             .add_constraint(ConstraintCell::FixPoint(Rc::new(RefCell::new(
                 FixPoint::new(point_a.clone(), Vector2::new(0.0, 0.0)),
             ))))
@@ -82,13 +72,11 @@ mod tests {
 
         // Constrain line_a and line_c to be horizontal
         sketch
-            .borrow_mut()
             .add_constraint(ConstraintCell::HorizontalLine(Rc::new(RefCell::new(
                 HorizontalLine::new(line_a.clone()),
             ))))
             .unwrap();
         sketch
-            .borrow_mut()
             .add_constraint(ConstraintCell::HorizontalLine(Rc::new(RefCell::new(
                 HorizontalLine::new(line_c.clone()),
             ))))
@@ -96,13 +84,11 @@ mod tests {
 
         // Constrain line_b and line_d to be vertical
         sketch
-            .borrow_mut()
             .add_constraint(ConstraintCell::VerticalLine(Rc::new(RefCell::new(
                 VerticalLine::new(line_b.clone()),
             ))))
             .unwrap();
         sketch
-            .borrow_mut()
             .add_constraint(ConstraintCell::VerticalLine(Rc::new(RefCell::new(
                 VerticalLine::new(line_d.clone()),
             ))))
@@ -110,7 +96,6 @@ mod tests {
 
         // Constrain the length of line_a to 2
         sketch
-            .borrow_mut()
             .add_constraint(ConstraintCell::HorizontalDistance(Rc::new(RefCell::new(
                 HorizontalDistanceBetweenPoints::new(point_a.clone(), point_b.clone(), 2.0),
             ))))
@@ -118,7 +103,6 @@ mod tests {
 
         // Constrain the length of line_b to 3
         sketch
-            .borrow_mut()
             .add_constraint(ConstraintCell::VerticalDistance(Rc::new(RefCell::new(
                 VerticalDistanceBetweenPoints::new(point_a.clone(), point_d.clone(), 3.0),
             ))))
@@ -126,9 +110,9 @@ mod tests {
 
         // Now solve the sketch
         let solver = BFGSSolver::new();
-        solver.solve(sketch.clone()).unwrap();
+        solver.solve(&mut sketch).unwrap();
 
-        println!("loss = {:?}", sketch.borrow_mut().get_loss());
+        println!("loss = {:?}", sketch.get_loss());
         println!("point_a: {:?}", point_a.as_ref().borrow());
         println!("point_b: {:?}", point_b.as_ref().borrow());
         println!("point_c: {:?}", point_c.as_ref().borrow());
