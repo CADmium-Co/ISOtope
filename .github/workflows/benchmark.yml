@@ -1,0 +1,20 @@
+name: Benchmarks
+on:
+  pull_request_target:
+    branches:
+      - main
+
+jobs:
+  benchmark:
+    name: Run benchmarks
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - run: echo \`\`\` > results.txt && cargo bench -- solvers --exact | tail -n +6  >> results.txt && echo \`\`\` >> results.txt
+      - uses: thollander/actions-comment-pull-request@v2
+        with:
+          filepath: results.txt
+          comment_tag: "Benchmark Results"
