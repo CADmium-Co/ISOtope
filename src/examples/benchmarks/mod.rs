@@ -92,8 +92,10 @@ mod tests {
             ),
             ("StairsWithLines", Box::new(StairsWithLinesBenchmarkFactory)),
         ];
-        let solvers: Vec<(&str, Box<dyn Solver>)> =
-            vec![("BFGSSolver         ", Box::new(BFGSSolver::new()))];
+        let solvers: Vec<(&str, Box<dyn Solver>)> = vec![
+            ("GradientBasedSolver", Box::new(GradientBasedSolver::new())),
+            ("BFGSSolver         ", Box::new(BFGSSolver::new())),
+        ];
 
         for (benchmark_name, benchmark) in benchmarks.iter() {
             println!("Benchmark: {}", benchmark_name);
