@@ -2,7 +2,7 @@ use std::{cell::RefCell, rc::Rc};
 
 use nalgebra::Vector2;
 
-use crate::{
+use isotope::{
     constraints::{
         distance::{
             horizontal_distance_between_points::HorizontalDistanceBetweenPoints,
