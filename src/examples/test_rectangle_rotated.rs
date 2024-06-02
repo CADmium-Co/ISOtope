@@ -21,6 +21,12 @@ pub struct RotatedRectangleDemo {
     pub point_reference: Rc<RefCell<Point2>>,
 }
 
+impl Default for RotatedRectangleDemo {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl RotatedRectangleDemo {
     pub fn new() -> Self {
         let sketch = Rc::new(RefCell::new(Sketch::new()));

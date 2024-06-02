@@ -14,6 +14,12 @@ pub struct LevenbergMarquardtSolver {
     beta: f64,
 }
 
+impl Default for LevenbergMarquardtSolver {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl LevenbergMarquardtSolver {
     pub fn new() -> Self {
         Self {
