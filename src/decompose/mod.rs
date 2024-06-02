@@ -276,3 +276,144 @@ pub fn angle_difference(mut a0: f64, mut a1: f64) -> f64 {
 
     naive_diff
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::primitives::line::Line;
+    use crate::primitives::point2::Point2;
+    use crate::primitives::PrimitiveCell;
+    use geo::{line_string, Coord};
+    use std::cell::RefCell;
+    use std::rc::Rc;
+
+    #[test]
+    fn test_find_rings_none() {
+        let mut sketch = Sketch::new();
+        let point_a = Rc::new(RefCell::new(Point2::new(0.0, 0.0)));
+        let point_b = Rc::new(RefCell::new(Point2::new(1.0, 0.0)));
+        let point_c = Rc::new(RefCell::new(Point2::new(1.0, 1.0)));
+
+        sketch
+            .add_primitive(PrimitiveCell::Point2(point_a.clone()))
+            .unwrap();
+        sketch
+            .add_primitive(PrimitiveCell::Point2(point_b.clone()))
+            .unwrap();
+        sketch
+            .add_primitive(PrimitiveCell::Point2(point_c.clone()))
+            .unwrap();
+
+        let line_ab = Rc::new(RefCell::new(Line::new(point_a.clone(), point_b.clone())));
+        let line_bc = Rc::new(RefCell::new(Line::new(point_b.clone(), point_c.clone())));
+
+        sketch.add_primitive(PrimitiveCell::Line(line_ab)).unwrap();
+        sketch.add_primitive(PrimitiveCell::Line(line_bc)).unwrap();
+
+        let (rings, unused_segments) = find_rings(&sketch);
+        assert!(rings.is_empty());
+        assert_eq!(unused_segments.len(), 2);
+    }
+
+    #[test]
+    fn test_find_rings_one() {
+        let mut sketch = Sketch::new();
+        let point_a = Rc::new(RefCell::new(Point2::new(0.0, 0.0)));
+        let point_b = Rc::new(RefCell::new(Point2::new(1.0, 0.0)));
+        let point_c = Rc::new(RefCell::new(Point2::new(1.0, 1.0)));
+
+        sketch
+            .add_primitive(PrimitiveCell::Point2(point_a.clone()))
+            .unwrap();
+        sketch
+            .add_primitive(PrimitiveCell::Point2(point_b.clone()))
+            .unwrap();
+        sketch
+            .add_primitive(PrimitiveCell::Point2(point_c.clone()))
+            .unwrap();
+
+        let line_ab = Rc::new(RefCell::new(Line::new(point_a.clone(), point_b.clone())));
+        let line_bc = Rc::new(RefCell::new(Line::new(point_b.clone(), point_c.clone())));
+        let line_ca = Rc::new(RefCell::new(Line::new(point_c.clone(), point_a.clone())));
+
+        sketch.add_primitive(PrimitiveCell::Line(line_ab)).unwrap();
+        sketch.add_primitive(PrimitiveCell::Line(line_bc)).unwrap();
+        sketch.add_primitive(PrimitiveCell::Line(line_ca)).unwrap();
+
+        let (rings, unused_segments) = find_rings(&sketch);
+        assert_eq!(rings.len(), 1);
+        assert!(unused_segments.is_empty());
+    }
+
+    #[test]
+    fn test_find_rings_multiple() {
+        let mut sketch = Sketch::new();
+        let point_a = Rc::new(RefCell::new(Point2::new(-1.0, 0.0)));
+        let point_b = Rc::new(RefCell::new(Point2::new(0.0, 1.0)));
+        let point_c = Rc::new(RefCell::new(Point2::new(1.0, 0.0)));
+        let point_d = Rc::new(RefCell::new(Point2::new(0.0, -1.0)));
+        let point_e = Rc::new(RefCell::new(Point2::new(2.0, 0.0)));
+        let point_f = Rc::new(RefCell::new(Point2::new(3.0, 0.0)));
+
+        for pt in vec![&point_a, &point_b, &point_c, &point_d, &point_e, &point_f] {
+            sketch
+                .add_primitive(PrimitiveCell::Point2(pt.clone()))
+                .unwrap();
+        }
+
+        for (start, end) in [
+            // Square
+            (point_a.clone(), point_b.clone()),
+            (point_b.clone(), point_c.clone()),
+            (point_c.clone(), point_d.clone()),
+            (point_d.clone(), point_a.clone()),
+            // First Extension
+            (point_b.clone(), point_e.clone()),
+            (point_e.clone(), point_d.clone()),
+            // Second Extension
+            (point_b.clone(), point_f.clone()),
+            (point_f.clone(), point_d.clone()),
+        ] {
+            let line = Rc::new(RefCell::new(Line::new(start, end)));
+            sketch.add_primitive(PrimitiveCell::Line(line)).unwrap();
+        }
+
+        let (rings, unused_segments) = find_rings(&sketch);
+        assert_eq!(rings.len(), 3);
+        assert!(unused_segments.is_empty());
+
+        let polys = rings
+            .iter()
+            .map(|r| r.as_polygon().exterior().clone())
+            .collect::<Vec<_>>();
+        assert_eq!(
+            polys,
+            [
+                // Extension 1
+                line_string![
+                    Coord::from((0.0, 1.0)),
+                    Coord::from((1.0, 0.0)),
+                    Coord::from((0.0, -1.0)),
+                    Coord::from((2.0, 0.0)),
+                    Coord::from((0.0, 1.0)),
+                ],
+                // Extension 2
+                line_string![
+                    Coord::from((0.0, 1.0)),
+                    Coord::from((2.0, 0.0)),
+                    Coord::from((0.0, -1.0)),
+                    Coord::from((3.0, 0.0)),
+                    Coord::from((0.0, 1.0)),
+                ],
+                // Square
+                line_string![
+                    Coord::from((0.0, 1.0)),
+                    Coord::from((-1.0, 0.0)),
+                    Coord::from((0.0, -1.0)),
+                    Coord::from((1.0, 0.0)),
+                    Coord::from((0.0, 1.0)),
+                ],
+            ],
+        );
+    }
+}
