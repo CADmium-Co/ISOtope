@@ -67,7 +67,6 @@ impl Ring {
                     b.push((x, y));
                 }
 
-                
                 Polygon::new(LineString::from(b), vec![])
             }
             Ring::Segments(segments) => {
