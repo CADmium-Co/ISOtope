@@ -42,8 +42,8 @@ impl Ring {
                         }
                     }
                 }
-                if edge_indices_a.len() == 0 {
-                    return None;
+                if edge_indices_a.is_empty() {
+                    None
                 } else {
                     Some((edge_indices_a, edge_indices_b))
                 }
@@ -67,8 +67,8 @@ impl Ring {
                     b.push((x, y));
                 }
 
-                let polygon = Polygon::new(LineString::from(b), vec![]);
-                polygon
+                
+                Polygon::new(LineString::from(b), vec![])
             }
             Ring::Segments(segments) => {
                 // we only ever push the start point. Imagine what happens for a closed
