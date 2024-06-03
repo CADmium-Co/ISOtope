@@ -243,7 +243,6 @@ impl RotatedRectangleDemo {
 
 #[cfg(test)]
 mod tests {
-    use nalgebra::Vector2;
     use std::error::Error;
     use std::ops::DerefMut;
 

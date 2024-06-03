@@ -36,12 +36,6 @@ impl BFGSSolver {
     }
 }
 
-impl Default for BFGSSolver {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
 impl Solver for BFGSSolver {
     fn solve(&self, sketch: &mut Sketch) -> Result<(), Box<dyn Error>> {
         let mut iterations = 0;
@@ -109,8 +103,6 @@ impl Solver for BFGSSolver {
 mod tests {
     use std::error::Error;
     use std::ops::DerefMut;
-
-    use nalgebra::Vector2;
 
     use crate::{
         examples::test_rectangle_rotated::RotatedRectangleDemo,

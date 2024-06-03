@@ -79,8 +79,6 @@ mod tests {
     use std::error::Error;
     use std::ops::DerefMut;
 
-    use nalgebra::Vector2;
-
     use crate::{
         examples::test_rectangle_rotated::RotatedRectangleDemo,
         solvers::{levenberg_marquardt::LevenbergMarquardtSolver, Solver},

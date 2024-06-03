@@ -1,3 +1,4 @@
+use std::ops::DerefMut;
 use std::{cell::RefCell, rc::Rc};
 
 use isotope::sketch::Sketch;
@@ -53,7 +54,7 @@ pub fn test_benchmark1() {
                 let benchmark = benchmark.new_benchmark(*n);
                 let sketch = benchmark.get_sketch();
                 let start = std::time::Instant::now();
-                solver.solve(sketch.clone()).unwrap();
+                solver.solve(sketch.borrow_mut().deref_mut()).unwrap();
                 let duration = start.elapsed();
                 let solved = benchmark.check(1e-6);
                 let error = sketch.borrow_mut().get_loss();
