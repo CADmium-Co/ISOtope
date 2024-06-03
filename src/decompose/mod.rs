@@ -4,7 +4,8 @@ use std::f64::consts::{PI, TAU};
 use geo::Polygon;
 use geo::{Contains as _, InteriorPoint as _};
 
-use crate::{primitives::Primitive, sketch::Sketch};
+use crate::primitives::PrimitiveCell;
+use crate::sketch::Sketch;
 
 use self::face::Face;
 use self::ring::Ring;
@@ -36,12 +37,13 @@ pub fn merge_faces(faces: Vec<Face>) -> Vec<Face> {
     for (new_face_idx, face) in faces.iter().enumerate() {
         let as_geo_polygon = face.as_polygon();
 
+        #[allow(clippy::expect_used)]
         let random_point_on_face = as_geo_polygon
             .interior_point()
             .expect("Every polygon should be able to yield an interior point");
 
         let mut located = false;
-        for (_old_face_idx, old_face) in old_faces_as_polygons.iter().enumerate() {
+        for old_face in old_faces_as_polygons.iter() {
             if old_face.contains(&random_point_on_face) {
                 // this means the old face contains the random point on the new face
                 // so we can keep this new face
@@ -71,7 +73,7 @@ pub fn find_faces(sketch: &Sketch) -> (Vec<Face>, Vec<Segment>) {
     let (rings, unused_segments) = find_rings(sketch);
     let mut faces: Vec<Face> = rings.iter().map(|r| Face::from_ring(r.clone())).collect();
 
-    if rings.len() == 0 {
+    if rings.is_empty() {
         return (faces, unused_segments);
     }
 
@@ -82,11 +84,12 @@ pub fn find_faces(sketch: &Sketch) -> (Vec<Face>, Vec<Segment>) {
     // they are already sorted from smallest to largest area - self.find_rings does this
     let mut what_contains_what: Vec<(usize, usize)> = vec![];
 
-    for smaller_polygon_index in 0..polygons.len() - 1 {
-        let smaller_polygon = &polygons[smaller_polygon_index];
-
-        for bigger_polygon_index in smaller_polygon_index + 1..polygons.len() {
-            let bigger_polygon = &polygons[bigger_polygon_index];
+    for (smaller_polygon_index, smaller_polygon) in
+        polygons[..polygons.len() - 1].iter().enumerate()
+    {
+        for (bigger_polygon_index, bigger_polygon) in
+            polygons[smaller_polygon_index + 1..].iter().enumerate()
+        {
             let inside = bigger_polygon.contains(smaller_polygon);
 
             if inside {
@@ -107,97 +110,87 @@ pub fn find_faces(sketch: &Sketch) -> (Vec<Face>, Vec<Segment>) {
 }
 
 pub fn find_rings(sketch: &Sketch) -> (Vec<Ring>, Vec<Segment>) {
-    let init_segments = sketch
+    let init_segments: Vec<Segment> = sketch
         .primitives()
-        .iter()
-        .map(|p| p.1.borrow().to_primitive())
+        .values()
         .filter_map(|p| match p {
             // We don't consider circles - we'll just add them to the rings directly (right?)
-            Primitive::Line(l) => Some(Segment::Line(l)),
-            Primitive::Arc(a) => Some(Segment::Arc(a)),
+            PrimitiveCell::Line(l) => Some(Segment::Line(l.borrow().clone())),
+            PrimitiveCell::Arc(a) => Some(Segment::Arc(a.borrow().clone())),
             _ => None,
         })
-        .collect::<Vec<Segment>>();
-    let init_segments_len = init_segments.len();
-    let segments_reversed = init_segments
-        .iter()
-        .map(|s| s.reverse())
-        .collect::<Vec<Segment>>();
+        .collect();
+
+    let segments_reversed = init_segments.iter().map(|s| s.reverse());
 
     // We consider all given segments and their reversed counterparts
-    let all_segments = vec![init_segments, segments_reversed].concat();
+    let all_segments: Vec<Segment> = init_segments
+        .iter()
+        .cloned()
+        .chain(segments_reversed)
+        .collect();
 
-    let mut used_indices: Vec<usize> = vec![];
-    let mut new_rings: Vec<Vec<usize>> = vec![];
+    let mut used_indices: BTreeSet<usize> = BTreeSet::new();
+    let mut new_rings: Vec<Vec<&Segment>> = vec![];
 
     for (segment_index, segment) in all_segments.iter().enumerate() {
         if used_indices.contains(&segment_index) {
             continue;
         }
 
-        let mut new_ring_indices: Vec<usize> = vec![];
+        let mut new_ring_indices: Vec<(usize, &Segment)> = vec![];
         let start_point = segment.get_start();
 
         let mut next_segment_index = segment_index;
+        let mut next_segment = segment;
         for _i in 1..all_segments.len() {
-            let next_segment = all_segments.get(next_segment_index).unwrap();
-            new_ring_indices.push(next_segment_index);
-
-            next_segment_index = if let Some(index) =
-                find_next_segment_index(&all_segments, next_segment, &used_indices)
-            {
-                index
-            } else {
-                break;
-            };
+            new_ring_indices.push((next_segment_index, next_segment));
 
             if next_segment.get_end() == start_point {
-                new_rings.push(new_ring_indices.clone());
-                used_indices.extend(new_ring_indices);
+                new_rings.push(new_ring_indices.iter().map(|x| x.1).collect());
+                used_indices.extend(new_ring_indices.iter().map(|x| x.0));
                 break;
             }
+
+            (next_segment_index, next_segment) =
+                match find_next_segment(&all_segments, next_segment, &used_indices) {
+                    Some((index, segment)) => (index, segment),
+                    None => break,
+                };
         }
     }
 
-    let used_indices_set = used_indices.into_iter().collect::<BTreeSet<_>>();
-    let all_indices_set = (0..all_segments.len()).collect::<BTreeSet<_>>();
-
-    let unused_indices_set = all_indices_set
-        .difference(&used_indices_set)
-        .collect::<BTreeSet<_>>();
-    let unused_indices = unused_indices_set
+    let unused_segments = init_segments
         .iter()
-        .cloned()
-        .filter(|index| *index < &init_segments_len)
-        .collect::<Vec<_>>();
-    let unused_segments = unused_indices
-        .iter()
-        .map(|index| all_segments.get(**index).unwrap().clone())
+        .enumerate()
+        .filter_map(|(index, segment)| {
+            if used_indices.contains(&index) {
+                None
+            } else {
+                Some(segment.clone())
+            }
+        })
         .collect::<Vec<_>>();
 
     let mut all_rings: Vec<Ring> = vec![];
     for ring_indices in new_rings {
-        let ring_segments = ring_indices
-            .iter()
-            .map(|index| all_segments.get(*index).unwrap().clone())
-            .collect::<Vec<_>>();
+        let ring_segments = ring_indices.into_iter().cloned().collect::<Vec<_>>();
         all_rings.push(Ring::Segments(ring_segments));
     }
 
     // Circles are rings too
     let circles = sketch
         .primitives()
-        .iter()
-        .map(|p| p.1.borrow().to_primitive())
+        .values()
         .filter_map(|s| match s {
-            Primitive::Circle(c) => Some(Ring::Circle(c.clone())),
+            PrimitiveCell::Circle(c) => Some(Ring::Circle(c.borrow().clone())),
             _ => None,
         })
         .collect::<Vec<_>>();
     all_rings.extend(circles);
 
     // Need to implement signed_area
-    all_rings.sort_by(|a, b| a.signed_area().partial_cmp(&b.signed_area()).unwrap());
+    all_rings.sort_by(|a, b| a.signed_area().total_cmp(&b.signed_area()));
 
     all_rings = all_rings
         .iter()
@@ -208,23 +201,22 @@ pub fn find_rings(sketch: &Sketch) -> (Vec<Ring>, Vec<Segment>) {
     (all_rings, unused_segments)
 }
 
-pub fn find_next_segment_index(
-    segments: &Vec<Segment>,
+pub fn find_next_segment<'seg>(
+    segments: impl IntoIterator<Item = &'seg Segment>,
     current_segment: &Segment,
-    used_indices: &Vec<usize>,
-) -> Option<usize> {
-    let mut matches: Vec<(usize, f64, f64)> = vec![];
-    let mut this_segment_end_angle = current_segment.end_angle();
-    this_segment_end_angle = (this_segment_end_angle + PI) % (2.0 * PI);
+    used_indices: &BTreeSet<usize>,
+) -> Option<(usize, &'seg Segment)> {
+    let mut matches: Vec<((usize, &Segment), f64)> = vec![];
+    let this_segment_end_angle = (current_segment.end_angle() + PI) % (2.0 * PI);
 
-    for (idx, s2) in segments.iter().enumerate() {
+    for (idx, s2) in segments.into_iter().enumerate() {
         if used_indices.contains(&idx) {
             continue;
         }
-        if s2.continues(&current_segment) && !s2.equals_or_reverse_equals(&current_segment) {
+        if s2.continues(current_segment) && !s2.equals_or_reverse_equals(current_segment) {
             let starting_angle = s2.start_angle();
             let angle_diff = angle_difference(this_segment_end_angle, starting_angle);
-            matches.push((idx, starting_angle, angle_diff));
+            matches.push(((idx, s2), angle_diff));
             // angle_diff measures how hard you'd have to turn left to continue the path from
             // starting_segment to s2, where a straight line would be 180, a left turn 270, a right turn 90.
             // This is important later because to make the smallest loops possible, we always want to be
@@ -232,23 +224,10 @@ pub fn find_next_segment_index(
         }
     }
 
-    if matches.len() == 0 {
-        None
-    } else if matches.len() == 1 {
-        Some(matches[0].0)
-    } else {
-        let mut best_option = 0;
-        let mut hardest_left_turn = 0.0;
-
-        for o in matches.iter() {
-            if o.2 > hardest_left_turn {
-                hardest_left_turn = o.2;
-                best_option = o.0;
-            }
-        }
-
-        Some(best_option)
-    }
+    matches
+        .iter()
+        .reduce(|a, b| if a.1 > b.1 { a } else { b })
+        .map(|x| x.0)
 }
 
 pub fn angle_difference(mut a0: f64, mut a1: f64) -> f64 {
@@ -275,4 +254,145 @@ pub fn angle_difference(mut a0: f64, mut a1: f64) -> f64 {
     }
 
     naive_diff
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::primitives::line::Line;
+    use crate::primitives::point2::Point2;
+    use crate::primitives::PrimitiveCell;
+    use geo::{line_string, Coord};
+    use std::cell::RefCell;
+    use std::rc::Rc;
+
+    #[test]
+    fn test_find_rings_none() {
+        let mut sketch = Sketch::new();
+        let point_a = Rc::new(RefCell::new(Point2::new(0.0, 0.0)));
+        let point_b = Rc::new(RefCell::new(Point2::new(1.0, 0.0)));
+        let point_c = Rc::new(RefCell::new(Point2::new(1.0, 1.0)));
+
+        sketch
+            .add_primitive(PrimitiveCell::Point2(point_a.clone()))
+            .unwrap();
+        sketch
+            .add_primitive(PrimitiveCell::Point2(point_b.clone()))
+            .unwrap();
+        sketch
+            .add_primitive(PrimitiveCell::Point2(point_c.clone()))
+            .unwrap();
+
+        let line_ab = Rc::new(RefCell::new(Line::new(point_a.clone(), point_b.clone())));
+        let line_bc = Rc::new(RefCell::new(Line::new(point_b.clone(), point_c.clone())));
+
+        sketch.add_primitive(PrimitiveCell::Line(line_ab)).unwrap();
+        sketch.add_primitive(PrimitiveCell::Line(line_bc)).unwrap();
+
+        let (rings, unused_segments) = find_rings(&sketch);
+        assert!(rings.is_empty());
+        assert_eq!(unused_segments.len(), 2);
+    }
+
+    #[test]
+    fn test_find_rings_one() {
+        let mut sketch = Sketch::new();
+        let point_a = Rc::new(RefCell::new(Point2::new(0.0, 0.0)));
+        let point_b = Rc::new(RefCell::new(Point2::new(1.0, 0.0)));
+        let point_c = Rc::new(RefCell::new(Point2::new(1.0, 1.0)));
+
+        sketch
+            .add_primitive(PrimitiveCell::Point2(point_a.clone()))
+            .unwrap();
+        sketch
+            .add_primitive(PrimitiveCell::Point2(point_b.clone()))
+            .unwrap();
+        sketch
+            .add_primitive(PrimitiveCell::Point2(point_c.clone()))
+            .unwrap();
+
+        let line_ab = Rc::new(RefCell::new(Line::new(point_a.clone(), point_b.clone())));
+        let line_bc = Rc::new(RefCell::new(Line::new(point_b.clone(), point_c.clone())));
+        let line_ca = Rc::new(RefCell::new(Line::new(point_c.clone(), point_a.clone())));
+
+        sketch.add_primitive(PrimitiveCell::Line(line_ab)).unwrap();
+        sketch.add_primitive(PrimitiveCell::Line(line_bc)).unwrap();
+        sketch.add_primitive(PrimitiveCell::Line(line_ca)).unwrap();
+
+        let (rings, unused_segments) = find_rings(&sketch);
+        assert_eq!(rings.len(), 1);
+        assert!(unused_segments.is_empty());
+    }
+
+    #[test]
+    fn test_find_rings_multiple() {
+        let mut sketch = Sketch::new();
+        let point_a = Rc::new(RefCell::new(Point2::new(-1.0, 0.0)));
+        let point_b = Rc::new(RefCell::new(Point2::new(0.0, 1.0)));
+        let point_c = Rc::new(RefCell::new(Point2::new(1.0, 0.0)));
+        let point_d = Rc::new(RefCell::new(Point2::new(0.0, -1.0)));
+        let point_e = Rc::new(RefCell::new(Point2::new(2.0, 0.0)));
+        let point_f = Rc::new(RefCell::new(Point2::new(3.0, 0.0)));
+
+        for pt in vec![&point_a, &point_b, &point_c, &point_d, &point_e, &point_f] {
+            sketch
+                .add_primitive(PrimitiveCell::Point2(pt.clone()))
+                .unwrap();
+        }
+
+        for (start, end) in [
+            // Square
+            (point_a.clone(), point_b.clone()),
+            (point_b.clone(), point_c.clone()),
+            (point_c.clone(), point_d.clone()),
+            (point_d.clone(), point_a.clone()),
+            // First Extension
+            (point_b.clone(), point_e.clone()),
+            (point_e.clone(), point_d.clone()),
+            // Second Extension
+            (point_b.clone(), point_f.clone()),
+            (point_f.clone(), point_d.clone()),
+        ] {
+            let line = Rc::new(RefCell::new(Line::new(start, end)));
+            sketch.add_primitive(PrimitiveCell::Line(line)).unwrap();
+        }
+
+        let (rings, unused_segments) = find_rings(&sketch);
+        assert_eq!(rings.len(), 3);
+        assert!(unused_segments.is_empty());
+
+        let polys = rings
+            .iter()
+            .map(|r| r.as_polygon().exterior().clone())
+            .collect::<Vec<_>>();
+        assert_eq!(
+            polys,
+            [
+                // Extension 1
+                line_string![
+                    Coord::from((0.0, 1.0)),
+                    Coord::from((1.0, 0.0)),
+                    Coord::from((0.0, -1.0)),
+                    Coord::from((2.0, 0.0)),
+                    Coord::from((0.0, 1.0)),
+                ],
+                // Extension 2
+                line_string![
+                    Coord::from((0.0, 1.0)),
+                    Coord::from((2.0, 0.0)),
+                    Coord::from((0.0, -1.0)),
+                    Coord::from((3.0, 0.0)),
+                    Coord::from((0.0, 1.0)),
+                ],
+                // Square
+                line_string![
+                    Coord::from((0.0, 1.0)),
+                    Coord::from((-1.0, 0.0)),
+                    Coord::from((0.0, -1.0)),
+                    Coord::from((1.0, 0.0)),
+                    Coord::from((0.0, 1.0)),
+                ],
+            ],
+        );
+    }
 }

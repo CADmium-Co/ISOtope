@@ -2,7 +2,7 @@ use std::{cell::RefCell, rc::Rc};
 
 use nalgebra::Vector2;
 
-use crate::{
+use isotope::{
     constraints::{
         distance::{
             horizontal_distance_between_points::HorizontalDistanceBetweenPoints,
@@ -116,7 +116,7 @@ impl Benchmark for StairsWithLinesBenchmark {
         for i in 0..self.point_references.len() - 1 {
             let point = self.point_references[i].as_ref().borrow();
             let true_x = ((i + 1) / 2) as f64 * 0.8;
-            let true_y = ((i + 0) / 2) as f64 * 0.8;
+            let true_y = (i / 2) as f64 * 0.8;
             if (point.x() - true_x).abs() > eps || (point.y() - true_y).abs() > eps {
                 return false;
             }

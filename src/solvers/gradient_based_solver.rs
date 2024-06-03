@@ -1,5 +1,6 @@
 use std::ops::DerefMut;
 use std::{cell::RefCell, error::Error, rc::Rc};
+use std::error::Error;
 
 use crate::sketch::Sketch;
 use crate::solvers::line_search::line_search_wolfe;
@@ -10,6 +11,12 @@ pub struct GradientBasedSolver {
     max_iterations: usize,
     min_loss: f64,
     min_grad: f64,
+}
+
+impl Default for GradientBasedSolver {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl GradientBasedSolver {
@@ -31,7 +38,7 @@ impl GradientBasedSolver {
 }
 
 impl Solver for GradientBasedSolver {
-    fn solve(&self, sketch: Rc<RefCell<Sketch>>) -> Result<(), Box<dyn Error>> {
+    fn solve(&self, sketch: &mut Sketch) -> Result<(), Box<dyn Error>> {
         let mut iterations = 0;
 
         let mut gradient = sketch.borrow_mut().get_gradient();

@@ -1,7 +1,5 @@
-use std::ops::DerefMut;
-use std::{cell::RefCell, error::Error, rc::Rc};
-
 use nalgebra::{DMatrix, UniformNorm};
+use std::error::Error;
 
 use crate::sketch::Sketch;
 use crate::solvers::line_search::line_search_wolfe;
@@ -12,6 +10,12 @@ pub struct BFGSSolver {
     max_iterations: usize,
     min_loss: f64,
     gradient_threshold: f64,
+}
+
+impl Default for BFGSSolver {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl BFGSSolver {
@@ -32,23 +36,27 @@ impl BFGSSolver {
     }
 }
 
+impl Default for BFGSSolver {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Solver for BFGSSolver {
-    fn solve(&self, sketch: Rc<RefCell<Sketch>>) -> Result<(), Box<dyn Error>> {
+    fn solve(&self, sketch: &mut Sketch) -> Result<(), Box<dyn Error>> {
         let mut iterations = 0;
+        let mut data = sketch.get_data();
+        let n = data.len();
 
-        let mut h = DMatrix::identity(
-            sketch.borrow().get_data().len(),
-            sketch.borrow().get_data().len(),
-        );
+        let mut h = DMatrix::identity(n, n);
 
-        let mut data = sketch.borrow().get_data();
         while iterations < self.max_iterations {
-            let loss = sketch.borrow_mut().get_loss();
+            let loss = sketch.get_loss();
             if loss < self.min_loss {
                 break;
             }
 
-            let gradient = sketch.borrow_mut().get_gradient();
+            let gradient = sketch.get_gradient();
             if !gradient.iter().all(|x| x.is_finite()) {
                 return Err("gradient contains non-finite values".into());
             }
@@ -62,15 +70,15 @@ impl Solver for BFGSSolver {
                 return Err("search direction contains non-finite values".into());
             }
 
-            let alpha = line_search_wolfe(sketch.borrow_mut().deref_mut(), &p, &gradient)?;
+            let alpha = line_search_wolfe(sketch, &p, &gradient)?;
 
             let s = alpha * &p;
 
             let new_data = &data + &s;
-            sketch.borrow_mut().set_data(new_data.clone());
+            sketch.set_data(new_data.clone());
             data = new_data;
 
-            let new_gradient = sketch.borrow_mut().get_gradient();
+            let new_gradient = sketch.get_gradient();
             let y = &new_gradient - &gradient;
 
             let mut s_dot_y = s.dot(&y);
@@ -99,6 +107,9 @@ impl Solver for BFGSSolver {
 
 #[cfg(test)]
 mod tests {
+    use std::error::Error;
+    use std::ops::DerefMut;
+
     use nalgebra::Vector2;
 
     use crate::{
@@ -107,12 +118,14 @@ mod tests {
     };
 
     #[test]
-    pub fn test_bfgs_solver() {
+    pub fn test_bfgs_solver() -> Result<(), Box<dyn Error>> {
         let rectangle = RotatedRectangleDemo::new();
 
         // Now solve the sketch
         let solver = BFGSSolver::new();
-        solver.solve(rectangle.sketch.clone()).unwrap();
+        solver
+            .solve(rectangle.sketch.borrow_mut().deref_mut())
+            .unwrap();
 
         println!("loss: {:?}", rectangle.sketch.borrow_mut().get_loss());
         println!("point_a: {:?}", rectangle.point_a.as_ref().borrow());
@@ -124,30 +137,6 @@ mod tests {
             rectangle.point_reference.as_ref().borrow()
         );
 
-        assert!(
-            (rectangle.point_a.as_ref().borrow().data() - Vector2::new(0.0, 0.0)).norm() < 1e-5
-        );
-        assert!(
-            (rectangle.point_b.as_ref().borrow().data()
-                - Vector2::new(f64::sqrt(2.0), -f64::sqrt(2.0)))
-            .norm()
-                < 1e-5
-        );
-        assert!(
-            (rectangle.point_c.as_ref().borrow().data()
-                - Vector2::new(5.0 / f64::sqrt(2.0), 1.0 / f64::sqrt(2.0)))
-            .norm()
-                < 1e-5
-        );
-        assert!(
-            (rectangle.point_d.as_ref().borrow().data()
-                - Vector2::new(3.0 / f64::sqrt(2.0), 3.0 / f64::sqrt(2.0)))
-            .norm()
-                < 1e-5
-        );
-        assert!(
-            (rectangle.point_reference.as_ref().borrow().data() - Vector2::new(1.0, 0.0)).norm()
-                < 1e-5
-        );
+        rectangle.check(1e-5)
     }
 }

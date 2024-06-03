@@ -2,7 +2,7 @@ use std::{cell::RefCell, rc::Rc};
 
 use nalgebra::Vector2;
 
-use crate::{
+use isotope::{
     constraints::{
         angle_between_points::AngleBetweenPoints,
         distance::euclidian_distance_between_points::EuclidianDistanceBetweenPoints,
@@ -19,7 +19,7 @@ pub fn circle(n: usize) -> Vec<Vector2<f64>> {
     let mut points = Vec::new();
     for i in 0..n {
         let x = ((i + 1) / 2) as f64 * 0.8;
-        let y = ((i + 0) / 2) as f64 * 0.8;
+        let y = (i / 2) as f64 * 0.8;
         points.push(Vector2::new(x, y));
     }
     points

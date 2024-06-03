@@ -13,3 +13,7 @@ wasm-bindgen = { version = "*", optional = true }
 
 [features]
 tsify = ["dep:tsify", "dep:wasm-bindgen"]
+
+[[bench]]
+name = "solvers"
+harness = false
