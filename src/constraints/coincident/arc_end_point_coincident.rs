@@ -98,7 +98,7 @@ mod tests {
 
     #[test]
     fn test_arc_end_point_coincident() {
-        let sketch = Rc::new(RefCell::new(Sketch::new()));
+        let mut sketch = Sketch::new();
 
         let center = Rc::new(RefCell::new(Point2::new(0.0, 0.0)));
         let arc1 = Rc::new(RefCell::new(Arc::new(
@@ -115,23 +115,18 @@ mod tests {
             line2_end.clone(),
         )));
         sketch
-            .borrow_mut()
             .add_primitive(PrimitiveCell::Point2(center.clone()))
             .unwrap();
         sketch
-            .borrow_mut()
             .add_primitive(PrimitiveCell::Arc(arc1.clone()))
             .unwrap();
         sketch
-            .borrow_mut()
             .add_primitive(PrimitiveCell::Point2(line2_start.clone()))
             .unwrap();
         sketch
-            .borrow_mut()
             .add_primitive(PrimitiveCell::Point2(line2_end.clone()))
             .unwrap();
         sketch
-            .borrow_mut()
             .add_primitive(PrimitiveCell::Line(line2.clone()))
             .unwrap();
 
@@ -140,15 +135,12 @@ mod tests {
             line2_start.clone(),
         )));
         sketch
-            .borrow_mut()
             .add_constraint(ConstraintCell::ArcEndPointCoincident(constr1.clone()))
             .unwrap();
 
-        sketch
-            .borrow_mut()
-            .check_gradients(1e-6, constr1.clone(), 1e-5);
+        sketch.check_gradients(1e-6, constr1.clone(), 1e-5);
         let solver = GradientBasedSolver::new();
-        solver.solve(sketch.clone()).unwrap();
+        solver.solve(&mut sketch).unwrap();
 
         println!("arc1: {:?}", arc1.as_ref().borrow());
         println!("arc1 end point: {:?}", arc1.as_ref().borrow().end_point());

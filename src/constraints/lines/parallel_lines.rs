@@ -139,7 +139,7 @@ mod tests {
 
     #[test]
     fn test_parallel_line() {
-        let sketch = Rc::new(RefCell::new(Sketch::new()));
+        let mut sketch = Sketch::new();
 
         let line1_start = Rc::new(RefCell::new(Point2::new(3.0, 4.0)));
         let line1_end = Rc::new(RefCell::new(Point2::new(5.0, 6.0)));
@@ -148,15 +148,12 @@ mod tests {
             line1_end.clone(),
         )));
         sketch
-            .borrow_mut()
             .add_primitive(PrimitiveCell::Point2(line1_start.clone()))
             .unwrap();
         sketch
-            .borrow_mut()
             .add_primitive(PrimitiveCell::Point2(line1_end.clone()))
             .unwrap();
         sketch
-            .borrow_mut()
             .add_primitive(PrimitiveCell::Line(line1.clone()))
             .unwrap();
 
@@ -168,15 +165,12 @@ mod tests {
         )));
 
         sketch
-            .borrow_mut()
             .add_primitive(PrimitiveCell::Point2(line2_start.clone()))
             .unwrap();
         sketch
-            .borrow_mut()
             .add_primitive(PrimitiveCell::Point2(line2_end.clone()))
             .unwrap();
         sketch
-            .borrow_mut()
             .add_primitive(PrimitiveCell::Line(line2.clone()))
             .unwrap();
 
@@ -185,15 +179,12 @@ mod tests {
             line2.clone(),
         )));
         sketch
-            .borrow_mut()
             .add_constraint(ConstraintCell::ParallelLines(constr1.clone()))
             .unwrap();
 
-        sketch
-            .borrow_mut()
-            .check_gradients(1e-6, constr1.clone(), 1e-6);
+        sketch.check_gradients(1e-6, constr1.clone(), 1e-6);
         let solver = GradientBasedSolver::new();
-        solver.solve(sketch.clone()).unwrap();
+        solver.solve(&mut sketch).unwrap();
 
         println!(
             "line1_dir: {:?}",

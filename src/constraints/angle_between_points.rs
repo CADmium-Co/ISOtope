@@ -181,6 +181,7 @@ impl ConstraintLike for AngleBetweenPoints {
 // Run some tests
 #[cfg(test)]
 mod tests {
+
     use std::{cell::RefCell, rc::Rc};
 
     use crate::constraints::ConstraintCell;
@@ -194,21 +195,18 @@ mod tests {
 
     #[test]
     fn test_angle_between_points() {
-        let sketch = Rc::new(RefCell::new(Sketch::new()));
+        let mut sketch = Sketch::new();
 
         let point_a = Rc::new(RefCell::new(Point2::new(1.0, 0.0)));
         let point_b = Rc::new(RefCell::new(Point2::new(0.0, 1.0)));
         let point_middle = Rc::new(RefCell::new(Point2::new(0.0, 0.0)));
         sketch
-            .borrow_mut()
             .add_primitive(PrimitiveCell::Point2(point_a.clone()))
             .unwrap();
         sketch
-            .borrow_mut()
             .add_primitive(PrimitiveCell::Point2(point_b.clone()))
             .unwrap();
         sketch
-            .borrow_mut()
             .add_primitive(PrimitiveCell::Point2(point_middle.clone()))
             .unwrap();
 
@@ -219,7 +217,6 @@ mod tests {
             std::f64::consts::PI / 4.0,
         )));
         sketch
-            .borrow_mut()
             .add_constraint(ConstraintCell::AngleBetweenPoints(constr1.clone()))
             .unwrap();
 
@@ -227,11 +224,9 @@ mod tests {
             "current angle: {}",
             constr1.borrow().current_angle() * 180.0 / std::f64::consts::PI
         );
-        sketch
-            .borrow_mut()
-            .check_gradients(1e-6, constr1.clone(), 1e-6);
+        sketch.check_gradients(1e-6, constr1.clone(), 1e-6);
         let solver = GradientBasedSolver::new();
-        solver.solve(sketch.clone()).unwrap();
+        solver.solve(&mut sketch).unwrap();
 
         println!("point_a: {:?}", point_a.as_ref().borrow());
         println!("point_b: {:?}", point_b.as_ref().borrow());
@@ -247,7 +242,7 @@ mod tests {
 
     #[test]
     fn test_specific_case() {
-        let sketch = Rc::new(RefCell::new(Sketch::new()));
+        let mut sketch = Sketch::new();
 
         let point_a = Rc::new(RefCell::new(Point2::new(
             0.7805516932908316,
@@ -263,15 +258,12 @@ mod tests {
         )));
 
         sketch
-            .borrow_mut()
             .add_primitive(PrimitiveCell::Point2(point_a.clone()))
             .unwrap();
         sketch
-            .borrow_mut()
             .add_primitive(PrimitiveCell::Point2(point_b.clone()))
             .unwrap();
         sketch
-            .borrow_mut()
             .add_primitive(PrimitiveCell::Point2(point_middle.clone()))
             .unwrap();
 
@@ -282,15 +274,12 @@ mod tests {
             std::f64::consts::PI / 2.0,
         )));
         sketch
-            .borrow_mut()
             .add_constraint(ConstraintCell::AngleBetweenPoints(constr1.clone()))
             .unwrap();
 
-        sketch
-            .borrow_mut()
-            .check_gradients(1e-6, constr1.clone(), 1e-4);
+        sketch.check_gradients(1e-6, constr1.clone(), 1e-4);
         let solver = GradientBasedSolver::new();
-        solver.solve(sketch.clone()).unwrap();
+        solver.solve(&mut sketch).unwrap();
 
         println!("point_a: {:?}", point_a.as_ref().borrow());
         println!("point_b: {:?}", point_b.as_ref().borrow());

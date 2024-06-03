@@ -243,7 +243,9 @@ impl RotatedRectangleDemo {
 
 #[cfg(test)]
 mod tests {
+    use nalgebra::Vector2;
     use std::error::Error;
+    use std::ops::DerefMut;
 
     use crate::{
         examples::test_rectangle_rotated::RotatedRectangleDemo,
@@ -256,7 +258,9 @@ mod tests {
 
         // Now solve the sketch
         let solver = BFGSSolver::new();
-        solver.solve(rectangle.sketch.clone()).unwrap();
+        solver
+            .solve(rectangle.sketch.borrow_mut().deref_mut())
+            .unwrap();
 
         println!("point_a: {:?}", rectangle.point_a.as_ref().borrow());
         println!("point_b: {:?}", rectangle.point_b.as_ref().borrow());
