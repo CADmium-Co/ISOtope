@@ -14,6 +14,12 @@ pub struct BFGSSolver {
     gradient_threshold: f64,
 }
 
+impl Default for BFGSSolver {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl BFGSSolver {
     pub fn new() -> Self {
         Self {

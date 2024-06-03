@@ -10,6 +10,12 @@ pub struct GradientBasedSolver {
     step_size: f64,
 }
 
+impl Default for GradientBasedSolver {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl GradientBasedSolver {
     pub fn new() -> Self {
         Self {

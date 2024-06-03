@@ -11,6 +11,12 @@ pub struct GaussNewtonSolver {
     pseudo_inverse_eps: f64,
 }
 
+impl Default for GaussNewtonSolver {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl GaussNewtonSolver {
     pub fn new() -> Self {
         Self {
