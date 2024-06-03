@@ -2,7 +2,7 @@ use std::{cell::RefCell, rc::Rc};
 
 use nalgebra::Vector2;
 
-use crate::{
+use isotope::{
     constraints::{
         angle_between_points::AngleBetweenPoints,
         distance::euclidian_distance_between_points::EuclidianDistanceBetweenPoints,
