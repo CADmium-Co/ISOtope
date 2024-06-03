@@ -1,4 +1,4 @@
-use std::{cell::RefCell, error::Error, rc::Rc};
+use std::error::Error;
 
 use crate::sketch::Sketch;
 
@@ -38,15 +38,15 @@ impl GaussNewtonSolver {
 }
 
 impl Solver for GaussNewtonSolver {
-    fn solve(&self, sketch: Rc<RefCell<Sketch>>) -> Result<(), Box<dyn Error>> {
+    fn solve(&self, sketch: &mut Sketch) -> Result<(), Box<dyn Error>> {
         let mut iterations = 0;
         let mut loss_sum = f64::INFINITY;
 
         while iterations < self.max_iterations && loss_sum > self.min_loss {
-            let mut data = sketch.borrow().get_data();
-            let losses = sketch.borrow().get_loss_per_constraint();
+            let mut data = sketch.get_data();
+            let losses = sketch.get_loss_per_constraint();
             loss_sum = losses.sum();
-            let jacobian = sketch.borrow_mut().get_jacobian();
+            let jacobian = sketch.get_jacobian();
 
             data -= (jacobian.transpose() * jacobian.clone())
                 .clone()
@@ -55,7 +55,7 @@ impl Solver for GaussNewtonSolver {
                 * &losses
                 * self.step_size;
 
-            sketch.borrow_mut().set_data(data);
+            sketch.set_data(data);
 
             iterations += 1;
         }
@@ -65,7 +65,9 @@ impl Solver for GaussNewtonSolver {
 
 #[cfg(test)]
 mod tests {
+    use nalgebra::Vector2;
     use std::error::Error;
+    use std::ops::DerefMut;
 
     use crate::{
         examples::test_rectangle_rotated::RotatedRectangleDemo,
@@ -78,17 +80,16 @@ mod tests {
 
         // Now solve the sketch
         let solver = GaussNewtonSolver::new_with_params(500, 1e-8, 1e0);
-        solver.solve(rectangle.sketch.clone()).unwrap();
+        solver
+            .solve(rectangle.sketch.borrow_mut().deref_mut())
+            .unwrap();
 
         println!("loss: {:?}", rectangle.sketch.borrow_mut().get_loss());
-        println!("point_a: {:?}", rectangle.point_a.as_ref().borrow());
-        println!("point_b: {:?}", rectangle.point_b.as_ref().borrow());
-        println!("point_c: {:?}", rectangle.point_c.as_ref().borrow());
-        println!("point_d: {:?}", rectangle.point_d.as_ref().borrow());
-        println!(
-            "point_reference: {:?}",
-            rectangle.point_reference.as_ref().borrow()
-        );
+        println!("point_a: {:?}", rectangle.point_a.as_ref());
+        println!("point_b: {:?}", rectangle.point_b.as_ref());
+        println!("point_c: {:?}", rectangle.point_c.as_ref());
+        println!("point_d: {:?}", rectangle.point_d.as_ref());
+        println!("point_reference: {:?}", rectangle.point_reference.as_ref());
 
         rectangle.check(1e-1)
     }
