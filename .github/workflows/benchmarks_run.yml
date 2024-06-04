@@ -30,7 +30,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: benchmark_results
-          path: ./results_*.txt
+          path: |
+            ./results_main.txt
+            ./results_pr.txt
           if-no-files-found: error
 
       - name: Upload GitHub Pull Request Event
