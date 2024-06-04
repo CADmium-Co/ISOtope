@@ -1,0 +1,41 @@
+name: Run and Cache Benchmarks
+
+on:
+  pull_request:
+
+jobs:
+  benchmark:
+    name: Run benchmarks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout main branch
+        uses: actions/checkout@v2
+        with:
+          ref: main
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Run benchmarks on main - solvers
+        run: cargo bench -- solvers --exact | tail -n +6  > results_main.txt
+
+      - name: Checkout PR branch
+        uses: actions/checkout@v2
+
+      - name: Run benchmarks on PR branch
+        run: cargo bench -- solvers --exact | tail -n +6 > results_pr.txt
+
+      - name: Upload Benchmark Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark_results
+          path: |
+            ./results_main.txt
+            ./results_pr.txt
+          if-no-files-found: error
+
+      - name: Upload GitHub Pull Request Event
+        uses: actions/upload-artifact@v4
+        with:
+          name: event.json
+          path: ${{ github.event_path }}
