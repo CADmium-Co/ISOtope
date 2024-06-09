@@ -1,8 +1,9 @@
-use nalgebra::{DMatrix, UniformNorm};
 use std::error::Error;
 
+use nalgebra::{DMatrix, UniformNorm};
+
 use crate::sketch::Sketch;
-use crate::solvers::line_search::line_search_wolfe;
+use crate::solvers::line_search::{line_search_wolfe, LineSearchError};
 
 use super::Solver;
 
@@ -44,6 +45,8 @@ impl Solver for BFGSSolver {
 
         let mut h = DMatrix::identity(n, n);
 
+        let mut recently_reset = false;
+
         while iterations < self.max_iterations {
             let loss = sketch.get_loss();
             if loss < self.min_loss {
@@ -64,7 +67,24 @@ impl Solver for BFGSSolver {
                 return Err("search direction contains non-finite values".into());
             }
 
-            let alpha = line_search_wolfe(sketch, &p, &gradient)?;
+            let alpha = match line_search_wolfe(sketch, &p, &gradient) {
+                Ok(alpha) => alpha,
+                Err(LineSearchError::SearchFailed) => {
+                    // If the line search could not find a suitable step size, the Hessian
+                    // approximation may be inaccurate. Resetting the Hessian to the identity matrix
+                    // will restart with a steepest descent step and hopefully build a better
+                    // approximation.
+                    if recently_reset {
+                        return Err("bfgs: line search failed twice in a row".into());
+                    }
+                    h = DMatrix::identity(n, n);
+                    recently_reset = true;
+                    continue;
+                }
+                Err(e) => return Err(e.into()),
+            };
+
+            recently_reset = false;
 
             let s = alpha * &p;
 
