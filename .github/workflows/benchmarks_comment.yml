@@ -4,16 +4,16 @@ on:
     workflows: [ Run and Cache Benchmarks ]
     types: [ completed ]
 
+permissions:
+  pull-requests: write
+
 jobs:
   comment:
     if: github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
-    env:
-      BENCHMARK_RESULTS: benchmark_results
-      PR_EVENT: event.json
     steps:
       - name: Download Benchmark Results
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           script: |
             async function downloadArtifact(artifactName) {
@@ -37,22 +37,27 @@ jobs:
               let fs = require('fs');
               fs.writeFileSync(`${process.env.GITHUB_WORKSPACE}/${artifactName}.zip`, Buffer.from(download.data));
             }
-            await downloadArtifact(process.env.BENCHMARK_RESULTS);
-            await downloadArtifact(process.env.PR_EVENT);
+            await downloadArtifact("benchmark_results_target");
+            await downloadArtifact("benchmark_results_pr");
+            await downloadArtifact("event.json");
       - name: Unzip Benchmark Results
         run: |
-          unzip $BENCHMARK_RESULTS.zip
-          unzip $PR_EVENT.zip
+          unzip benchmark_results_target.zip
+          unzip benchmark_results_pr.zip
+          unzip event.json.zip
       - name: Export PR Event Data
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           script: |
             let fs = require('fs');
-            let prEvent = JSON.parse(fs.readFileSync(process.env.PR_EVENT, {encoding: 'utf8'}));
+            let prEvent = JSON.parse(fs.readFileSync("event.json", {encoding: 'utf8'}));
             core.exportVariable("PR_NUMBER", prEvent.number);
+            core.exportVariable("HEAD_SHA", prEvent.pull_request.head.sha);
+            core.exportVariable("BASE_SHA", prEvent.pull_request.base.sha);
 
       - name: Find Comment
         uses: peter-evans/find-comment@v3
+        id: fc
         with:
           issue-number: ${{ env.PR_NUMBER }}
           comment-author: 'github-actions[bot]'
@@ -65,15 +70,17 @@ jobs:
             const fs = require('fs');
             const issue_number = ${{ env.PR_NUMBER }};
             const comment_id = '${{ steps.fc.outputs.comment-id }}';
-            let results_main = 'Benchmarks did not run successfully on main.';
+            const head_sha = '${{ env.HEAD_SHA }}'.slice(0, 7);
+            const base_sha = '${{ env.BASE_SHA }}'.slice(0, 7);
+            let results_main = 'Benchmarks did not run successfully on target.';
             let results_pr = 'Benchmarks did not run successfully on PR.';
-            if (fs.existsSync('results_main.txt')) {
-              results_main = fs.readFileSync('results_main.txt', 'utf8');
+            if (fs.existsSync('results_target.txt')) {
+              results_main = fs.readFileSync('results_target.txt', 'utf8');
             }
             if (fs.existsSync('results_pr.txt')) {
               results_pr = fs.readFileSync('results_pr.txt', 'utf8');
             }
-            const body = `Benchmark Results - Solvers\n\n<details><summary>Main</summary>\n\n\`\`\`\n${results_main}\n\`\`\`\n</details>\n<details><summary>PR</summary>\n\n\`\`\`\n${results_pr}\n\`\`\`\n</details>`;
+            const body = `Benchmark Results - Solvers\n\n<details><summary>Target Branch - ${base_sha}</summary>\n\n\`\`\`\n${results_main}\n\`\`\`\n</details>\n<details><summary>PR - ${head_sha}</summary>\n\n\`\`\`\n${results_pr}\n\`\`\`\n</details>`;
             if (comment_id) {
               github.rest.issues.updateComment({
                 owner: context.repo.owner,

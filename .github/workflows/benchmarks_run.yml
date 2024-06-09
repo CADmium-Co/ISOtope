@@ -9,29 +9,36 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout main branch
-        uses: actions/checkout@v2
+      - name: Checkout target branch
+        uses: actions/checkout@v4
         with:
-          ref: main
+          ref: ${{ github.base_ref }}
+          fetch-depth: 0
+
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
 
-      - name: Run benchmarks on main - solvers
-        run: cargo bench -- solvers --exact | tail -n +6  > results_main.txt
+      - name: Run benchmarks on target - solvers
+        run: cargo bench -- solvers --exact | tail -n +6  > results_target.txt
+
+      - name: Upload Benchmark Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark_results_target
+          path: ./results_target.txt
+          if-no-files-found: error
 
       - name: Checkout PR branch
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
-      - name: Run benchmarks on PR branch
+      - name: Run benchmarks on PR - solvers
         run: cargo bench -- solvers --exact | tail -n +6 > results_pr.txt
 
       - name: Upload Benchmark Results
         uses: actions/upload-artifact@v4
         with:
-          name: benchmark_results
-          path: |
-            ./results_main.txt
-            ./results_pr.txt
+          name: benchmark_results_pr
+          path: ./results_pr.txt
           if-no-files-found: error
 
       - name: Upload GitHub Pull Request Event
