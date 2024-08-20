@@ -14,7 +14,7 @@ use crate::{
 };
 
 pub struct RotatedRectangleDemo {
-    pub sketch: Rc<RefCell<Sketch>>,
+    pub sketch: Sketch,
     pub point_a: Rc<RefCell<Point2>>,
     pub point_b: Rc<RefCell<Point2>>,
     pub point_c: Rc<RefCell<Point2>>,
@@ -30,7 +30,7 @@ impl Default for RotatedRectangleDemo {
 
 impl RotatedRectangleDemo {
     pub fn new() -> Self {
-        let sketch = Rc::new(RefCell::new(Sketch::new()));
+        let mut sketch = Sketch::new();
 
         // This time we have to choose some random start points to break the symmetry
         let point_a = Rc::new(RefCell::new(Point2::new(0.0, 0.1)));
@@ -41,23 +41,18 @@ impl RotatedRectangleDemo {
         let point_reference = Rc::new(RefCell::new(Point2::new(1.0, 0.0)));
 
         sketch
-            .borrow_mut()
             .add_primitive(PrimitiveCell::Point2(point_a.clone()))
             .unwrap();
         sketch
-            .borrow_mut()
             .add_primitive(PrimitiveCell::Point2(point_b.clone()))
             .unwrap();
         sketch
-            .borrow_mut()
             .add_primitive(PrimitiveCell::Point2(point_c.clone()))
             .unwrap();
         sketch
-            .borrow_mut()
             .add_primitive(PrimitiveCell::Point2(point_d.clone()))
             .unwrap();
         sketch
-            .borrow_mut()
             .add_primitive(PrimitiveCell::Point2(point_reference.clone()))
             .unwrap();
 
@@ -67,25 +62,20 @@ impl RotatedRectangleDemo {
         let line_d = Rc::new(RefCell::new(Line::new(point_d.clone(), point_a.clone())));
 
         sketch
-            .borrow_mut()
             .add_primitive(PrimitiveCell::Line(line_a.clone()))
             .unwrap();
         sketch
-            .borrow_mut()
             .add_primitive(PrimitiveCell::Line(line_b.clone()))
             .unwrap();
         sketch
-            .borrow_mut()
             .add_primitive(PrimitiveCell::Line(line_c.clone()))
             .unwrap();
         sketch
-            .borrow_mut()
             .add_primitive(PrimitiveCell::Line(line_d.clone()))
             .unwrap();
 
         // Fix point a to origin
         sketch
-            .borrow_mut()
             .add_constraint(ConstraintCell::FixPoint(Rc::new(RefCell::new(
                 FixPoint::new(point_a.clone(), Vector2::new(0.0, 0.0)),
             ))))
@@ -93,7 +83,6 @@ impl RotatedRectangleDemo {
 
         // Constrain line_a and line_b to be perpendicular
         sketch
-            .borrow_mut()
             .add_constraint(ConstraintCell::PerpendicularLines(Rc::new(RefCell::new(
                 PerpendicularLines::new(line_a.clone(), line_b.clone()),
             ))))
@@ -101,7 +90,6 @@ impl RotatedRectangleDemo {
 
         // Constrain line_b and line_c to be perpendicular
         sketch
-            .borrow_mut()
             .add_constraint(ConstraintCell::PerpendicularLines(Rc::new(RefCell::new(
                 PerpendicularLines::new(line_b.clone(), line_c.clone()),
             ))))
@@ -109,7 +97,6 @@ impl RotatedRectangleDemo {
 
         // Constrain line_c and line_d to be perpendicular
         sketch
-            .borrow_mut()
             .add_constraint(ConstraintCell::PerpendicularLines(Rc::new(RefCell::new(
                 PerpendicularLines::new(line_c.clone(), line_d.clone()),
             ))))
@@ -123,7 +110,6 @@ impl RotatedRectangleDemo {
 
         // Constrain the length of line_a to 2
         sketch
-            .borrow_mut()
             .add_constraint(ConstraintCell::EuclideanDistance(Rc::new(RefCell::new(
                 EuclidianDistanceBetweenPoints::new(point_a.clone(), point_b.clone(), 2.0),
             ))))
@@ -131,7 +117,6 @@ impl RotatedRectangleDemo {
 
         // Constrain the length of line_b to 3
         sketch
-            .borrow_mut()
             .add_constraint(ConstraintCell::EuclideanDistance(Rc::new(RefCell::new(
                 EuclidianDistanceBetweenPoints::new(point_a.clone(), point_d.clone(), 3.0),
             ))))
@@ -139,7 +124,6 @@ impl RotatedRectangleDemo {
 
         // Fix reference point
         sketch
-            .borrow_mut()
             .add_constraint(ConstraintCell::FixPoint(Rc::new(RefCell::new(
                 FixPoint::new(point_reference.clone(), Vector2::new(1.0, 0.0)),
             ))))
@@ -147,7 +131,6 @@ impl RotatedRectangleDemo {
 
         // Constrain rotation of line_a to 45 degrees
         sketch
-            .borrow_mut()
             .add_constraint(ConstraintCell::AngleBetweenPoints(Rc::new(RefCell::new(
                 AngleBetweenPoints::new(
                     point_reference.clone(),
@@ -253,13 +236,11 @@ mod tests {
 
     #[test]
     pub fn test_rectangle_rotated() -> Result<(), Box<dyn Error>> {
-        let rectangle = RotatedRectangleDemo::new();
+        let mut rectangle = RotatedRectangleDemo::new();
 
         // Now solve the sketch
         let solver = BFGSSolver::new();
-        solver
-            .solve(rectangle.sketch.borrow_mut().deref_mut())
-            .unwrap();
+        solver.solve(&mut rectangle.sketch).unwrap();
 
         println!("point_a: {:?}", rectangle.point_a.as_ref().borrow());
         println!("point_b: {:?}", rectangle.point_b.as_ref().borrow());

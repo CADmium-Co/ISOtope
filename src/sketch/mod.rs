@@ -357,7 +357,7 @@ mod tests {
     #[test]
     fn test_data_and_grad_functions() {
         let rect = RotatedRectangleDemo::new();
-        let mut sketch = rect.sketch.borrow_mut();
+        let mut sketch = rect.sketch;
         sketch.get_data();
         sketch.get_loss();
         sketch.get_gradient();
