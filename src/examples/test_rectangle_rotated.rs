@@ -4,15 +4,7 @@ use std::{cell::RefCell, rc::Rc};
 use nalgebra::Vector2;
 
 use crate::error::ISOTopeError;
-use crate::{
-    constraints::{
-        angle_between_points::AngleBetweenPoints,
-        distance::euclidian_distance_between_points::EuclidianDistanceBetweenPoints,
-        fix_point::FixPoint, lines::perpendicular_lines::PerpendicularLines, ConstraintCell,
-    },
-    primitives::point2::Point2,
-    sketch::Sketch,
-};
+use crate::{primitives::point2::Point2, sketch::Sketch};
 
 pub struct RotatedRectangleDemo {
     pub sketch: Sketch,
@@ -47,32 +39,14 @@ impl RotatedRectangleDemo {
         let line_d = sketch.add_line(point_d.clone(), point_a.clone())?;
 
         // Fix point a to origin
-        sketch
-            .add_constraint(ConstraintCell::FixPoint(Rc::new(RefCell::new(
-                FixPoint::new(point_a.clone(), Vector2::new(0.0, 0.0)),
-            ))))
-            .unwrap();
+        sketch.constrain_fix_point(point_a.clone(), Vector2::new(0.0, 0.0))?;
 
         // Constrain line_a and line_b to be perpendicular
-        sketch
-            .add_constraint(ConstraintCell::PerpendicularLines(Rc::new(RefCell::new(
-                PerpendicularLines::new(line_a.clone(), line_b.clone()),
-            ))))
-            .unwrap();
+        sketch.constrain_perpendicular_lines(line_a, line_b.clone())?;
 
         // Constrain line_b and line_c to be perpendicular
-        sketch
-            .add_constraint(ConstraintCell::PerpendicularLines(Rc::new(RefCell::new(
-                PerpendicularLines::new(line_b.clone(), line_c.clone()),
-            ))))
-            .unwrap();
-
-        // Constrain line_c and line_d to be perpendicular
-        sketch
-            .add_constraint(ConstraintCell::PerpendicularLines(Rc::new(RefCell::new(
-                PerpendicularLines::new(line_c.clone(), line_d.clone()),
-            ))))
-            .unwrap();
+        sketch.constrain_perpendicular_lines(line_b, line_c.clone())?;
+        sketch.constrain_perpendicular_lines(line_c, line_d)?;
 
         // // Constrain line_d and line_a to be perpendicular
         // sketch.borrow_mut().add_constraint(Rc::new(RefCell::new(PerpendicularLines::new(
@@ -81,37 +55,21 @@ impl RotatedRectangleDemo {
         // ))));
 
         // Constrain the length of line_a to 2
-        sketch
-            .add_constraint(ConstraintCell::EuclideanDistance(Rc::new(RefCell::new(
-                EuclidianDistanceBetweenPoints::new(point_a.clone(), point_b.clone(), 2.0),
-            ))))
-            .unwrap();
+        sketch.constrain_distance_euclidean(point_a.clone(), point_b.clone(), 2.0)?;
 
         // Constrain the length of line_b to 3
-        sketch
-            .add_constraint(ConstraintCell::EuclideanDistance(Rc::new(RefCell::new(
-                EuclidianDistanceBetweenPoints::new(point_a.clone(), point_d.clone(), 3.0),
-            ))))
-            .unwrap();
+        sketch.constrain_distance_euclidean(point_a.clone(), point_d.clone(), 3.0)?;
 
         // Fix reference point
-        sketch
-            .add_constraint(ConstraintCell::FixPoint(Rc::new(RefCell::new(
-                FixPoint::new(point_reference.clone(), Vector2::new(1.0, 0.0)),
-            ))))
-            .unwrap();
+        sketch.constrain_fix_point(point_reference.clone(), Vector2::new(1.0, 0.0))?;
 
         // Constrain rotation of line_a to 45 degrees
-        sketch
-            .add_constraint(ConstraintCell::AngleBetweenPoints(Rc::new(RefCell::new(
-                AngleBetweenPoints::new(
-                    point_reference.clone(),
-                    point_b.clone(),
-                    point_a.clone(),
-                    f64::to_radians(45.0),
-                ),
-            ))))
-            .unwrap();
+        sketch.constrain_angle_between_points(
+            point_reference.clone(),
+            point_b.clone(),
+            point_a.clone(),
+            f64::to_radians(45.0),
+        )?;
 
         Ok(Self {
             sketch,

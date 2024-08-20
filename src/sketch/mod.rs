@@ -2,9 +2,14 @@ use std::cell::RefCell;
 use std::collections::{BTreeMap, VecDeque};
 use std::rc::Rc;
 
-use nalgebra::{DMatrix, DVector};
+use nalgebra::{DMatrix, DVector, Vector2};
 use serde::{Deserialize, Serialize};
 
+use crate::constraints::angle_between_points::AngleBetweenPoints;
+use crate::constraints::distance::euclidian_distance_between_points::EuclidianDistanceBetweenPoints;
+use crate::constraints::fix_point::FixPoint;
+use crate::constraints::lines::parallel_lines::ParallelLines;
+use crate::constraints::lines::perpendicular_lines::PerpendicularLines;
 use crate::constraints::ConstraintCell;
 use crate::decompose::face::Face;
 use crate::decompose::{decompose_sketch, merge_faces};
@@ -79,6 +84,70 @@ impl Sketch {
         )));
         self.add_primitive(PrimitiveCell::Arc(arc.clone()))?;
         Ok(arc)
+    }
+
+    pub fn constrain_perpendicular_lines(
+        &mut self,
+        line1: Rc<RefCell<Line>>,
+        line2: Rc<RefCell<Line>>,
+    ) -> Result<Rc<RefCell<PerpendicularLines>>, ISOTopeError> {
+        let perpendicular_lines = Rc::new(RefCell::new(PerpendicularLines::new(line1, line2)));
+        self.add_constraint(ConstraintCell::PerpendicularLines(
+            perpendicular_lines.clone(),
+        ))?;
+        Ok(perpendicular_lines)
+    }
+
+    pub fn constrain_parallel_lines(
+        &mut self,
+        line1: Rc<RefCell<Line>>,
+        line2: Rc<RefCell<Line>>,
+    ) -> Result<Rc<RefCell<ParallelLines>>, ISOTopeError> {
+        let parallel_lines = Rc::new(RefCell::new(ParallelLines::new(line1, line2)));
+        self.add_constraint(ConstraintCell::ParallelLines(parallel_lines.clone()))?;
+        Ok(parallel_lines)
+    }
+
+    pub fn constrain_distance_euclidean(
+        &mut self,
+        point1: Rc<RefCell<Point2>>,
+        point2: Rc<RefCell<Point2>>,
+        desired_distance: f64,
+    ) -> Result<Rc<RefCell<EuclidianDistanceBetweenPoints>>, ISOTopeError> {
+        let distance = Rc::new(RefCell::new(EuclidianDistanceBetweenPoints::new(
+            point1,
+            point2,
+            desired_distance,
+        )));
+        self.add_constraint(ConstraintCell::EuclideanDistance(distance.clone()))?;
+        Ok(distance)
+    }
+
+    pub fn constrain_fix_point(
+        &mut self,
+        point: Rc<RefCell<Point2>>,
+        desired_pos: Vector2<f64>,
+    ) -> Result<Rc<RefCell<FixPoint>>, ISOTopeError> {
+        let fix_point = Rc::new(RefCell::new(FixPoint::new(point, desired_pos)));
+        self.add_constraint(ConstraintCell::FixPoint(fix_point.clone()))?;
+        Ok(fix_point)
+    }
+
+    pub fn constrain_angle_between_points(
+        &mut self,
+        point1: Rc<RefCell<Point2>>,
+        point2: Rc<RefCell<Point2>>,
+        middle_point: Rc<RefCell<Point2>>,
+        desired_angle: f64,
+    ) -> Result<Rc<RefCell<AngleBetweenPoints>>, ISOTopeError> {
+        let angle = Rc::new(RefCell::new(AngleBetweenPoints::new(
+            point1,
+            point2,
+            middle_point,
+            desired_angle,
+        )));
+        self.add_constraint(ConstraintCell::AngleBetweenPoints(angle.clone()))?;
+        Ok(angle)
     }
 
     pub fn get_num_primitives(&self) -> usize {
@@ -368,15 +437,8 @@ mod tests {
         assert!(std::panic::catch_unwind(|| {
             let mut sketch = Sketch::new();
 
-            let point = Rc::new(RefCell::new(Point2::new(0.0, 0.0)));
-            let arc = Rc::new(RefCell::new(Arc::new(point.clone(), 1.0, true, 0.0, 1.0)));
-
-            sketch
-                .add_primitive(PrimitiveCell::Point2(point.clone()))
-                .unwrap();
-            sketch
-                .add_primitive(PrimitiveCell::Arc(arc.clone()))
-                .unwrap();
+            let point = sketch.add_point2(0.0, 0.0).unwrap();
+            let arc = sketch.add_arc(point.clone(), 1.0, true, 0.0, 1.0).unwrap();
 
             let constraint = Rc::new(RefCell::new(ArcEndPointCoincident::new(
                 arc.clone(),
