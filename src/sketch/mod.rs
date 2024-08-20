@@ -9,6 +9,8 @@ use crate::constraints::ConstraintCell;
 use crate::decompose::face::Face;
 use crate::decompose::{decompose_sketch, merge_faces};
 use crate::error::ISOTopeError;
+use crate::primitives::line::Line;
+use crate::primitives::point2::Point2;
 use crate::primitives::{point2, PrimitiveCell};
 
 use super::constraints::ConstraintLike;
@@ -41,6 +43,22 @@ impl Sketch {
         self.primitives_next_id += 1;
 
         Ok(self.primitives_next_id - 1)
+    }
+
+    pub fn add_point2(&mut self, x: f64, y: f64) -> Result<Rc<RefCell<Point2>>, ISOTopeError> {
+        let point = Rc::new(RefCell::new(Point2::new(x, y)));
+        self.add_primitive(PrimitiveCell::Point2(point.clone()))?;
+        Ok(point)
+    }
+
+    pub fn add_line(
+        &mut self,
+        start: Rc<RefCell<Point2>>,
+        end: Rc<RefCell<Point2>>,
+    ) -> Result<Rc<RefCell<Line>>, ISOTopeError> {
+        let line = Rc::new(RefCell::new(Line::new(start, end)));
+        self.add_primitive(PrimitiveCell::Line(line.clone()))?;
+        Ok(line)
     }
 
     pub fn get_num_primitives(&self) -> usize {
@@ -356,7 +374,7 @@ mod tests {
 
     #[test]
     fn test_data_and_grad_functions() {
-        let rect = RotatedRectangleDemo::new();
+        let rect = RotatedRectangleDemo::new().unwrap();
         let mut sketch = rect.sketch;
         sketch.get_data();
         sketch.get_loss();

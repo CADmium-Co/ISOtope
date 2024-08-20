@@ -85,7 +85,7 @@ mod tests {
 
     #[test]
     pub fn test_levenberg_marquardt_solver() -> Result<(), Box<dyn Error>> {
-        let mut rectangle = RotatedRectangleDemo::new();
+        let mut rectangle = RotatedRectangleDemo::new()?;
 
         // Now solve the sketch
         let solver = LevenbergMarquardtSolver::new_with_params(1000, 1e-10, 1e-1, 1e-5);

@@ -74,7 +74,7 @@ mod tests {
 
     #[test]
     pub fn test_gauss_newton_solver() -> Result<(), Box<dyn Error>> {
-        let mut rectangle = RotatedRectangleDemo::new();
+        let mut rectangle = RotatedRectangleDemo::new()?;
 
         // Now solve the sketch
         let solver = GaussNewtonSolver::new_with_params(500, 1e-8, 1e0);

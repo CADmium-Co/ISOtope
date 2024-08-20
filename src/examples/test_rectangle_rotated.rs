@@ -3,13 +3,14 @@ use std::{cell::RefCell, rc::Rc};
 
 use nalgebra::Vector2;
 
+use crate::error::ISOTopeError;
 use crate::{
     constraints::{
         angle_between_points::AngleBetweenPoints,
         distance::euclidian_distance_between_points::EuclidianDistanceBetweenPoints,
         fix_point::FixPoint, lines::perpendicular_lines::PerpendicularLines, ConstraintCell,
     },
-    primitives::{line::Line, point2::Point2, PrimitiveCell},
+    primitives::point2::Point2,
     sketch::Sketch,
 };
 
@@ -24,55 +25,26 @@ pub struct RotatedRectangleDemo {
 
 impl Default for RotatedRectangleDemo {
     fn default() -> Self {
-        Self::new()
+        Self::new().unwrap()
     }
 }
 
 impl RotatedRectangleDemo {
-    pub fn new() -> Self {
+    pub fn new() -> Result<RotatedRectangleDemo, ISOTopeError> {
         let mut sketch = Sketch::new();
 
         // This time we have to choose some random start points to break the symmetry
-        let point_a = Rc::new(RefCell::new(Point2::new(0.0, 0.1)));
-        let point_b = Rc::new(RefCell::new(Point2::new(0.3, 0.0)));
-        let point_c = Rc::new(RefCell::new(Point2::new(0.3, 0.3)));
-        let point_d = Rc::new(RefCell::new(Point2::new(0.1, 0.3)));
+        let point_a = sketch.add_point2(0.0, 0.1)?;
+        let point_b = sketch.add_point2(0.3, 0.0)?;
+        let point_c = sketch.add_point2(0.3, 0.3)?;
+        let point_d = sketch.add_point2(0.1, 0.3)?;
 
-        let point_reference = Rc::new(RefCell::new(Point2::new(1.0, 0.0)));
+        let point_reference = sketch.add_point2(1.0, 0.0)?;
 
-        sketch
-            .add_primitive(PrimitiveCell::Point2(point_a.clone()))
-            .unwrap();
-        sketch
-            .add_primitive(PrimitiveCell::Point2(point_b.clone()))
-            .unwrap();
-        sketch
-            .add_primitive(PrimitiveCell::Point2(point_c.clone()))
-            .unwrap();
-        sketch
-            .add_primitive(PrimitiveCell::Point2(point_d.clone()))
-            .unwrap();
-        sketch
-            .add_primitive(PrimitiveCell::Point2(point_reference.clone()))
-            .unwrap();
-
-        let line_a = Rc::new(RefCell::new(Line::new(point_a.clone(), point_b.clone())));
-        let line_b = Rc::new(RefCell::new(Line::new(point_b.clone(), point_c.clone())));
-        let line_c = Rc::new(RefCell::new(Line::new(point_c.clone(), point_d.clone())));
-        let line_d = Rc::new(RefCell::new(Line::new(point_d.clone(), point_a.clone())));
-
-        sketch
-            .add_primitive(PrimitiveCell::Line(line_a.clone()))
-            .unwrap();
-        sketch
-            .add_primitive(PrimitiveCell::Line(line_b.clone()))
-            .unwrap();
-        sketch
-            .add_primitive(PrimitiveCell::Line(line_c.clone()))
-            .unwrap();
-        sketch
-            .add_primitive(PrimitiveCell::Line(line_d.clone()))
-            .unwrap();
+        let line_a = sketch.add_line(point_a.clone(), point_b.clone())?;
+        let line_b = sketch.add_line(point_b.clone(), point_c.clone())?;
+        let line_c = sketch.add_line(point_c.clone(), point_d.clone())?;
+        let line_d = sketch.add_line(point_d.clone(), point_a.clone())?;
 
         // Fix point a to origin
         sketch
@@ -141,14 +113,14 @@ impl RotatedRectangleDemo {
             ))))
             .unwrap();
 
-        Self {
+        Ok(Self {
             sketch,
             point_a,
             point_b,
             point_c,
             point_d,
             point_reference,
-        }
+        })
     }
 
     pub fn check(&self, eps: f64) -> Result<(), Box<dyn Error>> {
@@ -227,7 +199,6 @@ impl RotatedRectangleDemo {
 #[cfg(test)]
 mod tests {
     use std::error::Error;
-    use std::ops::DerefMut;
 
     use crate::{
         examples::test_rectangle_rotated::RotatedRectangleDemo,
@@ -236,7 +207,7 @@ mod tests {
 
     #[test]
     pub fn test_rectangle_rotated() -> Result<(), Box<dyn Error>> {
-        let mut rectangle = RotatedRectangleDemo::new();
+        let mut rectangle = RotatedRectangleDemo::new()?;
 
         // Now solve the sketch
         let solver = BFGSSolver::new();
