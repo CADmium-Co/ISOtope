@@ -91,7 +91,7 @@ mod tests {
         constraints::{
             coincident::arc_end_point_coincident::ArcEndPointCoincident, ConstraintCell,
         },
-        primitives::{arc::Arc, line::Line, point2::Point2, PrimitiveCell},
+        primitives::{arc::Arc, PrimitiveCell},
         sketch::Sketch,
         solvers::{gradient_based_solver::GradientBasedSolver, Solver},
     };
@@ -100,7 +100,7 @@ mod tests {
     fn test_arc_end_point_coincident() {
         let mut sketch = Sketch::new();
 
-        let center = Rc::new(RefCell::new(Point2::new(0.0, 0.0)));
+        let center = sketch.add_point2(0.0, 0.0).unwrap();
         let arc1 = Rc::new(RefCell::new(Arc::new(
             center.clone(),
             1.0,
@@ -108,26 +108,14 @@ mod tests {
             0.0,
             std::f64::consts::PI,
         )));
-        let line2_start = Rc::new(RefCell::new(Point2::new(3.0, 4.0)));
-        let line2_end = Rc::new(RefCell::new(Point2::new(5.0, 6.0)));
-        let line2 = Rc::new(RefCell::new(Line::new(
-            line2_start.clone(),
-            line2_end.clone(),
-        )));
-        sketch
-            .add_primitive(PrimitiveCell::Point2(center.clone()))
+        let line2_start = sketch.add_point2(3.0, 4.0).unwrap();
+        let line2_end = sketch.add_point2(5.0, 6.0).unwrap();
+
+        let line2 = sketch
+            .add_line(line2_start.clone(), line2_end.clone())
             .unwrap();
         sketch
             .add_primitive(PrimitiveCell::Arc(arc1.clone()))
-            .unwrap();
-        sketch
-            .add_primitive(PrimitiveCell::Point2(line2_start.clone()))
-            .unwrap();
-        sketch
-            .add_primitive(PrimitiveCell::Point2(line2_end.clone()))
-            .unwrap();
-        sketch
-            .add_primitive(PrimitiveCell::Line(line2.clone()))
             .unwrap();
 
         let constr1 = Rc::new(RefCell::new(ArcEndPointCoincident::new(
