@@ -9,6 +9,7 @@ use crate::constraints::ConstraintCell;
 use crate::decompose::face::Face;
 use crate::decompose::{decompose_sketch, merge_faces};
 use crate::error::ISOTopeError;
+use crate::primitives::arc::Arc;
 use crate::primitives::line::Line;
 use crate::primitives::point2::Point2;
 use crate::primitives::{point2, PrimitiveCell};
@@ -59,6 +60,25 @@ impl Sketch {
         let line = Rc::new(RefCell::new(Line::new(start, end)));
         self.add_primitive(PrimitiveCell::Line(line.clone()))?;
         Ok(line)
+    }
+
+    pub fn add_arc(
+        &mut self,
+        center: Rc<RefCell<Point2>>,
+        radius: f64,
+        clockwise: bool,
+        start_angle: f64,
+        end_angle: f64,
+    ) -> Result<Rc<RefCell<Arc>>, ISOTopeError> {
+        let arc = Rc::new(RefCell::new(Arc::new(
+            center,
+            radius,
+            clockwise,
+            start_angle,
+            end_angle,
+        )));
+        self.add_primitive(PrimitiveCell::Arc(arc.clone()))?;
+        Ok(arc)
     }
 
     pub fn get_num_primitives(&self) -> usize {

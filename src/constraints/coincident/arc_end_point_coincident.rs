@@ -85,50 +85,38 @@ impl ConstraintLike for ArcEndPointCoincident {
 // Run some tests
 #[cfg(test)]
 mod tests {
-    use std::{cell::RefCell, rc::Rc};
+    use std::{cell::RefCell, error::Error, rc::Rc};
 
     use crate::{
         constraints::{
             coincident::arc_end_point_coincident::ArcEndPointCoincident, ConstraintCell,
         },
-        primitives::{arc::Arc, PrimitiveCell},
         sketch::Sketch,
         solvers::{gradient_based_solver::GradientBasedSolver, Solver},
     };
 
     #[test]
-    fn test_arc_end_point_coincident() {
+    fn test_arc_end_point_coincident() -> Result<(), Box<dyn Error>> {
         let mut sketch = Sketch::new();
 
-        let center = sketch.add_point2(0.0, 0.0).unwrap();
-        let arc1 = Rc::new(RefCell::new(Arc::new(
-            center.clone(),
-            1.0,
-            false,
-            0.0,
-            std::f64::consts::PI,
-        )));
-        let line2_start = sketch.add_point2(3.0, 4.0).unwrap();
-        let line2_end = sketch.add_point2(5.0, 6.0).unwrap();
+        let center = sketch.add_point2(0.0, 0.0)?;
 
-        let line2 = sketch
-            .add_line(line2_start.clone(), line2_end.clone())
-            .unwrap();
-        sketch
-            .add_primitive(PrimitiveCell::Arc(arc1.clone()))
-            .unwrap();
+        let arc1 = sketch.add_arc(center.clone(), 1.0, false, 0.0, std::f64::consts::PI)?;
+        let line2_start = sketch.add_point2(3.0, 4.0)?;
+        let line2_end = sketch.add_point2(5.0, 6.0)?;
+
+        let line2 = sketch.add_line(line2_start.clone(), line2_end.clone())?;
 
         let constr1 = Rc::new(RefCell::new(ArcEndPointCoincident::new(
             arc1.clone(),
             line2_start.clone(),
         )));
-        sketch
-            .add_constraint(ConstraintCell::ArcEndPointCoincident(constr1.clone()))
-            .unwrap();
+
+        sketch.add_constraint(ConstraintCell::ArcEndPointCoincident(constr1.clone()))?;
 
         sketch.check_gradients(1e-6, constr1.clone(), 1e-5);
         let solver = GradientBasedSolver::new();
-        solver.solve(&mut sketch).unwrap();
+        solver.solve(&mut sketch)?;
 
         println!("arc1: {:?}", arc1.as_ref().borrow());
         println!("arc1 end point: {:?}", arc1.as_ref().borrow().end_point());
@@ -144,5 +132,6 @@ mod tests {
                 .abs()
                 < 1e-6
         );
+        Ok(())
     }
 }
